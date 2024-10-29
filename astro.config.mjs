@@ -27,16 +27,6 @@ export default defineConfig({
     }),
     simpleStackForm(),
   ],
-  output: "hybrid",
-  adapter: netlify({
-    dist: {
-      client: "dist/client",
-      functions: "dist/functions"
-    }
-  }),
-  vite: {
-    ssr: {
-      noExternal: ['@supabase/supabase-js', 'discord.js', 'color.js']
-    }
-  }
+  output: "server",
+  adapter: netlify()
 });
