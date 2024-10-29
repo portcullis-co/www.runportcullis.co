@@ -1,6 +1,6 @@
 import db from "@astrojs/db";
 import mdx from "@astrojs/mdx";
-import { netlifyFunctions } from "@astrojs/netlify/functions";
+import netlify from "@astrojs/netlify";
 import react from "@astrojs/react";
 import sitemap from "@astrojs/sitemap";
 import tailwind from "@astrojs/tailwind";
@@ -10,7 +10,7 @@ import simpleStackForm from "simple-stack-form";
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://www.getportcullis.co",
+  site: "https://www.runportcullis.co",
   integrations: [
     mdx({
       syntaxHighlight: "shiki",
@@ -28,17 +28,15 @@ export default defineConfig({
     simpleStackForm(),
   ],
   output: "hybrid",
-  adapter: netlifyFunctions({
-    dist: new URL('./dist/', import.meta.url),
-    functionPerRoute: true, // Create a separate function for each route
-    edge: false // Disable edge functions
+  adapter: netlify({
+    dist: {
+      client: "dist/client",
+      functions: "dist/functions"
+    }
   }),
   vite: {
     ssr: {
       noExternal: ['@supabase/supabase-js', 'discord.js', 'color.js']
-    },
-    optimizeDeps: {
-      exclude: ['@supabase/supabase-js', 'discord.js']
     }
   }
 });

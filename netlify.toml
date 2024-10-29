@@ -4,7 +4,7 @@
   functions = "dist/functions"
 
 [build.environment]
-  NODE_VERSION = "20.11.0"
+  NODE_VERSION = "20"
   NPM_FLAGS = "--version"
 
 [functions]
@@ -15,6 +15,7 @@
   from = "/*"
   to = "/.netlify/functions/entry"
   status = 200
+  force = true
 
 [dev]
   framework = "astro"
