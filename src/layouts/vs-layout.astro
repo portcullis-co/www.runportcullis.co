@@ -1,0 +1,44 @@
+---
+import MainLayout from "./main-layout.astro";
+import { formatDate } from "@/lib/utils";
+import { Image } from "astro:assets";
+import { Badge } from "@/components/ui/badge";
+
+const { frontmatter } = Astro.props;
+---
+
+<MainLayout title={frontmatter.title} description={frontmatter.description}>
+  <div class="relative container max-w-screen-md py-10">
+    <article class="prose dark:prose-invert max-w-none">
+      
+      {frontmatter.cover && (
+        <Image
+          class="rounded-xl overflow-hidden my-6"
+          width={720}
+          height={360}
+          src={frontmatter.cover}
+          alt={frontmatter.title}
+        />
+      )}
+      
+      <div class="flex items-center justify-between">
+        <span class="font-medium text-muted-foreground">
+          {formatDate(frontmatter.pubDate)}
+          {frontmatter.updatedDate && (
+            <span> - Last updated on {formatDate(frontmatter.updatedDate)}</span>
+          )}
+        </span>
+      </div>
+      
+      <h1 class="font-heading text-4xl my-4">{frontmatter.title}</h1>
+      
+      {frontmatter.description && (
+        <p>{frontmatter.description}</p>
+      )}
+      
+      <hr class="my-6" />
+      
+      <slot />
+    </article>
+  </div>
+</MainLayout>

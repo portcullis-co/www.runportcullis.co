@@ -1,0 +1,58 @@
+---
+import { cn } from "@/lib/utils";
+import type { InfoLdg } from "@/types";
+import { Icon } from "astro-icon/components";
+import { Image } from "astro:assets";
+
+interface Props {
+  reverse?: boolean;
+  data: InfoLdg;
+}
+
+const { reverse, data } = Astro.props;
+---
+
+<div class="py-16 sm:py-20">
+  <div
+    class="mx-auto grid max-w-7xl gap-10 px-4 sm:gap-16 sm:px-6 lg:grid-cols-2 lg:items-center lg:px-8"
+  >
+    <div class={cn(reverse ? "lg:order-2" : "lg:order-1")}>
+      <h2
+        class="font-heading text-3xl text-foreground md:text-4xl lg:text-[40px]"
+      >
+        {data.title}
+      </h2>
+      <p class="mt-6 text-lg text-muted-foreground">
+        {data.description}
+      </p>
+      <dl class="mt-6 space-y-4 leading-7">
+        {
+          data.list.map((item) => {
+            return (
+              <div class="relative pl-8">
+                <dt class="font-semibold">
+                  <Icon
+                    name={item.icon}
+                    class="absolute left-0 top-1 size-5 stroke-purple-700"
+                  />
+                  <span>{item.title}</span>
+                </dt>
+                <dd class="text-sm text-muted-foreground">
+                  {item.description}
+                </dd>
+              </div>
+            );
+          })
+        }
+      </dl>
+    </div>
+    <div
+      class={cn(
+        "rounded-xl overflow-hidden border lg:-m-4",
+        reverse ? "order-1" : "order-2"
+      )}
+    >
+    <!--ARCADE EMBED START--><div style="position: relative; padding-bottom: calc(51.36054421768708% + 41px); height: 0; width: 100%;"><iframe src="https://demo.arcade.software/sQHldZwLQfZhhqXOiGFK?embed&embed_mobile=inline&embed_desktop=inline&show_copy_link=true" title="Portcullis | Magic Links for Enterprise Data Sharing" frameborder="0" loading="lazy" allowfullscreen allow="clipboard-write" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; color-scheme: light;" ></iframe></div><!--ARCADE EMBED END-->
+    </div>
+  </div>
+</div>
