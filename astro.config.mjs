@@ -28,5 +28,7 @@ export default defineConfig({
     simpleStackForm(),
   ],
   output: "server",
-  adapter: netlify()
+  adapter: netlify({
+    imageCDN: true
+  })
 });
