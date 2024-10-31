@@ -136,13 +136,6 @@ declare module 'astro:content' {
 
 	type ContentEntryMap = {
 		"blog": {
-"how-we-plan-to-take-on-gumroad.md": {
-	id: "how-we-plan-to-take-on-gumroad.md";
-  slug: "how-we-plan-to-take-on-gumroad";
-  body: string;
-  collection: "blog";
-  data: InferEntrySchema<"blog">
-} & { render(): Render[".md"] };
 "top-5-creator-paywalls.md": {
 	id: "top-5-creator-paywalls.md";
   slug: "top-5-creator-paywalls";
@@ -150,9 +143,9 @@ declare module 'astro:content' {
   collection: "blog";
   data: InferEntrySchema<"blog">
 } & { render(): Render[".md"] };
-"what-i-learned-from-dogfooding.md": {
-	id: "what-i-learned-from-dogfooding.md";
-  slug: "what-i-learned-from-dogfooding";
+"why-typescript-is-perfect-for-etl.md": {
+	id: "why-typescript-is-perfect-for-etl.md";
+  slug: "why-typescript-is-perfect-for-etl";
   body: string;
   collection: "blog";
   data: InferEntrySchema<"blog">

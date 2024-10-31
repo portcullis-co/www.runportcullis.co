@@ -1,7 +1,7 @@
 ---
-title: "How we plan to take on Gumroad in the trillion dollar social commerce market"
-description: "When your competition already has a bad reputation and gets sold back to the founder for pennies, you know there's a gap in the market ready to be filled."
-pubDate: "Aug 16 2024"
+title: "Why TypeScript is perfect for ETL"
+description: "TypeScript may be the most underappreciated language for ETL tooling."
+pubDate: "Oct 31 2024"
 cover: "/images/blog/competition.png"
 category: "insights"
 ---

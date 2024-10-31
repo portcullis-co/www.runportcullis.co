@@ -14,9 +14,9 @@ export const navMenuConfig: NavMenuConfig = {
           forceReload: true,
         },
         {
-          title: "Compatibility (Coming soon!)",
-          href: "/",
-          description: "Check out the list of tools we support.",
+          title: "Discord",
+          href: "https://discord.gg/JZCMf55GZa",
+          description: "Join our Discord to chat with the team and learn more about Portcullis.",
           image: "/images/examples/pricing.jpg",
         },
         {
@@ -26,10 +26,10 @@ export const navMenuConfig: NavMenuConfig = {
           image: "/images/examples/pricing.jpg",
         },
         {
-          title: "Examples (Coming soon!)",
-          href: "",
+          title: "Github",
+          href: "https://github.com/portcullis-co/",
           description:
-            "Check out a few demonstration portals",
+            "Check out our Github for some projects we've worked on and more information.",
           image: "/images/examples/waitlist.jpg",
           forceReload: true,
         },
@@ -38,11 +38,5 @@ export const navMenuConfig: NavMenuConfig = {
 
   ],
   links: [
-     {
-       title: "Blog",
-       href: "/blog",
-       description: "Blog",
-       image: "/images/examples/image.jpg",
-     },
   ],
 };

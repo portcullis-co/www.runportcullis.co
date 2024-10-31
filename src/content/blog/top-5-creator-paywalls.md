@@ -1,7 +1,7 @@
 ---
-title: "Top 5 creator paywalls compared"
-description: "Let's look at some of the options for paywalls out there."
-pubDate: "Aug 09 2024"
+title: "Top 5 Embedded ETL tools compared"
+description: "Let's look at some of the options for embedded ETL tools out there."
+pubDate: "Oct 31 2024"
 cover: "/images/blog/indie-paywalls.png"
 category: "comparison"
 ---

@@ -4,7 +4,7 @@ export const infos: InfoLdg[] = [
   {
     title: "Data exports don't have to be painful",
     description:
-      "Portcullis simplifies the process of customer data sharing by providing a tools for securely sharing data with your customers or partners.",
+      "Portcullis simplifies the process of customer data sharing by providing a toolset for securely sharing data with your customers or partners.",
     image: "/images/blog/placeholder-about.jpg",
     list: [
       {
@@ -20,7 +20,7 @@ export const infos: InfoLdg[] = [
       {
         title: "Scalable",
         description:
-          "We've tested portcullis with rows of 200m and it still works like a charm.",
+          "We've tested portcullis with tables of over 1 billion rows and it still works like a charm.",
         icon: "lucide:scale",
       },
     ],
@@ -54,23 +54,23 @@ export const infos: InfoLdg[] = [
 
 export const features = [
   {
-    title: "Simple Invite Links",
+    title: "Pay as you go",
     description:
-      "Generate simple invite links for your customers or partners to access your data.",
+      "Pay only for the data you export and the bandwidth you use.",
     link: "/pricing",
-    icon: "lucide:link",
+    icon: "lucide:credit-card",
   },
   {
-    title: "Password Protected Links",
+    title: "Themable",
     description:
-      "Secure your links with a password to ensure only the intended recipients have access to your data.",
+      "Customize the look and feel of your embeds to match your brand.",
     link: "/pricing",
-    icon: "lucide:lock",
+    icon: "lucide:paint-bucket",
   },
   {
     title: "Export to 6+ Warehouses",
     description:
-      "Export your data to any of the 6+ warehouses by simply providing an invite link.",
+      "Embed export functionality to any of the 6+ warehouses by using our React SDK.",
     link: "/pricing",
     icon: "lucide:layers",
   },
