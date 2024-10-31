@@ -3,9 +3,9 @@ import type { SidebarNavItem, SiteConfig } from "@/types";
 export const siteConfig: SiteConfig = {
   name: "Portcullis",
   description:
-    "Magic 🔗's for secure and painless enterprise data export",
+    "Embedded ETL for enterprise data sharing ",
   url: "https://www.runportcullis.co",
-  ogImage: "/og.jpg",
+  ogImage: "/og.png",
   links: {
     twitter: "",
     github: "https://github.com/portcullis-co/",
