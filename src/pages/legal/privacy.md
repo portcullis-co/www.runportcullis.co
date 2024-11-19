@@ -70,7 +70,6 @@ We may update this Privacy Policy from time to time. We will notify you of any s
 If you have any questions about this Privacy Policy, please contact us at:
 
 Portcullis
-privacy@Portcullis.co
-865-776-3192
+privacy@runportcullis.co
 
 By using our services, you agree to the terms of this Privacy Policy.

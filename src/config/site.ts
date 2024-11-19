@@ -3,7 +3,7 @@ import type { SidebarNavItem, SiteConfig } from "@/types";
 export const siteConfig: SiteConfig = {
   name: "Portcullis",
   description:
-    "Embedded ETL for enterprise data sharing ",
+    "Embedded ETL for enterprise data sharing",
   url: "https://www.runportcullis.co",
   ogImage: "/og.png",
   links: {
@@ -23,8 +23,8 @@ export const footerLinks: SidebarNavItem[] = [
   {
     title: "Legal",
     items: [
-      { title: "Terms", href: "/terms" },
-      { title: "Privacy", href: "/privacy" },
+      { title: "Terms", href: "/legal/terms" },
+      { title: "Privacy", href: "/legal/privacy" },
     ],
   },
 ];

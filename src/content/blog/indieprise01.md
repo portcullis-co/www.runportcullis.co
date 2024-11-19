@@ -1,8 +1,8 @@
 ---
-title: "Top 5 Embedded ETL tools compared"
-description: "Let's look at some of the options for embedded ETL tools out there."
+title: "Indieprise Founder Story: James Bohrman"
+description: "Meet James, the founder of Portcullis and take a peek inside his brain and what inspired him to ignore the traditional path of indie developer."
 pubDate: "Oct 31 2024"
-cover: "/images/blog/indie-paywalls.png"
+cover: "/images/blog/indieprise01.png"
 category: "comparison"
 ---
 
