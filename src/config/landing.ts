@@ -2,25 +2,25 @@ import type { InfoLdg } from "@/types";
 
 export const infos: InfoLdg[] = [
   {
-    title: "Data exports don't have to be painful",
+    title: "Get the most value out of your Clickhouse investment",
     description:
-      "Portcullis simplifies the process of customer data sharing by providing a toolset for securely sharing data with your customers or partners.",
+      "Portcullis is here to help you with reaching maximum ROI on your commitment to Clickhouse as a data warehouse",
     image: "/images/blog/placeholder-about.jpg",
     list: [
       {
-        title: "Secure",
-        description: "Your data is safe with us. We use the latest encryption and security measures to ensure your data is protected.",
-        icon: "lucide:lock",
+        title: "Engineer-founded",
+        description: "Portcullis was founded by engineers and understands the ins and outs of terabyte-scale data warehousing.",
+        icon: "lucide:code",
       },
       {
-        title: "Simple",
-        description: "Our tools are designed to be easy to use and understand. We want to make it as simple as possible for you to share your data.",
-        icon: "lucide:check-circle",
+        title: "White-glove",
+        description: "It might sound cringe, but we treat our clients like family. We can't work with everyone, but the people we can we make sure have the best CS.",
+        icon: "lucide:hand-heart",
       },
       {
-        title: "Scalable",
+        title: "Experimental by nature, pragmatic by default",
         description:
-          "We've tested portcullis with tables of over 1 billion rows and it still works like a charm.",
+          "We absolutely love trying new and bleeting edge things to solve problems, while keeping ourselves grounded where needed",
         icon: "lucide:scale",
       },
     ],
@@ -54,53 +54,53 @@ export const infos: InfoLdg[] = [
 
 export const features = [
   {
-    title: "Pay as you go",
+    title: "Migration Support",
     description:
-      "Pay only for the data you export and the bandwidth you use.",
-    link: "/pricing",
-    icon: "lucide:credit-card",
+      "We love building tools and supporting clients with migrations to Clickhouse.",
+    link: "/schedule-a-chat",
+    icon: "lucide:folder-sync",
   },
   {
-    title: "Themable",
+    title: "Analytics",
     description:
-      "Customize the look and feel of your embeds to match your brand.",
-    link: "/pricing",
-    icon: "lucide:paint-bucket",
+      "Contact us for support optimizing and gaining insights into your analytics",
+    link: "/schedule-a-chat",
+    icon: "lucide:activity",
   },
   {
-    title: "Export to 6+ Warehouses",
+    title: "Custom Dashboards",
     description:
-      "Embed export functionality to any of the 6+ warehouses by using our React SDK.",
-    link: "/pricing",
+      "Use our methodology and tools or let us support you with custom dashboards",
+    link: "/schedule-a-chat",
     icon: "lucide:layers",
   },
   {
-    title: "Usage Analytics",
+    title: "Bespoke Behaviour and UDFs",
     description:
-      "See how many times your data has been accessed and by whom.",
-    link: "/pricing",
-    icon: "lucide:scan-eye",
+      "Connect with us to see how we can help you extract unique behaviour out of your Clickhouse instances",
+    link: "/schedule-a-chat",
+    icon: "lucide:wand-sparkles",
   },
   {
-    title: "Notifications",
+    title: "Optimization",
     description:
-      "Get updates when your upserts are finished or when your links are accessed.",
-    link: "/pricing",
-    icon: "lucide:bell",
+      "Need help optimizing your queries? Let us help you with that.",
+    link: "/schedule-a-chat",
+    icon: "lucide:database",
   },
   {
-    title: "Fully Typed",
+    title: "Product Development",
     description:
-      "Our API is fully typed and supported by a team of engineers.",
-    link: "/pricing",
+      "Have something special you'd like developed? Give us a shout and we'll come up with a feasibility report.",
+    link: "/schedule-a-chat",
     icon: "lucide:code",
   },
 ];
 
 export const testimonials = [
   {
-    name: "John Doe",
-    job: "Full Stack Developer",
+    name: "Zach Naimon",
+    job: "Principal Product Manager @ Clickhouse",
     image: "https://randomuser.me/api/portraits/men/1.jpg",
     review:
       "The next-Portcullis-stripe-starter repo has truly revolutionized my development workflow. With its comprehensive features and seamless integration with Stripe, I've been able to build and deploy projects faster than ever before. The documentation is clear and concise, making it easy to navigate through the setup process. I highly recommend next-Portcullis-stripe-starter to any developer.",

@@ -20,22 +20,16 @@ export const navMenuConfig: NavMenuConfig = {
         //   image: "/images/examples/pricing.jpg",
         // },
         {
-          title: "Request an API key",
-          href: "/get-started",
-          description: "Tell us a bit about your needs and request an API key",
+          title: "Discuss a project",
+          href: "/schedule-a-chat",
+          description: "Talk to us about a Clickhouse project you have in mind",
           image: "/images/examples/pricing.jpg",
         },
         {
-          title: "Dashboard",
-          href: "https://app.portcullis.co/sign-in",
-          description: "Sign into your account",
-          image: "/images/examples/pricing.jpg",
-        },
-        {
-          title: "Docs",
-          href: "https://docs.runportcullis.co",
+          title: "Discord",
+          href: "https://discord.gg/gPCSXNtjcN",
           description:
-            "Check out our docs to learn more about our capabilities",
+            "Join the Portcullis community Discord for data engineers",
           image: "/images/examples/waitlist.jpg",
           forceReload: true,
         },

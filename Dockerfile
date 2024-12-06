@@ -4,8 +4,6 @@
 ARG NODE_VERSION=20.14.0
 FROM node:${NODE_VERSION}-slim as base
 
-LABEL fly_launch_runtime="Astro"
-
 # Astro app lives here
 WORKDIR /app
 

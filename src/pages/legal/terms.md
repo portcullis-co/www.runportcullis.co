@@ -6,191 +6,123 @@ pubDate: "Jul 01 2022"
 category: "code"
 ---
 
+Last Updated: December 5, 2024
 
-Last Updated: November 18, 2024
+# Portcullis - Terms of Service
 
 ## 1. Definitions
 
-- "Portcullis," "we," "us," or "our" refers to Portcullis ETL Platform and its parent company
-- "Service" refers to the Portcullis API-first embedded ETL platform
-- "Customer," "you," or "your" refers to any individual or entity using the Service
-- "Data" refers to any information processed through the Service
-- "API" refers to the application programming interface provided by Portcullis
+1.1 "Portcullis" refers to Enter the Portcullis Corp, a specialized solutions agency for the Clickhouse ecosystem.
 
-## 2. Acceptance of Terms
+1.2 "Client" means the individual, company, or organization engaging Portcullis for services.
 
-By accessing or using the Portcullis Platform, you agree to be bound by these Terms and Conditions. If you disagree with any part of these terms, you may not access or use the Service.
+1.3 "Services" include consulting, implementation, optimization, migration, and support related to Clickhouse technologies.
 
-## 3. Service Description
+1.4 "Clickhouse Ecosystem" refers to Clickhouse database technologies, related tools, and associated infrastructure solutions.
 
-Portcullis provides an API-first embedded ETL (Extract, Transform, Load) platform that enables:
+## 2. Service Scope
 
-- API-first data export feature development
-- Data transformation capabilities
-- Data loading into specified destinations
-- API access for integration with other systems
-- Monitoring and logging capabilities
+2.1 **Engagement Types**
+- Consulting Services
+- Implementation Projects
+- Performance Optimization
+- Migration Assistance
+- Ongoing Technical Support
+- Custom Development Solutions
 
-## 4. API Usage and Access
+2.2 Portcullis reserves the right to refuse or terminate any engagement that falls outside its area of expertise or technological capabilities.
 
-### 4.1 API Credentials
+## 3. Client Responsibilities
 
-- You are responsible for maintaining the security of your API credentials
-- You must notify us immediately of any unauthorized use of your API credentials
-- API credentials may not be shared between organizations or individuals
+3.1 The Client shall:
+- Provide accurate and complete information necessary for service delivery
+- Ensure access to required systems and environments
+- Maintain appropriate security protocols
+- Designate a primary point of contact for project communication
 
-### 4.2 Rate Limits
+3.2 Clients are responsible for:
+- Backing up their existing data before any migration or implementation
+- Maintaining appropriate software and hardware prerequisites
+- Implementing recommended security measures
 
-- API usage is subject to rate limits as specified in your service tier
-- Exceeding rate limits may result in temporary service suspension
-- We reserve the right to adjust rate limits with reasonable notice
+## 4. Pricing and Payment
 
-## 5. Data Processing and Security
+4.1 **Pricing Models**
+- Hourly Consulting Rates
+- Fixed-Price Project Contracts
+- Retainer-Based Support Agreements
+- Custom Pricing for Complex Engagements
 
-### 5.1 Data Ownership
+4.2 Payment Terms:
+-Invoices issued upon project milestone completion or monthly for ongoing services
+- 5% discount if paid within 7 days of invoice date
+- Maximum payment period of 14 days from invoice date
+- Payments received after 14 days subject to 1.5% monthly interest charge
 
-- You retain all rights to your data processed through the Service
-- You grant us a limited license to process your data as necessary to provide the Service
+## 5. Intellectual Property
 
-### 5.2 Data Security
+5.1 Deliverables created by Portcullis during service engagement:
+- Custom code and configurations remain client property
+- Underlying methodologies and generic tools remain Portcullis intellectual property
+- Open-source contributions follow respective project licenses
 
-- We implement industry-standard security measures to protect your data
-- We have plans to undergo full security audits for SOC 2 Type II compliance
-- We encrypt data in transit and at rest
+5.2 Client retains ownership of all pre-existing data and configurations.
 
-## 6. Service Level Agreement (SLA)
+## 6. Confidentiality
 
-### 6.1 Availability
+6.1 Portcullis commits to:
+- Maintaining strict confidentiality of client data
+- Using industry-standard encryption and secure communication protocols
+- Limiting access to client information on a need-to-know basis
 
-- We target 99.9% uptime, measured monthly
-- Scheduled maintenance windows are excluded from availability calculations
-- Service credits are provided according to our SLA policy
+6.2 Confidentiality remains in effect during and after service engagement.
 
-### 6.2 Support
+## 7. Warranties and Limitations
 
-- Technical support is provided according to your service tier
-- Response times vary based on issue severity and service tier
-- Support is provided via email and our developer portal
+7.1 **Service Warranties**
+- Technical solutions delivered will meet agreed specifications
+- Best-effort compatibility with Clickhouse ecosystem standards
+- Repair or re-performance of defective services
 
-## 7. Billing and Payment
+7.2 **Limitation of Liability**
+- Maximum liability limited to total contract value
+- No liability for indirect, consequential, or punitive damages
+- No warranty for third-party software or infrastructure not directly developed by Portcullis
 
-### 7.1 Pricing
+## 8. Termination
 
-- Fees are based on your selected service tier and usage
-- Usage is calculated based on API calls, data volume, and compute time
-- Prices may be adjusted with 30 days notice
+8.1 Either party may terminate services with 30 days written notice.
 
-### 7.2 Payment Terms
+8.2 Immediate termination possible for:
+- Breach of contract terms
+- Non-payment
+- Security violations
+- Unresolvable technical incompatibilities
 
-- Payments are due monthly in advance for subscription fees
-- Usage-based fees are billed in arrears
-- Accounts 30 days past due may be suspended
+## 9. Dispute Resolution
 
-## 8. Term and Termination
+9.1 Disputes will be resolved through:
+- Good-faith negotiation
+- Mediation
+- Binding arbitration in the jurisdiction of Portcullis's primary business location
 
-### 8.1 Term
+## 10. Modifications to Terms
 
-- Service terms begin upon account creation unless otherwise agreed upon
-- Subscription terms auto-renew unless cancelled
-- You may terminate service with 30 days written notice
+10.1 Portcullis reserves the right to modify these terms with 30 days prior written notice.
 
-### 8.2 Effect of Termination
+10.2 Continued use of services constitutes acceptance of updated terms.
 
-- Upon termination, you must cease use of the Service
-- You may export your data within 30 days of termination
-- We may delete your data after 90 days of termination
+## 11. Governing Law
 
-## 9. Warranties and Disclaimers
+11.1 These terms shall be governed by the laws of Delaware.
 
-### 9.1 Service Warranty
+## 12. Contact Information
 
-- We warrant the Service will perform substantially as documented
-- We warrant we have the right to provide the Service
-- We warrant compliance with applicable laws
+Enter the Portcullis Corp.
+hello@runportcullis.co
 
-### 9.2 Disclaimer
+**Effective Date**: 05/12/2024
 
-- THE SERVICE IS PROVIDED "AS IS" WITHOUT OTHER WARRANTIES
-- WE DISCLAIM IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-- WE DO NOT WARRANT UNINTERRUPTED OR ERROR-FREE OPERATION
+---
 
-## 10. Limitation of Liability
-
-- Our liability is limited to direct damages
-- Maximum liability is fees paid in preceding 12 months
-- We are not liable for indirect, special, or consequential damages
-- Force majeure events exclude liability
-
-## 11. Indemnification
-
-You agree to indemnify and hold us harmless from claims arising from:
-
-- Your use of the Service
-- Your violation of these terms
-- Your violation of any third-party rights
-- Your data or content processed through the Service
-
-## 12. Intellectual Property
-
-### 12.1 Our IP Rights
-
-- We retain all rights to the Service, APIs, and documentation
-- We grant you a limited license to use the Service
-- No rights are granted except as explicitly stated
-
-### 12.2 Your IP Rights
-
-- You retain all rights to your data and custom configurations
-- You grant us limited rights to process your data
-- You warrant you have rights to data processed through the Service
-
-## 13. Confidentiality
-
-### 13.1 Confidential Information
-
-- Both parties agree to protect confidential information
-- Confidential information includes API credentials and business information
-- Protection continues for 3 years after termination
-
-### 13.2 Exceptions
-
-- Information independently developed
-- Information publicly available without breach
-- Information required by law to be disclosed
-
-## 14. Modifications to Terms
-
-- We may modify these terms with 30 days notice
-- Continued use after modifications constitutes acceptance
-- Material changes require explicit acceptance
-
-## 15. Governing Law and Jurisdiction
-
-- These terms are governed by Delaware law
-- Disputes will be resolved in Delaware courts
-- You waive any objection to venue and jurisdiction
-
-## 16. Miscellaneous
-
-### 16.1 Assignment
-- You may not assign these terms without our consent
-- We may assign these terms with notice to you
-- These terms bind successors and assigns
-
-### 16.2 Severability
-- Invalid provisions will be modified to be valid
-- Invalid provisions do not affect other provisions
-- Terms will be interpreted to achieve original intent
-
-### 16.3 Entire Agreement
-- These terms constitute the entire agreement
-- These terms supersede prior agreements
-- Modifications must be in writing
-
-## 17. Contact Information
-
-For questions about these terms, contact:
-
-Portcullis Legal Team
-
-hello@runportcullis.co 
+**By engaging Portcullis, the Client acknowledges reading, understanding, and agreeing to these Terms of Service.**
