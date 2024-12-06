@@ -20,7 +20,7 @@ export const infos: InfoLdg[] = [
       {
         title: "Experimental by nature, pragmatic by default",
         description:
-          "We absolutely love trying new and bleeting edge things to solve problems, while keeping ourselves grounded where needed",
+          "We absolutely love trying new and bleeding edge things to solve problems, while keeping ourselves grounded where needed",
         icon: "lucide:scale",
       },
     ],
