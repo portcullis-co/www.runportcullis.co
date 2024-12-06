@@ -13,12 +13,12 @@ export const navMenuConfig: NavMenuConfig = {
           image: "/images/examples/waitlist.jpg",
           forceReload: true,
         },
-        // {
-        //   title: "Indieprise",
-        //   href: "/",
-        //   description: "Read from Indieprise, our blog about indie software for enterprise markets",
-        //   image: "/images/examples/pricing.jpg",
-        // },
+         {
+           title: "Blog",
+           href: "/blog",
+           description: "Check out Clickhouse and data engineering related content from our team",
+           image: "/images/examples/pricing.jpg",
+         },
         {
           title: "Discuss a project",
           href: "/schedule-a-chat",
