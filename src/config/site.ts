@@ -3,7 +3,7 @@ import type { SidebarNavItem, SiteConfig } from "@/types";
 export const siteConfig: SiteConfig = {
   name: "Portcullis",
   description:
-    "Embedded ETL for enterprise data sharing",
+    "The Clickhouse-native solution studio for petabyte-scale ideas",
   url: "https://www.runportcullis.co",
   ogImage: "/og.png",
   links: {
