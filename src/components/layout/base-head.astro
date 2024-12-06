@@ -76,6 +76,26 @@ const {
     }
   }}();
 </script>
+<script is:inline>
+  (function() {
+    if (typeof window === 'undefined') return;
+    if (typeof window.signals !== 'undefined') return;
+    var script = document.createElement('script');
+    script.src = 'https://cdn.cr-relay.com/v1/site/82354d66-e447-4e2d-969c-e80abba27b45/signals.js';
+    script.async = true;
+    window.signals = Object.assign(
+      [],
+      ['page', 'identify', 'form'].reduce(function (acc, method){
+        acc[method] = function () {
+          signals.push([method, arguments]);
+          return signals;
+        };
+       return acc;
+      }, {})
+    );
+    document.head.appendChild(script);
+  })();
+</script>
 <script is:inline>(function(w,r){w._rwq=r;w[r]=w[r]||function(){(w[r].q=w[r].q||[]).push(arguments)}})(window,'rewardful');</script>
 <script async src='https://r.wdfl.co/rw.js' data-rewardful='e119bd'></script>
 <script is:inline>
