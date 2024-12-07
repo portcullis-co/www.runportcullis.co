@@ -1,5 +1,7 @@
 ---
 import MainLayout from "@/layouts/main-layout.astro";
+import { Form, FormControl, FormDescription, FormItem, FormMessage } from "@/components/ui/form";
+import { Toaster } from "@/components/ui/sonner"
 ---
 
 <MainLayout
@@ -16,51 +18,9 @@ import MainLayout from "@/layouts/main-layout.astro";
         data-fillout-id="nibdfM5V7Sus" 
         data-fillout-embed-type="standard" 
         data-fillout-inherit-parameters 
-        id="fillout-form"
       ></div>
     </div>
   </div>
 </MainLayout>
 
 <script src="https://server.fillout.com/embed/v1/"></script>
-<script>
-  window.onload = function() {
-    const filloutForm = document.querySelector("#fillout-form");
-
-    // Check if the element is found before adding the event listener
-    if (filloutForm) {
-      filloutForm.addEventListener("submit", function(event) {
-        // Cast the event as a CustomEvent
-        const customEvent = event as CustomEvent;
-        const formData = customEvent.detail.formData;  // Now we can safely access `detail`
-
-        // Gather necessary data from the form
-        const email = formData.email; // Make sure the form has a field for email
-
-        // Make a POST request to Customer.io
-        fetch("https://track.customer.io/api/v1/forms/d5dcd1b50f2e4e1/submit", {
-          method: "POST",
-          headers: {
-            "Authorization": "Basic " + btoa("c82c3c5a78b00e8d612a:53f039e085e9acaf1761"),
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            data: {
-              email: email // You can add other fields here based on the form data
-            }
-          })
-        })
-        .then(response => {
-          if (response.ok) {
-            console.log("Form successfully submitted to Customer.io");
-          } else {
-            console.error("Error submitting form:", response.statusText);
-          }
-        })
-        .catch(error => console.error("Error:", error));
-      });
-    } else {
-      console.error("Fillout form not found!");
-    }
-  };
-</script>
