@@ -5,7 +5,7 @@ import crypto from 'crypto';
 
 const SECRET_KEY = process.env.SECRET_KEY!;  // Replace with the actual secret key
 
-export async function post(req: IncomingMessage, res: ServerResponse): Promise<void> {
+export async function POST(req: IncomingMessage, res: ServerResponse): Promise<void> {
   try {
     // Read the raw request body
     let data = '';
