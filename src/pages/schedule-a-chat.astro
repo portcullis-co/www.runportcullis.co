@@ -16,7 +16,7 @@ import MainLayout from "@/layouts/main-layout.astro";
       <p class="text-center text-gray-600 mt-2">Fill out the form below to connect with us and talk more.</p>
       
       <!-- Form -->
-      <form id="waitlistForm" class="mt-8 space-y-6">
+      <form id="contactForm" class="mt-8 space-y-6">
         <!-- First Name and Work Email Row -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <!-- First Name -->
@@ -25,6 +25,7 @@ import MainLayout from "@/layouts/main-layout.astro";
               First Name
             </label>
             <Input
+              name='firstName'
               id="firstName"
               placeholder="Enter your first name"
               className="mt-1"
@@ -37,6 +38,7 @@ import MainLayout from "@/layouts/main-layout.astro";
               Work Email
             </label>
             <Input
+              name='workEmail'
               id="workEmail"
               placeholder="Enter your work email"
               className="mt-1"
@@ -50,6 +52,7 @@ import MainLayout from "@/layouts/main-layout.astro";
             Phone Number
           </label>
           <Input
+            name='phoneNumber'
             id="phoneNumber"
             placeholder="Enter your phone number (Optional)"
             className="mt-1"
@@ -61,7 +64,7 @@ import MainLayout from "@/layouts/main-layout.astro";
           <label for="currentWarehouse" class="block text-sm font-medium text-gray-700">
             Current Warehouse
           </label>
-          <select id="currentWarehouse" class="mt-1 w-full px-4 py-2 border-2 border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-blue-400">
+          <select name="currentWarehouse" id="currentWarehouse" class="mt-1 w-full px-4 py-2 border-2 border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-blue-400">
             <option value="">Select a warehouse</option>
             <option value="warehouse1">Snowflake</option>
             <option value="warehouse2">Clickhouse</option>
@@ -77,7 +80,7 @@ import MainLayout from "@/layouts/main-layout.astro";
           <label for="projectInterest" class="block text-sm font-medium text-gray-700">
             Project Interest
           </label>
-          <select id="projectInterest" class="mt-1 w-full px-4 py-2 border-2 border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-blue-400">
+          <select name="projectInterest" id="projectInterest" class="mt-1 w-full px-4 py-2 border-2 border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-blue-400">
             <option value="">Select a project type</option>
             <option value="migration">Clickhouse Migration (Import)</option>
             <option value="customPoc">Custom POC</option>
@@ -92,7 +95,7 @@ import MainLayout from "@/layouts/main-layout.astro";
           <label for="budget" class="block text-sm font-medium text-gray-700">
             Budget
           </label>
-          <select id="budget" class="mt-1 w-full px-4 py-2 border-2 border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-blue-400">
+          <select name="budget" id="budget" class="mt-1 w-full px-4 py-2 border-2 border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-blue-400">
             <option value="">Select a budget range</option>
             <option value="under50k">Under $50,000</option>
             <option value="50kTo75k">$50,000 - $75,000</option>
