@@ -139,7 +139,18 @@ import MainLayout from "@/layouts/main-layout.astro";
 
       // Extract domain from email
       const emailDomain = extractDomainFromEmail(workEmail);
-      
+      (function() {
+        var t = document.createElement('script'),
+            s = document.getElementsByTagName('script')[0];
+        t.async = true;
+        t.id    = 'cio-forms-handler';
+        t.setAttribute('data-site-id', 'c82c3c5a78b00e8d612a');
+        t.setAttribute('data-base-url', 'https://customerioforms.com');
+
+        t.src = 'https://customerioforms.com/assets/forms.js';
+
+        s.parentNode.insertBefore(t, s);
+      })();
       // Show a toast notification
     });
 
