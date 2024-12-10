@@ -16,8 +16,8 @@ import MainLayout from "@/layouts/main-layout.astro";
       <p class="text-center text-gray-600 mt-2">Fill out the form below to connect with us and talk more.</p>
       
       <!-- Form -->
-      <form id="contactForm" class="mt-8 space-y-6">
-        <!-- First Name and Work Email Row -->
+      <form method="POST" action="https://customerioforms.com/forms/submit_action?site_id=c82c3c5a78b00e8d612a&form_id=c128eeda974b443&success_url=https://cal.com/portcullisjames/30min" id="contactForm" class="mt-8 space-y-6">
+        <!-- First Name and Last Name Row -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <!-- First Name -->
           <div>
@@ -32,31 +32,47 @@ import MainLayout from "@/layouts/main-layout.astro";
             />
           </div>
 
+          <!-- Last Name -->
+          <div>
+            <label for="lastName" class="block text-sm font-medium text-gray-700">
+              Last Name
+            </label>
+            <Input
+              name='lastName'
+              id="lastName"
+              placeholder="Enter your last name"
+              className="mt-1"
+            />
+          </div>
+        </div>
+
+        <!-- Work Email and Phone Number Row -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <!-- Work Email -->
           <div>
             <label for="workEmail" class="block text-sm font-medium text-gray-700">
               Work Email
             </label>
             <Input
-              name='workEmail'
+              name='email'
               id="workEmail"
               placeholder="Enter your work email"
               className="mt-1"
             />
           </div>
-        </div>
 
-        <!-- Phone Number -->
-        <div>
-          <label for="phoneNumber" class="block text-sm font-medium text-gray-700">
-            Phone Number
-          </label>
-          <Input
-            name='phoneNumber'
-            id="phoneNumber"
-            placeholder="Enter your phone number (Optional)"
-            className="mt-1"
-          />
+          <!-- Company Name -->
+          <div>
+            <label for="domain" class="block text-sm font-medium text-gray-700">
+              Company Domain
+            </label>
+            <Input
+              name='domain'
+              id="domain"
+              placeholder="Enter your company domain"
+              className="mt-1"
+            />
+          </div>
         </div>
 
         <!-- Current Warehouse (Dropdown) -->
@@ -118,6 +134,7 @@ import MainLayout from "@/layouts/main-layout.astro";
     // Grab form elements
     const form = document.getElementById('waitlistForm');
     const firstNameInput = document.getElementById('firstName');
+    const lastNameInput = document.getElementById('lastName');
     const workEmailInput = document.getElementById('workEmail');
     const phoneNumberInput = document.getElementById('phoneNumber');
     const currentWarehouseInput = document.getElementById('currentWarehouse');
@@ -131,6 +148,7 @@ import MainLayout from "@/layouts/main-layout.astro";
       e.preventDefault();
 
       const firstName = firstNameInput.value;
+      const lastName = lastNameInput.value;
       const workEmail = workEmailInput.value;
       const phoneNumber = phoneNumberInput.value;
       const currentWarehouse = currentWarehouseInput.value;
@@ -138,7 +156,6 @@ import MainLayout from "@/layouts/main-layout.astro";
       const budget = budgetInput.value;
 
       // Extract domain from email
-      const emailDomain = extractDomainFromEmail(workEmail);
       (function() {
         var t = document.createElement('script'),
             s = document.getElementsByTagName('script')[0];
@@ -154,10 +171,5 @@ import MainLayout from "@/layouts/main-layout.astro";
       // Show a toast notification
     });
 
-    // Function to extract domain from email
-    function extractDomainFromEmail(email) {
-      const parts = email.split('@');
-      return parts.length === 2 ? parts[1] : 'Invalid email';
-    }
   </script>
 </MainLayout>
