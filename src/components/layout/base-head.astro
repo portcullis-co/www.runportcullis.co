@@ -40,6 +40,12 @@ const {
 <title>{title ? `${title} | Portcullis` : "Portcullis"}</title>
 <meta name="title" content={title ? `${title} | Portcullis` : "Portcullis"} />
 <meta name="description" content={description} />
+<link
+    rel="alternate"
+    type="application/rss+xml"
+    title="Portcullis | The Clickhouse solution studio for petabyte-scale ideas "
+    href={new URL("rss.xml", Astro.site)}
+/>
 
 <!-- Open Graph / Facebook -->
 <meta property="og:type" content="website" />
