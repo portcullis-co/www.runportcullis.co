@@ -11,7 +11,7 @@ export async function GET(context) {
 		title: siteConfig.name,
 		description: siteConfig.description,
 		site: context.site,
-		items: blog.map((post) => ({
+		items: posts.map((post) => ({
 			link: `/blog/${post.slug}/`,
 			// Note: this will not process components or JSX expressions in MDX files.
 			content: sanitizeHtml(parser.render(post.body), {
