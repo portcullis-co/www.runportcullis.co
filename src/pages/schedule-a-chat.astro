@@ -1,175 +1,28 @@
 ---
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { toast } from "sonner";  // For toasts
 import MainLayout from "@/layouts/main-layout.astro";
+import { Form, FormControl, FormDescription, FormItem, FormMessage } from "@/components/ui/form";
+import { Toaster } from "@/components/ui/sonner"
 ---
 
 <MainLayout
   title="Waitlist"
-  description="A waiting list page with a simple form."
+  description="A waiting list page with form using Fillout."
   mainClass="bg-background-200"
 >
   <div class="relative flex my-4 w-full min-h-svh items-center justify-center">
-    <div class="px-8 py-8 sm:p-10 bg-background border rounded-xl overflow-hidden max-w-2xl w-full mx-auto">
-      <h1 class="text-3xl font-bold text-center text-gray-900">Tell us about your project</h1>
-      <p class="text-center text-gray-600 mt-2">Fill out the form below to connect with us and talk more.</p>
-      
-      <!-- Form -->
-      <form method="POST" action="https://customerioforms.com/forms/submit_action?site_id=c82c3c5a78b00e8d612a&form_id=c128eeda974b443&success_url=https://cal.com/portcullisjames/30min" id="contactForm" class="mt-8 space-y-6">
-        <!-- First Name and Last Name Row -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <!-- First Name -->
-          <div>
-            <label for="firstName" class="block text-sm font-medium text-gray-700">
-              First Name
-            </label>
-            <Input
-              name='firstName'
-              id="firstName"
-              placeholder="Enter your first name"
-              className="mt-1"
-            />
-          </div>
-
-          <!-- Last Name -->
-          <div>
-            <label for="lastName" class="block text-sm font-medium text-gray-700">
-              Last Name
-            </label>
-            <Input
-              name='lastName'
-              id="lastName"
-              placeholder="Enter your last name"
-              className="mt-1"
-            />
-          </div>
-        </div>
-
-        <!-- Work Email and Phone Number Row -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <!-- Work Email -->
-          <div>
-            <label for="workEmail" class="block text-sm font-medium text-gray-700">
-              Work Email
-            </label>
-            <Input
-              name='email'
-              id="workEmail"
-              placeholder="Enter your work email"
-              className="mt-1"
-            />
-          </div>
-
-          <!-- Company Name -->
-          <div>
-            <label for="domain" class="block text-sm font-medium text-gray-700">
-              Company Domain
-            </label>
-            <Input
-              name='domain'
-              id="domain"
-              placeholder="Enter your company domain"
-              className="mt-1"
-            />
-          </div>
-        </div>
-
-        <!-- Current Warehouse (Dropdown) -->
-        <div>
-          <label for="currentWarehouse" class="block text-sm font-medium text-gray-700">
-            Current Warehouse
-          </label>
-          <select name="currentWarehouse" id="currentWarehouse" class="mt-1 w-full px-4 py-2 border-2 border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-blue-400">
-            <option value="">Select a warehouse</option>
-            <option value="warehouse1">Snowflake</option>
-            <option value="warehouse2">Clickhouse</option>
-            <option value="warehouse3">Databricks</option>
-            <option value="warehouse3">Bigquery</option>
-            <option value="warehouse3">Redshift</option>
-            <option value="warehouse3">Postgres</option>
-          </select>
-        </div>
-
-        <!-- Project Interest (Dropdown) -->
-        <div>
-          <label for="projectInterest" class="block text-sm font-medium text-gray-700">
-            Project Interest
-          </label>
-          <select name="projectInterest" id="projectInterest" class="mt-1 w-full px-4 py-2 border-2 border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-blue-400">
-            <option value="">Select a project type</option>
-            <option value="migration">Clickhouse Migration (Import)</option>
-            <option value="customPoc">Custom POC</option>
-            <option value="automation">Automation and Systems Integration</option>
-            <option value="writing">Content Writing</option>
-            <option value="optimization">Warehouse Optimization</option>
-          </select>
-        </div>
-
-        <!-- Budget (Dropdown) -->
-        <div>
-          <label for="budget" class="block text-sm font-medium text-gray-700">
-            Budget
-          </label>
-          <select name="budget" id="budget" class="mt-1 w-full px-4 py-2 border-2 border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-blue-400">
-            <option value="">Select a budget range</option>
-            <option value="under50k">Under $50,000</option>
-            <option value="50kTo75k">$50,000 - $75,000</option>
-            <option value="75kTo200k">$75,000 - $200,000</option>
-            <option value="over200k">Over $200,000</option>
-          </select>
-        </div>
-
-        <!-- Submit Button -->
-        <div class="mt-4">
-          <Button type="submit" className="w-full sm:w-full mx-auto block bg-black hover:bg-[#faff69] hover:text-black text-white font-semibold py-2 px-4 rounded-md shadow-md transition duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-400">
-            Submit
-          </Button>
-        </div>
-      </form>
+    <div
+      class="px-8 py-8 sm:p-10 bg-background border rounded-xl overflow-hidden max-w-2xl w-full mx-auto"
+    >
+    <h1 class="text-3xl font-bold text-center text-gray-900">Tell us about your project</h1>
+    <p class="text-center text-gray-600 mt-2">Fill out the form below to connect with us and talk more.</p>
+      <div 
+        style="width:100%;height:485px;" 
+        data-fillout-id="nibdfM5V7Sus" 
+        data-fillout-embed-type="standard" 
+        data-fillout-inherit-parameters 
+      ></div>
     </div>
   </div>
-
-  <script type="module">
-    // Grab form elements
-    const form = document.getElementById('waitlistForm');
-    const firstNameInput = document.getElementById('firstName');
-    const lastNameInput = document.getElementById('lastName');
-    const workEmailInput = document.getElementById('workEmail');
-    const phoneNumberInput = document.getElementById('phoneNumber');
-    const currentWarehouseInput = document.getElementById('currentWarehouse');
-    const projectInterestInput = document.getElementById('projectInterest');
-    const budgetInput = document.getElementById('budget');
-    const domainDisplay = document.getElementById('domainDisplay');
-    const emailDomainElement = document.getElementById('emailDomain');
-
-    // Handle form submission
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-
-      const firstName = firstNameInput.value;
-      const lastName = lastNameInput.value;
-      const workEmail = workEmailInput.value;
-      const phoneNumber = phoneNumberInput.value;
-      const currentWarehouse = currentWarehouseInput.value;
-      const projectInterest = projectInterestInput.value;
-      const budget = budgetInput.value;
-
-      // Extract domain from email
-      (function() {
-        var t = document.createElement('script'),
-            s = document.getElementsByTagName('script')[0];
-        t.async = true;
-        t.id    = 'cio-forms-handler';
-        t.setAttribute('data-site-id', 'c82c3c5a78b00e8d612a');
-        t.setAttribute('data-base-url', 'https://customerioforms.com');
-
-        t.src = 'https://customerioforms.com/assets/forms.js';
-
-        s.parentNode.insertBefore(t, s);
-      })();
-      // Show a toast notification
-    });
-
-  </script>
 </MainLayout>
+
+<script src="https://server.fillout.com/embed/v1/"></script>
