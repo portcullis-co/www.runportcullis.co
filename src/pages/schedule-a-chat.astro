@@ -168,7 +168,15 @@ import MainLayout from "@/layouts/main-layout.astro";
 
         s.parentNode.insertBefore(t, s);
       })();
-      // Show a toast notification
+      _cio.identify({
+        firstName: firstName,
+        lastName: lastName,
+        workEmail: workEmail,
+        phoneNumber: phoneNumber,
+        currentWarehouse: currentWarehouse,
+        projectInterest: projectInterest,
+        budget: budget
+      })
     });
 
   </script>
