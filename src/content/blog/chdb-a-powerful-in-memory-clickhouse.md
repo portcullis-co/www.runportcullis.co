@@ -17,7 +17,7 @@ DuckDB has gained significant popularity as an in-process analytical database th
 What sets chDB apart is its ability to handle massive datasets with the same performance characteristics as Clickhouse, making it particularly attractive for scenarios where data volume exceeds DuckDB's sweet spot. In fact, chDB regularly outperforms DuckDB,
 Pandas, and Polars in benchmark queries. 
 
-![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/9484ea57-fa6e-4c7d-9dbf-363c61a25285/e413956a-740a-48a4-ad5d-b0fb08303a40/image.png)
+![image.png](/blog/chdb-benchmarks.png)
 
 ## Why in-process SQL Engines are popping up
 
@@ -33,7 +33,7 @@ chDB's versatility makes it well-suited for several key use cases in modern data
 
 One of the primary use cases for chDB is building efficient local data pipelines. Its ability to process large datasets in-memory makes it ideal for ETL operations, data transformations, and preprocessing tasks that would traditionally require a full database setup. Developers can leverage chDB to perform complex SQL operations on local files, making it perfect for data scientists working with CSV files, JSON data, or Parquet formats. The seamless integration with popular programming languages like Python and Rust enables smooth workflow automation and rapid development of data processing scripts.
 
-![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/9484ea57-fa6e-4c7d-9dbf-363c61a25285/bb425de2-804c-4881-9aed-9bf02634c4bd/image.png)
+![image.png](/blog/chdb-query.png)
 
 ### Serverless SQL Analytics
 
@@ -43,7 +43,7 @@ This makes it particularly well-suited for serverless computing environments whe
 
 The ability to execute queries without maintaining persistent connections or managing database infrastructure significantly reduces operational overhead while maintaining high performance.
 
-![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/9484ea57-fa6e-4c7d-9dbf-363c61a25285/51b7180d-ebed-4046-86b1-6f6da04d76db/image.png)
+![image.png](/blog/chdb-udf.png)
 
 ## Using chDB: A in-process Data Pipeline Demo
 
@@ -81,4 +81,4 @@ Another feature on my wishlist would be enhanced integration with streaming data
 
 chDB represents a significant step forward in the evolution of embedded analytics and data processing capabilities. By combining Clickhouse's proven performance with the simplicity of an in-process engine, it offers developers a powerful tool for building modern data-intensive applications. As the project continues to mature and gain adoption, we can expect to see even more innovative use cases and implementations that push the boundaries of what's possible with local data processing.
 
-If you’d like to explore how we’re using chDB at Portcullis and how it can help you in your organization, schedule a free consultation.
+If you’d like to explore how we’re using chDB at Portcullis and how it can help you in your organization, [schedule a free consultation](https://www.runportcullis.co/schedule-a-chat).
