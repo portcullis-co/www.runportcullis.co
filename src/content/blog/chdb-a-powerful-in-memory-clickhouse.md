@@ -1,7 +1,7 @@
 ---
 title: "Key features for chDB, a powerful in-memory OLAP SQL Engine"
 description: "Come learn about an exciting Clickhouse-powered alternative to DuckDB "
-pubDate: "Dec 16 2024"
+pubDate: "Dec 17 2024"
 cover: "/blog/blog-cover-16.png"
 category: "insights"
 ---
