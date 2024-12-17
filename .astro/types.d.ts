@@ -136,6 +136,13 @@ declare module 'astro:content' {
 
 	type ContentEntryMap = {
 		"blog": {
+"chdb-a-powerful-in-memory-clickhouse.md": {
+	id: "chdb-a-powerful-in-memory-clickhouse.md";
+  slug: "chdb-a-powerful-in-memory-clickhouse";
+  body: string;
+  collection: "blog";
+  data: InferEntrySchema<"blog">
+} & { render(): Render[".md"] };
 "why-we-bet-on-clickhouse.md": {
 	id: "why-we-bet-on-clickhouse.md";
   slug: "why-we-bet-on-clickhouse";
