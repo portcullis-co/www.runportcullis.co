@@ -21,7 +21,7 @@ export const navMenuConfig: NavMenuConfig = {
          },
         {
           title: "Discuss a project",
-          href: "/schedule-a-chat",
+          href: "https://cal.com/portcullisjames/intro-call",
           description: "Talk to us about a Clickhouse project you have in mind",
           image: "/images/examples/pricing.jpg",
         },
