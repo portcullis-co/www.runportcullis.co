@@ -2,6 +2,9 @@ import {
   Calendar,
   Clock,
   Flame,
+  Keyboard,
+  Option,
+  PencilLine,
   Tv2,
   type LucideIcon,
   type LucideProps,
@@ -12,6 +15,9 @@ export type Icon = LucideIcon;
 export const Icons = {
   flame: Flame,
   calendar: Calendar,
+  keyboard: Keyboard,
+  writing: PencilLine,
+  option: Option,
   tv: Tv2,
   clock: Clock,
   logo: ({ ...props }: LucideProps) => (

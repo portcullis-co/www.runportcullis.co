@@ -14,17 +14,27 @@ export const siteConfig: SiteConfig = {
 
 export const footerLinks: SidebarNavItem[] = [
   {
-    title: "Company",
-    items: [
-      { title: "Contact", href: "/schedule-a-chat" },
-      { title: "Discord", href: "https://discord.gg/gPCSXNtjcN" },
-    ],
-  },
-  {
     title: "Legal",
     items: [
       { title: "Terms", href: "/legal/terms" },
       { title: "Privacy", href: "/legal/privacy" },
+    ],
+  },
+  {
+    title: "Company",
+    items: [
+      { title: "Contact", href: "/schedule-a-chat" },
+      { title: "Discord", href: "https://discord.gg/gPCSXNtjcN" },
+      { title: "Blog", href: "/blog" },
+    ],
+  },
+  {
+    title: "Services",
+    items: [
+      { title: "OSS Deployments", href: "/services/oss-support" },
+      { title: "Content Writing", href: "/services/content-writing" },
+      { title: "General Clickhouse Support", href: "/services/clickhouse-support" },
+      { title: "Query Optimization", href: "/services/query-optimization" },
     ],
   },
 ];

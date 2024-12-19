@@ -14,52 +14,70 @@ import { Badge } from "@/components/ui/badge";
 import { navMenuConfig } from "@/config/nav-menu";
 import type { MenuItem } from "@/types";
 
-const links = navMenuConfig.links;
-const pages = navMenuConfig.pagesNav[0];
-
 export function MainNavigationMenu() {
+  const about = navMenuConfig.aboutNav[0];
+  const services = navMenuConfig.servicesNav[0];
+  const links = navMenuConfig.links;
+
   return (
     <NavigationMenu>
       <NavigationMenuList>
-        {/* <NavigationMenuItem>
-          <NavigationMenuTrigger>{pages.title}</NavigationMenuTrigger>
+        {/* About Section */}
+        <NavigationMenuItem>
+          <NavigationMenuTrigger>{about.title}</NavigationMenuTrigger>
           <NavigationMenuContent>
             <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
+              {/* Highlighted Section (if needed) */}
               <li className="row-span-3">
                 <a
                   className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
-                  href="/"
+                  href="/blog"
                 >
-                  <Icons.logo className="size-8" />
-                  <div className="mb-2 mt-3 text-lg font-medium">Portcullis</div>
+                  <Icons.option className="size-8" />
+                  <div className="mb-2 mt-3 text-lg font-medium">Blog</div>
                   <p className="text-sm leading-tight text-muted-foreground">
-                    Pages and examples apps built with Astro v4.5,
-                    shadcn/ui & react js.
-                    <br />
-                    Open Source.
+                    Learn more about Portcullis, our mission, and our community.
                   </p>
                 </a>
               </li>
 
-              {pages.items?.map((page) => (
-                <ListItem key={page.title} {...page} />
-              ))}
-            </ul>
-          </NavigationMenuContent>
-        </NavigationMenuItem> */}
-
-        <NavigationMenuItem>
-          <NavigationMenuTrigger>{pages.title}</NavigationMenuTrigger>
-          <NavigationMenuContent>
-            <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
-              {pages.items?.map((page) => (
-                <ListItem key={page.title} {...page} />
+              {/* About Items */}
+              {about.items?.map((item) => (
+                <ListItem key={item.title} {...item} />
               ))}
             </ul>
           </NavigationMenuContent>
         </NavigationMenuItem>
 
-        {links ? (
+        {/* Services Section */}
+        <NavigationMenuItem>
+          <NavigationMenuTrigger>{services.title}</NavigationMenuTrigger>
+          <NavigationMenuContent>
+            <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
+              {/* Highlighted Section (if needed) */}
+              <li className="row-span-3">
+                <a
+                  className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
+                  href="/services/clickhouse-support"
+                >
+                  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSUgFiVvXOIZkixO0u-qe9ct6s3k27q1x7F4A&s" className="size-8" />
+                  <div className="mb-2 mt-3 text-lg font-medium">Clickhouse Support</div>
+                  <p className="text-sm leading-tight text-muted-foreground">
+                    Discover the ways we can help you with consulting, training, and more.
+                  </p>
+                </a>
+              </li>
+
+              {/* Services Items */}
+              {services.items?.map((item) => (
+                <ListItem key={item.title} {...item} />
+              ))}
+            </ul>
+          </NavigationMenuContent>
+        </NavigationMenuItem>
+
+        {/* Links Section */}
+        {links.length > 0 && (
           <NavigationMenuItem>
             {links.map((link) => (
               <a
@@ -72,7 +90,7 @@ export function MainNavigationMenu() {
               </a>
             ))}
           </NavigationMenuItem>
-        ) : null}
+        )}
       </NavigationMenuList>
     </NavigationMenu>
   );

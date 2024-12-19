@@ -1,7 +1,7 @@
 import type { NavMenuConfig } from "@/types";
 
 export const navMenuConfig: NavMenuConfig = {
-  pagesNav: [
+  aboutNav: [
     {
       title: "About",
       items: [
@@ -14,24 +14,43 @@ export const navMenuConfig: NavMenuConfig = {
           forceReload: true,
         },
          {
-           title: "Blog",
-           href: "/blog",
-           description: "Check out Clickhouse and data engineering related content from our team",
+           title: "Discord",
+           href: "https://discord.gg/ZRczvJagf9",
+           description: "Join The Gateway, our data-engineering focused Discord server",
            image: "/images/examples/pricing.jpg",
          },
         {
           title: "Discuss a project",
-          href: "https://cal.com/portcullisjames/intro-call",
+          href: "https://cal.com/portcullisjames/content-discussion",
           description: "Talk to us about a Clickhouse project you have in mind",
           image: "/images/examples/pricing.jpg",
         },
+      ],
+    },
+  ],
+  servicesNav: [
+    {
+      title: "Services",
+      items: [
         {
-          title: "Discord",
-          href: "https://discord.gg/gPCSXNtjcN",
+          title: "OSS Clickhouse Deployment",
+          href: "/services/oss-support",
           description:
-            "Join the Portcullis community Discord for data engineers",
+            "Trouble deploying OSS Clickhouse? We can help.",
           image: "/images/examples/waitlist.jpg",
           forceReload: true,
+        },
+         {
+           title: "Content Writing",
+           href: "/services/content-writing",
+           description: "Like our blog? We can do that for your site too.",
+           image: "/images/examples/pricing.jpg",
+         },
+        {
+          title: "Query Optimization",
+          href: "/services/query-optimization",
+          description: "Hire us to squeeze the most performance out of your queries",
+          image: "/images/examples/pricing.jpg",
         },
       ],
     },
