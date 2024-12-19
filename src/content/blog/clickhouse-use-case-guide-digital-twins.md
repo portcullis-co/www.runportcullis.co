@@ -69,7 +69,7 @@ import time
 from datetime import datetime, timedelta
 
 # Initialize in-memory chDB instance
-db = chdb.Client(memory=True)
+db = chdb.dbapi.connect()
 
 # Create table for sensor data
 db.execute("""

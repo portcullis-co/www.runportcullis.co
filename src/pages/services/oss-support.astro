@@ -52,7 +52,7 @@ const pageDescription = "Professional deployment support services to ensure your
                       rounded="xl"
                       className="px-4"
                     >
-                      <a href="https://cal.com/portcullisjames/intro-call" class="flex items-center gap-2">
+                    <a href="javascript:void(0);" class="flex items-center gap-2" id="intercom-button-1">
                         <span>Get a quote</span>
                         <Icon name="lucide:arrow-up-right" class="size-4" />
                       </a>
@@ -84,8 +84,8 @@ const pageDescription = "Professional deployment support services to ensure your
                       rounded="xl"
                       className="px-4"
                     >
-                      <a href="/discuss-project" class="flex items-center gap-2">
-                        <span>Discuss Project</span>
+                    <a href="javascript:void(0);" class="flex items-center gap-2" id="intercom-button-1">
+                        <span>Get a quote</span>
                         <Icon name="lucide:arrow-up-right" class="size-4" />
                       </a>
                     </Button>
@@ -116,8 +116,8 @@ const pageDescription = "Professional deployment support services to ensure your
                       rounded="xl"
                       className="px-4"
                     >
-                      <a href="/discuss-project" class="flex items-center gap-2">
-                        <span>Discuss Project</span>
+                    <a href="javascript:void(0);" class="flex items-center gap-2" id="intercom-button-1">
+                        <span>Get a quote</span>
                         <Icon name="lucide:arrow-up-right" class="size-4" />
                       </a>
                     </Button>
@@ -148,8 +148,8 @@ const pageDescription = "Professional deployment support services to ensure your
                       rounded="xl"
                       className="px-4"
                     >
-                      <a href="/discuss-project" class="flex items-center gap-2">
-                        <span>Discuss Project</span>
+                    <a href="javascript:void(0);" class="flex items-center gap-2" id="intercom-button-1">
+                        <span>Get a quote</span>
                         <Icon name="lucide:arrow-up-right" class="size-4" />
                       </a>
                     </Button>
@@ -180,8 +180,8 @@ const pageDescription = "Professional deployment support services to ensure your
                       rounded="xl"
                       className="px-4"
                     >
-                      <a href="/discuss-project" class="flex items-center gap-2">
-                        <span>Discuss Project</span>
+                    <a href="javascript:void(0);" class="flex items-center gap-2" id="intercom-button-1">
+                        <span>Get a quote</span>
                         <Icon name="lucide:arrow-up-right" class="size-4" />
                       </a>
                     </Button>
@@ -212,8 +212,8 @@ const pageDescription = "Professional deployment support services to ensure your
                       rounded="xl"
                       className="px-4"
                     >
-                      <a href="/discuss-project" class="flex items-center gap-2">
-                        <span>Discuss Project</span>
+                    <a href="javascript:void(0);" class="flex items-center gap-2" id="intercom-button-1">
+                        <span>Get a quote</span>
                         <Icon name="lucide:arrow-up-right" class="size-4" />
                       </a>
                     </Button>
@@ -227,3 +227,20 @@ const pageDescription = "Professional deployment support services to ensure your
     <BentoGrid />
     <ProcessSteps />
 </MainLayout>
+
+<script is:inline>
+    document.addEventListener('DOMContentLoaded', () => {
+      const intercomButtons = document.querySelectorAll('[id^="intercom-button"]');
+      intercomButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          if (window.Intercom) {
+            // Open Intercom Messenger
+            window.Intercom('show');
+            console.log('Intercom opened');
+          } else {
+            console.error('Intercom is not initialized');
+          }
+        });
+      });
+    });
+  </script>
