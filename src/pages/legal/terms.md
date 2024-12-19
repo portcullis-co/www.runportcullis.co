@@ -2,7 +2,7 @@
 layout: ../../layouts/vs-layout.astro
 title: "Terms and Conditions"
 description: "By using our platform, you agree to adhere to these terms and conditions"
-pubDate: "Jul 01 2022"
+pubDate: "Nov 05 2024"
 category: "code"
 ---
 

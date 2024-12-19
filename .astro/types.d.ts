@@ -141,28 +141,28 @@ declare module 'astro:content' {
   slug: "chdb-a-powerful-in-memory-clickhouse";
   body: string;
   collection: "blog";
-  data: InferEntrySchema<"blog">
+  data: any
 } & { render(): Render[".md"] };
 "clickhouse-use-case-guide-digital-twins.md": {
 	id: "clickhouse-use-case-guide-digital-twins.md";
   slug: "clickhouse-use-case-guide-digital-twins";
   body: string;
   collection: "blog";
-  data: InferEntrySchema<"blog">
+  data: any
 } & { render(): Render[".md"] };
 "use-cases-for-clickhouse-json.md": {
 	id: "use-cases-for-clickhouse-json.md";
   slug: "use-cases-for-clickhouse-json";
   body: string;
   collection: "blog";
-  data: InferEntrySchema<"blog">
+  data: any
 } & { render(): Render[".md"] };
 "why-we-bet-on-clickhouse.md": {
 	id: "why-we-bet-on-clickhouse.md";
   slug: "why-we-bet-on-clickhouse";
   body: string;
   collection: "blog";
-  data: InferEntrySchema<"blog">
+  data: any
 } & { render(): Render[".md"] };
 };
 "docs": {
@@ -171,118 +171,80 @@ declare module 'astro:content' {
   slug: "documentation/code-blocks";
   body: string;
   collection: "docs";
-  data: InferEntrySchema<"docs">
+  data: any
 } & { render(): Render[".mdx"] };
 "documentation/commerce/data-fulfillment.mdx": {
 	id: "documentation/commerce/data-fulfillment.mdx";
   slug: "documentation/commerce/data-fulfillment";
   body: string;
   collection: "docs";
-  data: InferEntrySchema<"docs">
+  data: any
 } & { render(): Render[".mdx"] };
 "documentation/commerce/payment-links.mdx": {
 	id: "documentation/commerce/payment-links.mdx";
   slug: "documentation/commerce/payment-links";
   body: string;
   collection: "docs";
-  data: InferEntrySchema<"docs">
+  data: any
 } & { render(): Render[".mdx"] };
 "documentation/commerce/portals.mdx": {
 	id: "documentation/commerce/portals.mdx";
   slug: "documentation/commerce/portals";
   body: string;
   collection: "docs";
-  data: InferEntrySchema<"docs">
+  data: any
 } & { render(): Render[".mdx"] };
 "documentation/commerce/stripe-connect.mdx": {
 	id: "documentation/commerce/stripe-connect.mdx";
   slug: "documentation/commerce/stripe-connect";
   body: string;
   collection: "docs";
-  data: InferEntrySchema<"docs">
+  data: any
 } & { render(): Render[".mdx"] };
 "documentation/concepts.mdx": {
 	id: "documentation/concepts.mdx";
   slug: "documentation/concepts";
   body: string;
   collection: "docs";
-  data: InferEntrySchema<"docs">
+  data: any
 } & { render(): Render[".mdx"] };
 "documentation/index.mdx": {
 	id: "documentation/index.mdx";
   slug: "documentation";
   body: string;
   collection: "docs";
-  data: InferEntrySchema<"docs">
+  data: any
 } & { render(): Render[".mdx"] };
 "documentation/style-guide.mdx": {
 	id: "documentation/style-guide.mdx";
   slug: "documentation/style-guide";
   body: string;
   collection: "docs";
-  data: InferEntrySchema<"docs">
+  data: any
 } & { render(): Render[".mdx"] };
 "getting-started.mdx": {
 	id: "getting-started.mdx";
   slug: "getting-started";
   body: string;
   collection: "docs";
-  data: InferEntrySchema<"docs">
+  data: any
 } & { render(): Render[".mdx"] };
 "in-progress.mdx": {
 	id: "in-progress.mdx";
   slug: "in-progress";
   body: string;
   collection: "docs";
-  data: InferEntrySchema<"docs">
+  data: any
 } & { render(): Render[".mdx"] };
 };
-"guides": {
-"build-blog-using-astro-mdx.mdx": {
-	id: "build-blog-using-astro-mdx.mdx";
-  slug: "build-blog-using-astro-mdx";
-  body: string;
-  collection: "guides";
-  data: InferEntrySchema<"guides">
-} & { render(): Render[".mdx"] };
-"using-next-auth-next-13.mdx": {
-	id: "using-next-auth-next-13.mdx";
-  slug: "using-next-auth-next-13";
-  body: string;
-  collection: "guides";
-  data: InferEntrySchema<"guides">
-} & { render(): Render[".mdx"] };
-};
-"releases": {
-"1_0.md": {
-	id: "1_0.md";
-  slug: "1_0";
+"releases": Record<string, {
+  id: string;
+  slug: string;
   body: string;
   collection: "releases";
-  data: InferEntrySchema<"releases">
-} & { render(): Render[".md"] };
-"1_4.md": {
-	id: "1_4.md";
-  slug: "1_4";
-  body: string;
-  collection: "releases";
-  data: InferEntrySchema<"releases">
-} & { render(): Render[".md"] };
-"1_8.md": {
-	id: "1_8.md";
-  slug: "1_8";
-  body: string;
-  collection: "releases";
-  data: InferEntrySchema<"releases">
-} & { render(): Render[".md"] };
-"2_0.md": {
-	id: "2_0.md";
-  slug: "2_0";
-  body: string;
-  collection: "releases";
-  data: InferEntrySchema<"releases">
-} & { render(): Render[".md"] };
-};
+  data: any;
+  render(): Render[".md"];
+}>;
 
 	};
 
@@ -292,5 +254,5 @@ declare module 'astro:content' {
 
 	type AnyEntryMap = ContentEntryMap & DataEntryMap;
 
-	export type ContentConfig = typeof import("../src/content/config.js");
+	export type ContentConfig = never;
 }
