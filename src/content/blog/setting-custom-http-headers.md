@@ -1,5 +1,5 @@
 ---
-title: "Clickhouse Use Case Guide: Digital Twins"
+title: "Setting Custom HTTP Headers in SELECT statements in Clickhouse"
 description: "As the world becomes more tech-driven, we rely more and more on rare earth metals to power our phones, appliances, and even lifesaving devices. The mining operations to gather these minerals have grown increasingly complex and sophisticated."
 pubDate: "Dec 25 2024"
 cover: "/blog/blog-cover-http-headers.png"
