@@ -150,6 +150,20 @@ declare module 'astro:content' {
   collection: "blog";
   data: InferEntrySchema<"blog">
 } & { render(): Render[".md"] };
+"faster-clickhouse-queries-with-these-eight-tricks.md": {
+	id: "faster-clickhouse-queries-with-these-eight-tricks.md";
+  slug: "faster-clickhouse-queries-with-these-eight-tricks";
+  body: string;
+  collection: "blog";
+  data: InferEntrySchema<"blog">
+} & { render(): Render[".md"] };
+"setting-custom-http-headers.md": {
+	id: "setting-custom-http-headers.md";
+  slug: "setting-custom-http-headers";
+  body: string;
+  collection: "blog";
+  data: InferEntrySchema<"blog">
+} & { render(): Render[".md"] };
 "use-cases-for-clickhouse-json.md": {
 	id: "use-cases-for-clickhouse-json.md";
   slug: "use-cases-for-clickhouse-json";
