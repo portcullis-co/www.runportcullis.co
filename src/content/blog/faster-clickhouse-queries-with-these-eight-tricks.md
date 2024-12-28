@@ -1,7 +1,7 @@
 ---
 title: "Extract all the juice from your queries with these 8 tricks"
 description: "If your Clickhouse cluster is an orange, then your queries are the juicing tool that you need to extract all the precious sweet nectar that is the data you need to provide value to your shareholders."
-pubDate: "Dec 26 2025"
+pubDate: "Dec 26 2024"
 cover: "/blog/blog-cover-juice.png"
 category: "insights"
 ---

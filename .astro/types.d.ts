@@ -157,6 +157,13 @@ declare module 'astro:content' {
   collection: "blog";
   data: InferEntrySchema<"blog">
 } & { render(): Render[".md"] };
+"primary-key-caching.md": {
+	id: "primary-key-caching.md";
+  slug: "primary-key-caching";
+  body: string;
+  collection: "blog";
+  data: InferEntrySchema<"blog">
+} & { render(): Render[".md"] };
 "setting-custom-http-headers.md": {
 	id: "setting-custom-http-headers.md";
   slug: "setting-custom-http-headers";
