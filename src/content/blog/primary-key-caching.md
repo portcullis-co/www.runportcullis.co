@@ -6,7 +6,7 @@ cover: "/blog/primary-key-cache.png"
 category: "insights"
 ---
 
-Let's face it, Clickhouse is already a super fast OLAP data warehouse, but with each release it feels like performance keeps improving a key areas. With the 24.12 release, one of the standout additions is a new cache for primary indexes, which can dramatically improve query performance by reducing disk reads and network traffic in distributed setups. 
+Let's face it, Clickhouse is already a super fast OLAP data warehouse, but with each release it feels like performance keeps improving in various key areas. With the 24.12 release, one of the standout additions is a new cache for primary indexes, which can dramatically improve query performance by reducing disk reads and network traffic in distributed setups. 
 
 This feature is particularly valuable for tables with frequent point lookups or joins on primary key columns. Let's explore how to implement and optimize primary key caching in Clickhouse to boost your query efficiency.
 
