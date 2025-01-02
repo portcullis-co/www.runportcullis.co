@@ -22,7 +22,7 @@ The new engines will support both read and write operations, with optimized perf
 
 ### Drivers for UDFs
 
-In [Issue 71172](https://github.com/ClickHouse/ClickHouse/issues/71172) on the roadmap, it’s planned to allow users to write code of configuration for a UDF in any arbitrary languagedirectly in the `CREATE FUNCTION` statement. 
+In [Issue #71172](https://github.com/ClickHouse/ClickHouse/issues/71172) on the roadmap, it’s planned to allow users to write code of configuration for a UDF in any arbitrary languagedirectly in the `CREATE FUNCTION` statement. 
 
 This feature would broaden the flexibility of Clickhouse UDF and make the developer experience more enjoyable.  
 
@@ -34,7 +34,7 @@ Additional parameters can be specified in the path, such as `select`, `columns`,
 
 ### Implicit Inserts
 
-[Issue 38775](https://github.com/ClickHouse/ClickHouse/issues/38775) seeks to enable event simpler data upload via implicit inserts for HTTP PUT request and POST with form file upload where the query is not specified. It makes the assumption that it is an INSERT query into a table with the name as the corresponding file name, with format autodetected from the file name.
+[Issue #38775](https://github.com/ClickHouse/ClickHouse/issues/38775) seeks to enable event simpler data upload via implicit inserts for HTTP PUT request and POST with form file upload where the query is not specified. It makes the assumption that it is an INSERT query into a table with the name as the corresponding file name, with format autodetected from the file name.
 
 ### HTTP Event Stream
 
@@ -86,7 +86,7 @@ Streaming queries are getting a major upgrade in 2025, with improvements to how 
 
 ### PREWHERE to work with the FINAL clause
 
-[Issue 70210](https://github.com/ClickHouse/ClickHouse/pull/70210) adds the ability for PREWHERE to work with the FINAL clause. This enhancement will improve query performance by allowing the PREWHERE optimization to be applied even when using FINAL to get the latest versions of records. The implementation will include intelligent optimization strategies to ensure optimal execution plans for queries combining these clauses.
+[Issue #70210](https://github.com/ClickHouse/ClickHouse/pull/70210) adds the ability for PREWHERE to work with the FINAL clause. This enhancement will improve query performance by allowing the PREWHERE optimization to be applied even when using FINAL to get the latest versions of records. The implementation will include intelligent optimization strategies to ensure optimal execution plans for queries combining these clauses.
 
 ### JOIN reordering based on finer-grained statistics
 
