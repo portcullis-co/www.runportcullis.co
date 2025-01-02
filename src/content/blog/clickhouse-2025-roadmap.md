@@ -86,7 +86,7 @@ Streaming queries are getting a major upgrade in 2025, with improvements to how 
 
 ### PREWHERE to work with the FINAL clause
 
-https://github.com/ClickHouse/ClickHouse/pull/70210 adds the ability for PREWHERE to work with the FINAL clause. This enhancement will improve query performance by allowing the PREWHERE optimization to be applied even when using FINAL to get the latest versions of records. The implementation will include intelligent optimization strategies to ensure optimal execution plans for queries combining these clauses.
+[Issue 70210](https://github.com/ClickHouse/ClickHouse/pull/70210) adds the ability for PREWHERE to work with the FINAL clause. This enhancement will improve query performance by allowing the PREWHERE optimization to be applied even when using FINAL to get the latest versions of records. The implementation will include intelligent optimization strategies to ensure optimal execution plans for queries combining these clauses.
 
 ### JOIN reordering based on finer-grained statistics
 
