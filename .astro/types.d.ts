@@ -143,6 +143,13 @@ declare module 'astro:content' {
   collection: "blog";
   data: InferEntrySchema<"blog">
 } & { render(): Render[".md"] };
+"clickhouse-2025-roadmap.md": {
+	id: "clickhouse-2025-roadmap.md";
+  slug: "clickhouse-2025-roadmap";
+  body: string;
+  collection: "blog";
+  data: InferEntrySchema<"blog">
+} & { render(): Render[".md"] };
 "clickhouse-use-case-guide-digital-twins.md": {
 	id: "clickhouse-use-case-guide-digital-twins.md";
   slug: "clickhouse-use-case-guide-digital-twins";
