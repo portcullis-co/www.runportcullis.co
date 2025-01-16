@@ -1,9 +1,9 @@
 import type { SidebarNavItem, SiteConfig } from "@/types";
 
 export const siteConfig: SiteConfig = {
-  name: "Portcullis",
+  name: "Portcullis | On-demand Clickhouse Support via Slack Connect ",
   description:
-    "The Clickhouse-native solution studio for petabyte-scale ideas",
+    "Get your own personal #help channel without having to wait hours for support",
   url: "https://www.runportcullis.co",
   ogImage: "/og.png",
   links: {
