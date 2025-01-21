@@ -1,31 +1,21 @@
-import { WebClient } from '@slack/web-api';
-
-const slackToken = import.meta.env.SLACK_BOT_TOKEN;
-const hubspotToken = import.meta.env.HUBSPOT_ACCESS_TOKEN;
-
 export const config = {
   runtime: 'edge',
 };
-
-const web = new WebClient(slackToken);
 
 export async function POST({ request }: { request: Request }) {
     if (request.method !== 'POST') {
         return new Response('Method not allowed', { status: 405 });
     }
 
+    const slackToken = import.meta.env.SLACK_BOT_TOKEN;
+    const hubspotToken = import.meta.env.HUBSPOT_ACCESS_TOKEN;
+
     try {
         const { email, firstName, lastName, companyName, jobTitle } = await request.json();
-
-        if (!email || !companyName) {
-            return new Response('Email and company name are required', { status: 400 });
-        }
-
         const domain = email.split('@')[1];
         const sanitizedCompanyName = companyName.trim();
 
         // Create company
-        let companyId;
         const companyResponse = await fetch('https://api.hubapi.com/crm/v3/objects/companies', {
             method: 'POST',
             headers: {
@@ -41,10 +31,9 @@ export async function POST({ request }: { request: Request }) {
             })
         });
         const companyData = await companyResponse.json();
-        companyId = companyData.id;
+        const companyId = companyData.id;
 
         // Create contact
-        let contactId;
         const contactResponse = await fetch('https://api.hubapi.com/crm/v3/objects/contacts', {
             method: 'POST',
             headers: {
@@ -65,7 +54,7 @@ export async function POST({ request }: { request: Request }) {
             })
         });
         const contactData = await contactResponse.json();
-        contactId = contactData.id;
+        const contactId = contactData.id;
 
         // Create association
         if (contactId && companyId) {
@@ -84,34 +73,46 @@ export async function POST({ request }: { request: Request }) {
             });
         }
 
-        // Step 1: Create a private channel with the name format `connect-{companyName}`
-        const channelName = `connect-${companyName.toLowerCase()}`;
-        const listResponse = await web.conversations.list();
-        const existingChannel = listResponse.channels?.find(channel => channel.name === channelName);
-
-        let channelId: string;
-        if (existingChannel) {
-            channelId = existingChannel.id!;
-            console.log(`Channel ${channelName} already exists.`);
-        } else {
-            const createChannelResponse = await web.conversations.create({
+        // Create Slack channel
+        const channelName = `connect-${sanitizedCompanyName.toLowerCase()}`;
+        const createChannelResponse = await fetch('https://slack.com/api/conversations.create', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${slackToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
                 name: channelName,
-                is_private: true,
-            });
-            channelId = createChannelResponse.channel?.id!;
-        }
+                is_private: true
+            })
+        });
+        const channelData = await createChannelResponse.json();
+        const channelId = channelData.channel?.id;
 
         // Invite team members
-        const userIds = ['U07TUHW4NPL', 'U07TX3KJG84'];
-        await web.conversations.invite({
-            channel: channelId,
-            users: userIds.join(','),
+        await fetch('https://slack.com/api/conversations.invite', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${slackToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                channel: channelId,
+                users: 'U07TUHW4NPL,U07TX3KJG84'
+            })
         });
 
         // Send Slack Connect invite
-        await web.conversations.inviteShared({
-            channel: channelId,
-            emails: [email],
+        await fetch('https://slack.com/api/conversations.inviteShared', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${slackToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                channel: channelId,
+                emails: [email]
+            })
         });
 
         return new Response(JSON.stringify({ success: true }), {
