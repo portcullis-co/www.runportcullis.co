@@ -17,6 +17,10 @@ export default defineConfig({
     runtime: {
       mode: 'local',
       type: 'pages'
+    },
+    imageService: 'cloudflare',
+    build: {
+      nodeModuleCompat: true
     }
   }),
   integrations: [
@@ -34,6 +38,18 @@ export default defineConfig({
   vite: {
     ssr: {
       noExternal: ['path-to-regexp'],
+      external: ['@slack/web-api', '@hubspot/api-client']
     },
+    resolve: {
+      alias: {
+        'node:path': 'path-browserify',
+        'node:crypto': 'crypto-browserify',
+        'node:buffer': 'buffer',
+        'node:stream': 'stream-browserify'
+      }
+    },
+    optimizeDeps: {
+      exclude: ['@slack/web-api', '@hubspot/api-client']
+    }
   },
 });
