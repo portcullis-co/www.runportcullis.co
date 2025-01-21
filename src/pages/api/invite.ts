@@ -12,13 +12,33 @@ const hubspotClient = new Client({
     accessToken: process.env.HUBSPOT_ACCESS_TOKEN,
 });
 
-export default async function handler(request: Request) {
+export async function POST({ request }: { request: Request }) {
     if (request.method !== 'POST') {
         return new Response('Method not allowed', { status: 405 });
     }
 
     try {
-        const { email, firstName, lastName, companyName, jobTitle, consent } = await request.json();
+        const { email, firstName, lastName, companyName, jobTitle, turnstileToken, consent } = await request.json();
+
+        // Verify Turnstile token
+        const turnstileResponse = await fetch(
+            "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    secret: process.env.TURNSTILE_SECRET_KEY,
+                    response: turnstileToken,
+                }),
+            }
+        );
+
+        const turnstileData = await turnstileResponse.json();
+        if (!turnstileData.success) {
+            return new Response("Invalid Turnstile token", { status: 400 });
+        }
 
         if (!email) {
             return new Response('Email parameter is required', { status: 400 });

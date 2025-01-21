@@ -23,6 +23,10 @@ const { title, description, bodyClass } = Astro.props;
     <slot />
     <TailwindIndicator />
     <Toaster richColors client:only="react" />
+      <script
+      src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+      defer
+    ></script>
     <script type="text/javascript">
       var _cio = _cio || [];
       (function() {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -18,6 +18,7 @@ interface BusinessData {
   companyName: string;
   jobTitle: string;
   consent: boolean;
+  turnstileToken?: string;
 }
 
 export default function SlackConnectDialog({ children }: { children: React.ReactNode }) {
@@ -31,6 +32,13 @@ export default function SlackConnectDialog({ children }: { children: React.React
     jobTitle: "",
     consent: false,
   });
+
+  const handleTurnstileCallback = useCallback((token: string) => {
+    setFormData(prev => ({
+      ...prev,
+      turnstileToken: token
+    }));
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -135,8 +143,6 @@ export default function SlackConnectDialog({ children }: { children: React.React
                   type="checkbox"
                   name="consent"
                   id="consent"
-                  checked={formData.consent}
-                  onChange={handleInputChange}
                   required
                 />
                 <label htmlFor="consent" className="text-sm text-gray-600">
@@ -144,7 +150,17 @@ export default function SlackConnectDialog({ children }: { children: React.React
                   <a href="/legal/privacy" className="text-primary hover:underline" onClick={(e) => e.stopPropagation()}>Privacy Policy</a>
                 </label>
               </div>
-              <Button type="submit" disabled={status === "loading"} className="w-full">
+              <div
+                className="cf-turnstile"
+                data-sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+                data-callback={handleTurnstileCallback}
+                data-theme="light"
+              />
+              <Button 
+                type="submit" 
+                disabled={status === "loading" || !formData.turnstileToken} 
+                className="w-full"
+              >
                 {status === "loading" ? "Sending..." : "Get Slack Invite"}
               </Button>
             </form>
