@@ -1,4 +1,4 @@
-# Portcullis
+# Portcullis Homepage | On-demand Clickhouse Support via Slack Connect
 
 ![Portcullis](/public/og.png)
 The Astro v4 Homepage for Portcullis, On-demand Clickhouse Support via Slack Connect 
