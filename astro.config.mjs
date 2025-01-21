@@ -10,6 +10,10 @@ import vercel from '@astrojs/vercel/serverless';
 
 export default defineConfig({
   site: 'https://www.runportcullis.co',
+  outDir: './dist',
+  build: {
+    serverEntry: 'entry.mjs',
+  },
   integrations: [
     mdx({
       syntaxHighlight: "shiki",
@@ -28,5 +32,12 @@ export default defineConfig({
     },
   },
   output: "server",
-  adapter: vercel(),
+  adapter: vercel({
+    webAnalytics: {
+      enabled: true,
+    },
+    speedInsights: {
+      enabled: true,
+    },
+  }),
 });
