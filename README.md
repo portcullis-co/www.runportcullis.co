@@ -1,6 +1,6 @@
 # Portcullis
 
-![Portcullis](og.png)
+![Portcullis](/public/og.png)
 The Astro v4 Homepage for Portcullis, On-demand Clickhouse Support via Slack Connect 
 
 ## How to run
