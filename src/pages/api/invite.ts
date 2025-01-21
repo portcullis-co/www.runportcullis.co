@@ -1,5 +1,4 @@
 import { WebClient } from '@slack/web-api';
-import { Client } from "@hubspot/api-client";
 
 const slackToken = import.meta.env.SLACK_BOT_TOKEN;
 const hubspotToken = import.meta.env.HUBSPOT_ACCESS_TOKEN;
@@ -9,7 +8,6 @@ export const config = {
 };
 
 const web = new WebClient(slackToken);
-const hubspotClient = new Client({ accessToken: hubspotToken });
 
 export async function POST({ request }: { request: Request }) {
     if (request.method !== 'POST') {
@@ -26,26 +24,34 @@ export async function POST({ request }: { request: Request }) {
         const domain = email.split('@')[1];
         const sanitizedCompanyName = companyName.trim();
 
-        // Create company first
+        // Create company
         let companyId;
-        try {
-            const companyResponse = await hubspotClient.crm.companies.basicApi.create({
+        const companyResponse = await fetch('https://api.hubapi.com/crm/v3/objects/companies', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${hubspotToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
                 properties: {
                     name: sanitizedCompanyName,
                     domain: domain,
-                    hubspot_owner_id: '1546319970',
+                    hubspot_owner_id: '1546319970'
                 }
-            });
-            companyId = companyResponse.id;
-        } catch (error) {
-            console.error('HubSpot Company Creation Error:', error);
-            throw error;
-        }
+            })
+        });
+        const companyData = await companyResponse.json();
+        companyId = companyData.id;
 
-        // Then create contact
+        // Create contact
         let contactId;
-        try {
-            const contactResponse = await hubspotClient.crm.contacts.basicApi.create({
+        const contactResponse = await fetch('https://api.hubapi.com/crm/v3/objects/contacts', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${hubspotToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
                 properties: {
                     email,
                     firstname: firstName,
@@ -54,14 +60,12 @@ export async function POST({ request }: { request: Request }) {
                     company: sanitizedCompanyName,
                     lifecyclestage: 'opportunity',
                     hs_lead_status: 'IN_PROGRESS',
-                    hubspot_owner_id: '1546319970',
+                    hubspot_owner_id: '1546319970'
                 }
-            });
-            contactId = contactResponse.id;
-        } catch (error) {
-            console.error('HubSpot Contact Creation Error:', error);
-            throw error;
-        }
+            })
+        });
+        const contactData = await contactResponse.json();
+        contactId = contactData.id;
 
         // Create association
         if (contactId && companyId) {
