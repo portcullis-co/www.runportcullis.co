@@ -6,14 +6,19 @@ import tailwind from "@astrojs/tailwind";
 import icon from "astro-icon";
 import { defineConfig } from "astro/config";
 import simpleStackForm from "simple-stack-form";
-import vercel from '@astrojs/vercel/serverless';
+import cloudflare from '@astrojs/cloudflare';
 
 export default defineConfig({
   site: 'https://www.runportcullis.co',
-  outDir: './dist',
-  build: {
-    serverEntry: 'entry.mjs',
-  },
+  output: "server",
+  adapter: cloudflare({
+    mode: 'directory',
+    functionPerRoute: true,
+    runtime: {
+      mode: 'local',
+      type: 'pages'
+    }
+  }),
   integrations: [
     mdx({
       syntaxHighlight: "shiki",
@@ -31,13 +36,4 @@ export default defineConfig({
       noExternal: ['path-to-regexp'],
     },
   },
-  output: "server",
-  adapter: vercel({
-    webAnalytics: {
-      enabled: true,
-    },
-    speedInsights: {
-      enabled: true,
-    },
-  }),
 });
