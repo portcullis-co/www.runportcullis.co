@@ -1,9 +1,9 @@
 import { WebClient } from '@slack/web-api';
-import { config } from 'dotenv';
 import { Client } from "@hubspot/api-client";
 
-// Load environment variables from .env file
-config();
+export const config = {
+  runtime: 'edge',
+};
 
 const slackToken = process.env.SLACK_BOT_TOKEN;
 const web = new WebClient(slackToken);
@@ -12,7 +12,11 @@ const hubspotClient = new Client({
     accessToken: process.env.HUBSPOT_ACCESS_TOKEN,
 });
 
-export async function POST({ request }: { request: Request }) {
+export default async function handler(request: Request) {
+    if (request.method !== 'POST') {
+        return new Response('Method not allowed', { status: 405 });
+    }
+
     try {
         const { email, firstName, lastName, companyName, jobTitle } = await request.json();
 
@@ -85,30 +89,36 @@ export async function POST({ request }: { request: Request }) {
                 name: channelName,
                 is_private: true,
             });
-
-            if (!createChannelResponse.channel?.id) {
-                throw new Error('Failed to create channel');
-            }
-            channelId = createChannelResponse.channel.id;
+            channelId = createChannelResponse.channel?.id!;
         }
 
-        // Step 2: Invite yourself and your cofounder to the channel
-        const userIds = ['U07TUHW4NPL', 'U07TX3KJG84']; // Replace with your and your cofounder's user IDs
+        // Invite team members
+        const userIds = ['U07TUHW4NPL', 'U07TX3KJG84'];
         await web.conversations.invite({
             channel: channelId,
             users: userIds.join(','),
         });
 
-        // Step 3: Send Slack Connect invite to the customer
+        // Send Slack Connect invite
         await web.conversations.inviteShared({
             channel: channelId,
             emails: [email],
         });
 
-        console.log('Channel created or found, invites sent, and HubSpot records created successfully');
-        return new Response(JSON.stringify({ message: 'Invitation sent successfully' }), { status: 200 });
+        return new Response(JSON.stringify({ success: true }), {
+            status: 200,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
     } catch (error) {
-        console.error('Error in invite process:', error);
-        return new Response('Failed to process invitation', { status: 500 });
+        console.error('Error:', error);
+        return new Response(JSON.stringify({ error: 'Internal server error' }), {
+            status: 500,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
     }
 }

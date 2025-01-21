@@ -1,5 +1,5 @@
 export { renderers } from '../renderers.mjs';
 
-const page = () => import('../chunks/index_Cop_Mtv0.mjs');
+const page = () => import('../chunks/index_DkAT-jmB.mjs');
 
 export { page };
