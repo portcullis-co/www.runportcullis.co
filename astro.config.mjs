@@ -6,6 +6,7 @@ import tailwind from "@astrojs/tailwind";
 import icon from "astro-icon";
 import { defineConfig } from "astro/config";
 import simpleStackForm from "simple-stack-form";
+import vercel from '@astrojs/vercel/serverless';
 
 export default defineConfig({
   site: 'https://www.runportcullis.co',
@@ -21,5 +22,6 @@ export default defineConfig({
     tailwind({ applyBaseStyles: false }),
     simpleStackForm(),
   ],
-  output: "server"
+  output: "server",
+  adapter: vercel(),
 });
