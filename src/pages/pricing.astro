@@ -4,6 +4,7 @@ import MainLayout from "@/layouts/main-layout.astro";
 import { cn } from "@/lib/utils";
 import { Icon } from "astro-icon/components";
 import jitsuAnalytics from "@jitsu/js";
+import SlackConnectDialog from "@/components/slack-connect-dialog";
 ---
 
 <MainLayout title="Pricing" mainClass="flex-1 bg-background-200">
@@ -12,12 +13,12 @@ import jitsuAnalytics from "@jitsu/js";
   >
     <div class="mx-auto flex w-full flex-col gap-4 md:max-w-[58rem]">
       <h2 class="font-heading text-3xl leading-[1.1] sm:text-3xl md:text-6xl">
-       Transparent hourly billing so you know what you're getting
+       Transparent hourly billing with a one-week free trial
       </h2>
       <p
         class="max-w-[85%] leading-normal text-muted-foreground sm:text-lg sm:leading-7"
       >
-       Only pay for the hours you need to access our team, barring any large projects
+       Get a little taste of what quality support looks like with a one-week free trial
       </p>
     </div>
     <div
@@ -53,14 +54,15 @@ import jitsuAnalytics from "@jitsu/js";
         <div>
           <h4 class="text-4xl font-bold">$268/hr</h4>
         </div>
-        <a
-          href="/schedule-a-chat"
-          class={cn(buttonVariants({ size: "lg" }))}
-          id="slack-connect-button"
-        >
-          <Icon name='lucide:calendar' class="mr-2 size-4" />
-          <span class="text-xs">Chat with us</span>
-        </a>
+        <SlackConnectDialog client:load>
+          <button
+            class={cn(buttonVariants({ size: "lg" }))}
+            id="slack-connect-button"
+          >
+            <Icon name='lucide:slack' class="mr-2 size-4" />
+            <span class="text-xs">Start Trial</span>
+          </button>
+        </SlackConnectDialog>
       </div>
     </div>
     <!-- <div

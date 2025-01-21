@@ -21,5 +21,5 @@ export default defineConfig({
     tailwind({ applyBaseStyles: false }),
     simpleStackForm(),
   ],
-  output: "static"
+  output: "server"
 });
