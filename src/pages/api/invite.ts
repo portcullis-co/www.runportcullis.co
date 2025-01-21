@@ -18,7 +18,7 @@ export default async function handler(request: Request) {
     }
 
     try {
-        const { email, firstName, lastName, companyName, jobTitle } = await request.json();
+        const { email, firstName, lastName, companyName, jobTitle, consent } = await request.json();
 
         if (!email) {
             return new Response('Email parameter is required', { status: 400 });
@@ -33,13 +33,15 @@ export default async function handler(request: Request) {
             jobtitle: jobTitle,
             lifecyclestage: 'opportunity',
             hs_lead_status: 'IN_PROGRESS',
-            hubspot_owner_id: '1546319970'
+            hubspot_owner_id: '1546319970',
+            consent: consent
         };
 
         const companyProperties = {
             name: companyName,
             domain: domain,
-            hubspot_owner_id: '1546319970'
+            hubspot_owner_id: '1546319970',
+            consent: consent
         };
 
         try {
