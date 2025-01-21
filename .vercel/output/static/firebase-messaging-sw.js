@@ -1,1 +1,0 @@
-importScripts('https://load.fomo.com/widget/fomo-sw.js');
