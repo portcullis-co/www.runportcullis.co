@@ -1,16 +1,15 @@
 import { WebClient } from '@slack/web-api';
 import { Client } from "@hubspot/api-client";
 
+const slackToken = import.meta.env.SLACK_BOT_TOKEN;
+const hubspotToken = import.meta.env.HUBSPOT_ACCESS_TOKEN;
+
 export const config = {
   runtime: 'edge',
 };
 
-const slackToken = process.env.SLACK_BOT_TOKEN;
 const web = new WebClient(slackToken);
-
-const hubspotClient = new Client({
-    accessToken: process.env.HUBSPOT_ACCESS_TOKEN,
-});
+const hubspotClient = new Client({ accessToken: hubspotToken });
 
 export async function POST({ request }: { request: Request }) {
     if (request.method !== 'POST') {
@@ -18,68 +17,58 @@ export async function POST({ request }: { request: Request }) {
     }
 
     try {
-        const { email, firstName, lastName, companyName, jobTitle, turnstileToken, consent } = await request.json();
+        const { email, firstName, lastName, companyName, jobTitle } = await request.json();
 
-        // Verify Turnstile token
-        const turnstileResponse = await fetch(
-            "https://challenges.cloudflare.com/turnstile/v0/siteverify",
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    secret: process.env.TURNSTILE_SECRET_KEY,
-                    response: turnstileToken,
-                }),
-            }
-        );
-
-        const turnstileData = await turnstileResponse.json();
-        if (!turnstileData.success) {
-            return new Response("Invalid Turnstile token", { status: 400 });
+        if (!email || !companyName) {
+            return new Response('Email and company name are required', { status: 400 });
         }
 
-        if (!email) {
-            return new Response('Email parameter is required', { status: 400 });
-        }
-
-        // Create or update contact in HubSpot
         const domain = email.split('@')[1];
-        const contactProperties = {
-            email,
-            firstname: firstName,
-            lastname: lastName,
-            jobtitle: jobTitle,
-            lifecyclestage: 'opportunity',
-            hs_lead_status: 'IN_PROGRESS',
-            hubspot_owner_id: '1546319970',
-            consent: consent
-        };
+        const sanitizedCompanyName = companyName.trim();
 
-        const companyProperties = {
-            name: companyName,
-            domain: domain,
-            hubspot_owner_id: '1546319970',
-            consent: consent
-        };
-
+        // Create company first
+        let companyId;
         try {
-            // Create/Update Contact
-            const contactResponse = await hubspotClient.crm.contacts.basicApi.create({
-                properties: contactProperties
-            });
-            
-            // Create Company if it doesn't exist
             const companyResponse = await hubspotClient.crm.companies.basicApi.create({
-                properties: companyProperties
+                properties: {
+                    name: sanitizedCompanyName,
+                    domain: domain,
+                    hubspot_owner_id: '1546319970',
+                }
             });
+            companyId = companyResponse.id;
+        } catch (error) {
+            console.error('HubSpot Company Creation Error:', error);
+            throw error;
+        }
 
-            // Associate Contact with Company
-            await fetch(`https://api.hubapi.com/crm/v4/associations/contacts/${contactResponse.id}/companies/${companyResponse.id}`, {
+        // Then create contact
+        let contactId;
+        try {
+            const contactResponse = await hubspotClient.crm.contacts.basicApi.create({
+                properties: {
+                    email,
+                    firstname: firstName,
+                    lastname: lastName,
+                    jobtitle: jobTitle,
+                    company: sanitizedCompanyName,
+                    lifecyclestage: 'opportunity',
+                    hs_lead_status: 'IN_PROGRESS',
+                    hubspot_owner_id: '1546319970',
+                }
+            });
+            contactId = contactResponse.id;
+        } catch (error) {
+            console.error('HubSpot Contact Creation Error:', error);
+            throw error;
+        }
+
+        // Create association
+        if (contactId && companyId) {
+            await fetch(`https://api.hubapi.com/crm/v4/associations/contacts/${contactId}/companies/${companyId}`, {
                 method: 'PUT',
                 headers: {
-                    'Authorization': `Bearer ${process.env.HUBSPOT_ACCESS_TOKEN}`,
+                    'Authorization': `Bearer ${hubspotToken}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
@@ -89,13 +78,7 @@ export async function POST({ request }: { request: Request }) {
                     }]
                 })
             });
-        } catch (hubspotError) {
-            console.error('HubSpot Error:', hubspotError);
-            // Continue with Slack invite even if HubSpot fails
         }
-
-        // Extract company name from email domain for Slack channel
-
 
         // Step 1: Create a private channel with the name format `connect-{companyName}`
         const channelName = `connect-${companyName.toLowerCase()}`;
