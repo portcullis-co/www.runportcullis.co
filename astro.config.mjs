@@ -22,6 +22,11 @@ export default defineConfig({
     tailwind({ applyBaseStyles: false }),
     simpleStackForm(),
   ],
+  vite: {
+    ssr: {
+      noExternal: ['path-to-regexp'],
+    },
+  },
   output: "server",
   adapter: vercel(),
 });
