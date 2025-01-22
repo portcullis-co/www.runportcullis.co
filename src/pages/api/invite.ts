@@ -2,9 +2,10 @@ export const config = {
   runtime: 'edge',
 };
 
-export const POST = async ({ request }: { request: Request }) => {
-    const slackToken = import.meta.env.SLACK_BOT_TOKEN;
-    const hubspotToken = import.meta.env.HUBSPOT_ACCESS_TOKEN;
+export const POST = async ({ request, platform }: { request: Request, platform: any }) => {
+    const { env } = platform;
+    const slackToken = env.SLACK_BOT_TOKEN;
+    const hubspotToken = env.HUBSPOT_ACCESS_TOKEN;
 
     try {
       if (request.method !== 'POST') {
