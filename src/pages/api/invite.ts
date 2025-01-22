@@ -11,11 +11,34 @@ export async function POST({ request }: { request: Request }) {
     const hubspotToken = import.meta.env.HUBSPOT_ACCESS_TOKEN;
 
     try {
-        const { email, firstName, lastName, companyName, jobTitle } = await request.json();
+        const contentType = request.headers.get('content-type');
+        let email, firstName, lastName, companyName, jobTitle;
+
+        if (contentType?.includes('application/x-www-form-urlencoded')) {
+            const formData = await request.formData();
+            const text = formData.get('text') as string;
+            
+            if (!text || text.trim() === '') {
+                return new Response(JSON.stringify({
+                    response_type: 'ephemeral',
+                    text: "How to use `/invite`:\n```/invite email firstName lastName companyName jobTitle```\nExample:\n```/invite jane@acme.com Jane Smith Acme CTO```"
+                }), {
+                    status: 200,
+                    headers: { 'Content-Type': 'application/json' },
+                });
+            }
+
+            [email, firstName, lastName, companyName, jobTitle] = text.split(' ');
+            console.log('Parsed Slack command:', { email, firstName, lastName, companyName, jobTitle });
+        } else {
+            const data = await request.json();
+            ({ email, firstName, lastName, companyName, jobTitle } = data);
+        }
+
         const domain = email.split('@')[1];
         const sanitizedCompanyName = companyName.trim();
 
-        // Create company
+        // Create company with error checking
         const companyResponse = await fetch('https://api.hubapi.com/crm/v3/objects/companies', {
             method: 'POST',
             headers: {
@@ -30,10 +53,18 @@ export async function POST({ request }: { request: Request }) {
                 }
             })
         });
+        
+        if (!companyResponse.ok) {
+            const error = await companyResponse.text();
+            console.error('HubSpot Company Creation Failed:', error);
+            throw new Error(`HubSpot Company Creation Failed: ${error}`);
+        }
+
         const companyData = await companyResponse.json();
         const companyId = companyData.id;
+        console.log('Company created:', companyId);
 
-        // Create contact
+        // Create contact with error checking
         const contactResponse = await fetch('https://api.hubapi.com/crm/v3/objects/contacts', {
             method: 'POST',
             headers: {
@@ -53,28 +84,21 @@ export async function POST({ request }: { request: Request }) {
                 }
             })
         });
-        const contactData = await contactResponse.json();
-        const contactId = contactData.id;
 
-        // Create association
-        if (contactId && companyId) {
-            await fetch(`https://api.hubapi.com/crm/v4/associations/contacts/${contactId}/companies/${companyId}`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${hubspotToken}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    types: [{
-                        associationCategory: 'HUBSPOT_DEFINED',
-                        associationTypeId: 1
-                    }]
-                })
-            });
+        if (!contactResponse.ok) {
+            const error = await contactResponse.text();
+            console.error('HubSpot Contact Creation Failed:', error);
+            throw new Error(`HubSpot Contact Creation Failed: ${error}`);
         }
 
-        // Create Slack channel
-        const channelName = `connect-${sanitizedCompanyName.toLowerCase()}`;
+        const contactData = await contactResponse.json();
+        const contactId = contactData.id;
+        console.log('Contact created:', contactId);
+
+        // Create Slack channel with error checking
+        const channelName = `connect-${sanitizedCompanyName.toLowerCase().replace(/[^a-z0-9-]/g, '-')}`;
+        console.log('Creating Slack channel:', channelName);
+        
         const createChannelResponse = await fetch('https://slack.com/api/conversations.create', {
             method: 'POST',
             headers: {
@@ -86,11 +110,18 @@ export async function POST({ request }: { request: Request }) {
                 is_private: true
             })
         });
-        const channelData = await createChannelResponse.json();
-        const channelId = channelData.channel?.id;
 
-        // Invite team members
-        await fetch('https://slack.com/api/conversations.invite', {
+        const channelData = await createChannelResponse.json();
+        if (!channelData.ok) {
+            console.error('Slack Channel Creation Failed:', channelData.error);
+            throw new Error(`Slack Channel Creation Failed: ${channelData.error}`);
+        }
+
+        const channelId = channelData.channel?.id;
+        console.log('Channel created:', channelId);
+
+        // Invite team members with error checking
+        const inviteResponse = await fetch('https://slack.com/api/conversations.invite', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${slackToken}`,
@@ -102,8 +133,14 @@ export async function POST({ request }: { request: Request }) {
             })
         });
 
-        // Send Slack Connect invite
-        await fetch('https://slack.com/api/conversations.inviteShared', {
+        const inviteData = await inviteResponse.json();
+        if (!inviteData.ok) {
+            console.error('Slack Invite Failed:', inviteData.error);
+            throw new Error(`Slack Invite Failed: ${inviteData.error}`);
+        }
+
+        // Send Slack Connect invite with error checking
+        const connectInviteResponse = await fetch('https://slack.com/api/conversations.inviteShared', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${slackToken}`,
@@ -115,7 +152,16 @@ export async function POST({ request }: { request: Request }) {
             })
         });
 
-        return new Response(JSON.stringify({ success: true }), {
+        const connectInviteData = await connectInviteResponse.json();
+        if (!connectInviteData.ok) {
+            console.error('Slack Connect Invite Failed:', connectInviteData.error);
+            throw new Error(`Slack Connect Invite Failed: ${connectInviteData.error}`);
+        }
+
+        return new Response(JSON.stringify({ 
+            success: true,
+            message: `Created channel ${channelName} and sent invite to ${email}`
+        }), {
             status: 200,
             headers: {
                 'Content-Type': 'application/json',
@@ -124,7 +170,10 @@ export async function POST({ request }: { request: Request }) {
 
     } catch (error) {
         console.error('Error:', error);
-        return new Response(JSON.stringify({ error: 'Internal server error' }), {
+        return new Response(JSON.stringify({ 
+            error: 'Internal server error',
+            details: error instanceof Error ? error.message : 'Unknown error'
+        }), {
             status: 500,
             headers: {
                 'Content-Type': 'application/json',
