@@ -6,15 +6,12 @@ import tailwind from "@astrojs/tailwind";
 import icon from "astro-icon";
 import { defineConfig } from "astro/config";
 import simpleStackForm from "simple-stack-form";
-import cloudflare from '@astrojs/cloudflare';
+import netlify from '@astrojs/netlify';
 
 export default defineConfig({
   site: 'https://www.runportcullis.co',
   output: "server",
-  adapter: cloudflare({
-    mode: 'directory',
-    imageService: 'cloudflare'
-  }),
+  adapter: netlify(),
   integrations: [
     mdx({
       syntaxHighlight: "shiki",

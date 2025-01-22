@@ -1,0 +1,44 @@
+---
+import MainLayout from "@/layouts/main-layout.astro";
+import { Image } from "astro:assets";
+import { hobbies } from "@/config/about.ts";
+import { Button } from "@/components/ui/button";
+import { Icon } from "astro-icon/components";
+---
+
+<MainLayout title="About" description="Lorem ipsum dolor sit amet">
+  <section class="space-y-5">
+    <section
+      class="relative container max-w-screen-md mb-28 mt-16 sm:mt-20 lg:mt-28"
+    >
+      <div class="flex h-full flex-col justify-between">
+        <div class="grid gap-8 sm:grid-cols-2">
+          <div>
+            <h1 class="text-4xl font-heading text-foreground">Portcullis</h1>
+            <p class="text-base text-muted-foreground mt-0.5">
+              Made with ❤️ in Knoxville, TN
+            </p>
+          </div>
+          <div>
+            <p class="mb-12 text-base text-muted-foreground">
+              Have something you'd like to talk about?
+              <br />
+              Send us a message and we'll get back to you as soon as possible.
+            </p>
+            <div class="flex items-center gap-3">
+              <Button className="rounded-xl">
+                <Icon name='lucide:mail' class="mr-2 size-4" />
+                <a href="mailto:hello@runportcullis.co">Talk with us</a>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</MainLayout>

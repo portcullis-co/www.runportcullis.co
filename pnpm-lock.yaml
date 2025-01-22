@@ -207,6 +207,9 @@ importers:
       unist-util-visit:
         specifier: ^5.0.0
         version: 5.0.0
+      wrangler:
+        specifier: ^3.105.0
+        version: 3.105.0(@cloudflare/workers-types@4.20250121.0)
 
 packages:
 
