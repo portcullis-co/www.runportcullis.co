@@ -2,13 +2,22 @@ export const config = {
   runtime: 'edge',
 };
 
-export async function POST({ request }: { request: Request }) {
+export async function POST({ request, env }: { request: Request, env: any }) {
     if (request.method !== 'POST') {
         return new Response('Method not allowed', { status: 405 });
     }
 
-    const slackToken = import.meta.env.SLACK_BOT_TOKEN;
-    const hubspotToken = import.meta.env.HUBSPOT_ACCESS_TOKEN;
+    const slackToken = env.SLACK_BOT_TOKEN;
+    const hubspotToken = env.HUBSPOT_ACCESS_TOKEN;
+
+    // Verify tokens exist
+    if (!hubspotToken || !slackToken) {
+        console.error('Missing required tokens:', { hubspotToken: !!hubspotToken, slackToken: !!slackToken });
+        return new Response(JSON.stringify({ error: 'Configuration error' }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
 
     try {
         const contentType = request.headers.get('content-type');
