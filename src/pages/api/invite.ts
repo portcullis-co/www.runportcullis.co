@@ -2,16 +2,15 @@ export const config = {
   runtime: 'edge',
 };
 
-export const POST = async ({ request, locals }: { request: Request, locals: any }) => {
-    const runtime = locals.runtime;
-    const slackToken = runtime.env.SLACK_BOT_TOKEN;
-    const hubspotToken = runtime.env.HUBSPOT_ACCESS_TOKEN;
+export const POST = async ({ request }: { request: Request }) => {
+    const slackToken = import.meta.env.SLACK_BOT_TOKEN;
+    const hubspotToken = import.meta.env.HUBSPOT_ACCESS_TOKEN;
 
     if (!slackToken || !hubspotToken) {
         console.error('Environment variables not found', {
             hasSlackToken: !!slackToken,
             hasHubspotToken: !!hubspotToken,
-            envKeys: Object.keys(runtime.env || {})
+            envKeys: Object.keys(import.meta.env)
         });
         return new Response(JSON.stringify({ error: 'Configuration error' }), {
             status: 500,

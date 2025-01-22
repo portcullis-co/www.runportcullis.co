@@ -13,15 +13,7 @@ export default defineConfig({
   output: "server",
   adapter: cloudflare({
     mode: 'directory',
-    functionPerRoute: true,
-    runtime: {
-      mode: 'local',
-      type: 'pages'
-    },
-    imageService: 'cloudflare',
-    build: {
-      nodeModuleCompat: true
-    }
+    imageService: 'cloudflare'
   }),
   integrations: [
     mdx({
