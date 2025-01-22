@@ -7,10 +7,9 @@ interface Env {
   HUBSPOT_ACCESS_TOKEN: string;
 }
 
-export default {
-  async fetch(request: Request, env: Env) {
+export async function POST({ request, env }: { request: Request, env: Env }) {
     if (request.method !== 'POST') {
-      return new Response('Method not allowed', { status: 405 });
+        return new Response('Method not allowed', { status: 405 });
     }
 
     const slackToken = env.SLACK_BOT_TOKEN;
@@ -18,11 +17,11 @@ export default {
 
     // Verify tokens exist
     if (!hubspotToken || !slackToken) {
-      console.error('Missing required tokens:', { hubspotToken: !!hubspotToken, slackToken: !!slackToken });
-      return new Response(JSON.stringify({ error: 'Configuration error' }), {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      });
+        console.error('Missing required tokens:', { hubspotToken: !!hubspotToken, slackToken: !!slackToken });
+        return new Response(JSON.stringify({ error: 'Configuration error' }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' },
+        });
     }
 
     try {
@@ -195,5 +194,4 @@ export default {
         },
       });
     }
-  },
-};
+}
