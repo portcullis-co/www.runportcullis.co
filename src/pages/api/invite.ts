@@ -6,22 +6,11 @@ export const POST = async ({ request }: { request: Request }) => {
     const slackToken = import.meta.env.SLACK_BOT_TOKEN;
     const hubspotToken = import.meta.env.HUBSPOT_ACCESS_TOKEN;
 
-    if (request.method !== 'POST') {
-        return new Response('Method not allowed', { status: 405 });
-    }
-
     try {
-      if (!slackToken || !hubspotToken) {
-        console.error('Environment variables not found', {
-            hasSlackToken: !!slackToken,
-            hasHubspotToken: !!hubspotToken,
-            envKeys: Object.keys(import.meta.env)
-        });
-        return new Response(JSON.stringify({ error: 'Configuration error' }), {
-            status: 500,
-            headers: { 'Content-Type': 'application/json' },
-        });
-    }
+      if (request.method !== 'POST') {
+          return new Response('Method not allowed', { status: 405 });
+      }
+
       const contentType = request.headers.get('content-type');
       let email, firstName, lastName, companyName, jobTitle;
 
