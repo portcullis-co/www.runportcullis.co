@@ -2,16 +2,16 @@ export const config = {
   runtime: 'edge',
 };
 
-export const POST = async ({ request, platform }: { request: Request; platform: { env: any } }) => {
-    const slackToken = platform.env.SLACK_BOT_TOKEN;
-    const hubspotToken = platform.env.HUBSPOT_ACCESS_TOKEN;
+export const POST = async (context: { request: Request; locals: { platform: { env: any } } }) => {
+    const slackToken = context.locals.platform.env.SLACK_BOT_TOKEN;
+    const hubspotToken = context.locals.platform.env.HUBSPOT_ACCESS_TOKEN;
 
     try {
-      if (request.method !== 'POST') {
+      if (context.request.method !== 'POST') {
           return new Response('Method not allowed', { status: 405 });
       }
 
-      const contentType = request.headers.get('content-type');
+      const contentType = context.request.headers.get('content-type');
       let email, firstName, lastName, companyName, jobTitle;
       
       // Debug token (only showing first/last 4 chars)
@@ -19,7 +19,7 @@ export const POST = async ({ request, platform }: { request: Request; platform: 
       console.log('HubSpot Token Preview:', tokenPreview);
 
       if (contentType?.includes('application/x-www-form-urlencoded')) {
-        const formData = await request.formData();
+        const formData = await context.request.formData();
         const text = formData.get('text') as string;
         
         if (!text || text.trim() === '') {
@@ -35,7 +35,7 @@ export const POST = async ({ request, platform }: { request: Request; platform: 
         [email, firstName, lastName, companyName, jobTitle] = text.split(' ');
         console.log('Parsed Slack command:', { email, firstName, lastName, companyName, jobTitle });
       } else {
-        const data = await request.json();
+        const data = await context.request.json();
         ({ email, firstName, lastName, companyName, jobTitle } = data);
       }
 
