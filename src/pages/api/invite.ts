@@ -7,8 +7,10 @@ interface Env {
   HUBSPOT_ACCESS_TOKEN: string;
 }
 
-export async function POST({ request, env }: { request: Request, env: Env }) {
-    if (request.method !== 'POST') {
+export const POST = async (context: { request: Request }) => {
+    const env = (context as any).env as Env;
+    
+    if (context.request.method !== 'POST') {
         return new Response('Method not allowed', { status: 405 });
     }
 
@@ -25,11 +27,11 @@ export async function POST({ request, env }: { request: Request, env: Env }) {
     }
 
     try {
-      const contentType = request.headers.get('content-type');
+      const contentType = context.request.headers.get('content-type');
       let email, firstName, lastName, companyName, jobTitle;
 
       if (contentType?.includes('application/x-www-form-urlencoded')) {
-        const formData = await request.formData();
+        const formData = await context.request.formData();
         const text = formData.get('text') as string;
         
         if (!text || text.trim() === '') {
@@ -45,7 +47,7 @@ export async function POST({ request, env }: { request: Request, env: Env }) {
         [email, firstName, lastName, companyName, jobTitle] = text.split(' ');
         console.log('Parsed Slack command:', { email, firstName, lastName, companyName, jobTitle });
       } else {
-        const data = await request.json();
+        const data = await context.request.json();
         ({ email, firstName, lastName, companyName, jobTitle } = data);
       }
 
@@ -194,4 +196,4 @@ export async function POST({ request, env }: { request: Request, env: Env }) {
         },
       });
     }
-}
+};
