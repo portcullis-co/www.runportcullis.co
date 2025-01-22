@@ -3,17 +3,17 @@ export const config = {
 };
 
 export const POST = async (context: { request: Request }) => {
+    const request = context.request;
     
-    if (context.request.method !== 'POST') {
+    if (request.method !== 'POST') {
         return new Response('Method not allowed', { status: 405 });
     }
 
-    const slackToken = import.meta.env.SLACK_BOT_TOKEN;
-    const hubspotToken = import.meta.env.HUBSPOT_ACCESS_TOKEN;
+    const slackToken = process.env.SLACK_BOT_TOKEN 
+    const hubspotToken = process.env.HUBSPOT_ACCESS_TOKEN
 
-    // Verify tokens exist
-    if (!hubspotToken || !slackToken) {
-        console.error('Missing required tokens:', { hubspotToken: !!hubspotToken, slackToken: !!slackToken });
+    if (!slackToken || !hubspotToken) {
+        console.error('Environment variables not found');
         return new Response(JSON.stringify({ error: 'Configuration error' }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' },
@@ -21,11 +21,11 @@ export const POST = async (context: { request: Request }) => {
     }
 
     try {
-      const contentType = context.request.headers.get('content-type');
+      const contentType = request.headers.get('content-type');
       let email, firstName, lastName, companyName, jobTitle;
 
       if (contentType?.includes('application/x-www-form-urlencoded')) {
-        const formData = await context.request.formData();
+        const formData = await request.formData();
         const text = formData.get('text') as string;
         
         if (!text || text.trim() === '') {
@@ -41,7 +41,7 @@ export const POST = async (context: { request: Request }) => {
         [email, firstName, lastName, companyName, jobTitle] = text.split(' ');
         console.log('Parsed Slack command:', { email, firstName, lastName, companyName, jobTitle });
       } else {
-        const data = await context.request.json();
+        const data = await request.json();
         ({ email, firstName, lastName, companyName, jobTitle } = data);
       }
 
