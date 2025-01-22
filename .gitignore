@@ -132,3 +132,5 @@ dist
 # Build output
 .wrangler
 
+.DS_Store
+.astro
