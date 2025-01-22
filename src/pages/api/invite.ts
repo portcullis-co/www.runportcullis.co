@@ -2,10 +2,9 @@ export const config = {
   runtime: 'edge',
 };
 
-export const POST = async ({ request, platform }: { request: Request, platform: any }) => {
-    const { env } = platform;
-    const slackToken = env.SLACK_BOT_TOKEN;
-    const hubspotToken = env.HUBSPOT_ACCESS_TOKEN;
+export const POST = async ({ request, platform }: { request: Request; platform: { env: any } }) => {
+    const slackToken = platform.env.SLACK_BOT_TOKEN;
+    const hubspotToken = platform.env.HUBSPOT_ACCESS_TOKEN;
 
     try {
       if (request.method !== 'POST') {
@@ -14,6 +13,10 @@ export const POST = async ({ request, platform }: { request: Request, platform: 
 
       const contentType = request.headers.get('content-type');
       let email, firstName, lastName, companyName, jobTitle;
+      
+      // Debug token (only showing first/last 4 chars)
+      const tokenPreview = hubspotToken ? `${hubspotToken.slice(0,4)}...${hubspotToken.slice(-4)}` : 'undefined';
+      console.log('HubSpot Token Preview:', tokenPreview);
 
       if (contentType?.includes('application/x-www-form-urlencoded')) {
         const formData = await request.formData();
