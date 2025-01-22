@@ -2,15 +2,25 @@ export const config = {
   runtime: 'edge',
 };
 
-export const POST = async ({ request }: { request: Request }) => {
-    const slackToken = import.meta.env.SLACK_BOT_TOKEN;
-    const hubspotToken = import.meta.env.HUBSPOT_ACCESS_TOKEN;
+interface Env {
+  SLACK_BOT_TOKEN: string;
+  HUBSPOT_ACCESS_TOKEN: string;
+}
+
+export const POST = async ({ request, platform }: { request: Request, platform: { env: Env } }) => {
+      
+    if (request.method !== 'POST') {
+        return new Response('Method not allowed', { status: 405 });
+    }
+
+    const slackToken = platform.env.SLACK_BOT_TOKEN;
+    const hubspotToken = platform.env.HUBSPOT_ACCESS_TOKEN;
 
     if (!slackToken || !hubspotToken) {
         console.error('Environment variables not found', {
             hasSlackToken: !!slackToken,
             hasHubspotToken: !!hubspotToken,
-            envKeys: Object.keys(import.meta.env || {})
+            envKeys: Object.keys(platform.env || {})
         });
         return new Response(JSON.stringify({ error: 'Configuration error' }), {
             status: 500,
