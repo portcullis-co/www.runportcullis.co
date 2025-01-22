@@ -7,20 +7,15 @@ interface Env {
   HUBSPOT_ACCESS_TOKEN: string;
 }
 
-export const POST = async ({ request, platform }: { request: Request, platform: { env: Env } }) => {
-      
-    if (request.method !== 'POST') {
-        return new Response('Method not allowed', { status: 405 });
-    }
-
-    const slackToken = platform.env.SLACK_BOT_TOKEN;
-    const hubspotToken = platform.env.HUBSPOT_ACCESS_TOKEN;
+export const POST = async (context: { request: Request; env?: Env }) => {
+    const slackToken = context?.env?.SLACK_BOT_TOKEN;
+    const hubspotToken = context?.env?.HUBSPOT_ACCESS_TOKEN;
 
     if (!slackToken || !hubspotToken) {
         console.error('Environment variables not found', {
             hasSlackToken: !!slackToken,
             hasHubspotToken: !!hubspotToken,
-            envKeys: Object.keys(platform.env || {})
+            envKeys: Object.keys(context?.env || {})
         });
         return new Response(JSON.stringify({ error: 'Configuration error' }), {
             status: 500,
@@ -28,12 +23,16 @@ export const POST = async ({ request, platform }: { request: Request, platform: 
         });
     }
 
+    if (context.request.method !== 'POST') {
+        return new Response('Method not allowed', { status: 405 });
+    }
+
     try {
-      const contentType = request.headers.get('content-type');
+      const contentType = context.request.headers.get('content-type');
       let email, firstName, lastName, companyName, jobTitle;
 
       if (contentType?.includes('application/x-www-form-urlencoded')) {
-        const formData = await request.formData();
+        const formData = await context.request.formData();
         const text = formData.get('text') as string;
         
         if (!text || text.trim() === '') {
@@ -49,7 +48,7 @@ export const POST = async ({ request, platform }: { request: Request, platform: 
         [email, firstName, lastName, companyName, jobTitle] = text.split(' ');
         console.log('Parsed Slack command:', { email, firstName, lastName, companyName, jobTitle });
       } else {
-        const data = await request.json();
+        const data = await context.request.json();
         ({ email, firstName, lastName, companyName, jobTitle } = data);
       }
 
