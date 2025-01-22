@@ -43,7 +43,8 @@ export const POST = async ({ request }: { request: Request }) => {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${hubspotToken}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'accept': 'application/json'
         },
         body: JSON.stringify({
           properties: {
@@ -69,7 +70,8 @@ export const POST = async ({ request }: { request: Request }) => {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${hubspotToken}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'accept': 'application/json'
         },
         body: JSON.stringify({
           properties: {
