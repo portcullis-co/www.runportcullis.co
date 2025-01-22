@@ -2,20 +2,14 @@ export const config = {
   runtime: 'edge',
 };
 
-interface Env {
-  SLACK_BOT_TOKEN: string;
-  HUBSPOT_ACCESS_TOKEN: string;
-}
-
 export const POST = async (context: { request: Request }) => {
-    const env = (context as any).env as Env;
     
     if (context.request.method !== 'POST') {
         return new Response('Method not allowed', { status: 405 });
     }
 
-    const slackToken = env.SLACK_BOT_TOKEN;
-    const hubspotToken = env.HUBSPOT_ACCESS_TOKEN;
+    const slackToken = import.meta.env.SLACK_BOT_TOKEN;
+    const hubspotToken = import.meta.env.HUBSPOT_ACCESS_TOKEN;
 
     // Verify tokens exist
     if (!hubspotToken || !slackToken) {
