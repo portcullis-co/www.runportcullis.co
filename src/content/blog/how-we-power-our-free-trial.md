@@ -85,7 +85,7 @@ Here’s a [gist](https://gist.github.com/jdbohrman/065477d6644fe70dd9613f2935bb
     const sanitizedCompanyName = companyName.trim();
 ```
 
-4. Makes a request to the [`https://api.hubapi.com/crm/v3/objects/companies`](https://api.hubapi.com/crm/v3/objects/companies) API in the `companyResponse`
+4. Makes a request to the `https://api.hubapi.com/crm/v3/objects/companies` API in the `companyResponse`
 
 ```typescript
         const companyResponse = await fetch('https://api.hubapi.com/crm/v3/objects/companies', {
@@ -111,7 +111,7 @@ Here’s a [gist](https://gist.github.com/jdbohrman/065477d6644fe70dd9613f2935bb
         }
 ```
 
-5. Makes a request to the [`https://api.hubapi.com/crm/v3/objects/contact`](https://api.hubapi.com/crm/v3/objects/contact) API in the contactResponse
+5. Makes a request to the `https://api.hubapi.com/crm/v3/objects/contact` API in the `contactResponse`
 
 ```typescript
             const companyData = await companyResponse.json();
