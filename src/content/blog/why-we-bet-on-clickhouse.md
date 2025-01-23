@@ -42,4 +42,6 @@ Snowflake is at a minimum 3x more expensive than ClickHouse Cloud when projectin
 
 ## Conclusion
 
-With all that said, we're super excited to tap into the Clickhouse ecosystem and start building tools and solutions that solve petabyte-scale problems for our stakeholders. If you're curious about migrating to Clickhouse from another platform, or have a POC in mind that you need help with, give us a shout via this [form](/schedule-a-chat) or in the [Discord](https://discord.gg/gPCSXNtjc)
+With all that said, we're super excited to tap into the Clickhouse ecosystem and start building tools and solutions that solve petabyte-scale problems for our stakeholders. If you're curious about migrating to Clickhouse from another platform, or have a POC in mind that you need help with, get a free trial of our enterprise-grade support today!
+
+[Start a free trial](https://www.runportcullis.co/pricing)

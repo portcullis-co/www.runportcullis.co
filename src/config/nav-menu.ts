@@ -14,9 +14,9 @@ export const navMenuConfig: NavMenuConfig = {
           forceReload: true,
         },
          {
-           title: "Discord",
-           href: "https://discord.gg/ZRczvJagf9",
-           description: "Join The Gateway, our data-engineering focused Discord server",
+           title: "Free Trial",
+           href: "/pricing",
+           description: "Get a free trial of our enterprise-grade support",
            image: "/images/examples/pricing.jpg",
          },
         {

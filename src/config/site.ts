@@ -24,7 +24,7 @@ export const footerLinks: SidebarNavItem[] = [
     title: "Company",
     items: [
       { title: "Contact", href: "/schedule-a-chat" },
-      { title: "Discord", href: "https://discord.gg/gPCSXNtjcN" },
+      { title: "Free Trial", href: "/pricing" },
       { title: "Blog", href: "/blog" },
     ],
   },
