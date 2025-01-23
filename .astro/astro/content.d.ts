@@ -179,6 +179,13 @@ declare module 'astro:content' {
   collection: "blog";
   data: InferEntrySchema<"blog">
 } & { render(): Render[".md"] };
+"how-we-power-our-free-trial.md": {
+	id: "how-we-power-our-free-trial.md";
+  slug: "how-we-power-our-free-trial";
+  body: string;
+  collection: "blog";
+  data: InferEntrySchema<"blog">
+} & { render(): Render[".md"] };
 "primary-key-caching.md": {
 	id: "primary-key-caching.md";
   slug: "primary-key-caching";
