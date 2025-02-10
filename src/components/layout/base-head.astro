@@ -8,7 +8,6 @@ interface Props {
   description?: string;
   image?: string;
   ogImage?: string;
-  cover?: string;
 }
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
@@ -18,11 +17,10 @@ const {
   description = siteConfig.description,
   image = "/og.png",
   ogImage,
-  cover,
 } = Astro.props;
 
 // Determine the OG image URL
-const finalCover = cover || image; // fallback to default if no blog image
+const finalOgImage = ogImage || image; // fallback to default if no blog image
 ---
 
 <!-- Global Metadata -->
@@ -59,14 +57,14 @@ const finalCover = cover || image; // fallback to default if no blog image
 <meta property="og:url" content={Astro.url} />
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
-<meta property="og:image" content={new URL(finalCover, Astro.url)} />
+<meta property="og:image" content={new URL(finalOgImage, Astro.url)} />
 
 <!-- Twitter -->
 <meta property="twitter:card" content="summary_large_image" />
 <meta property="twitter:url" content={Astro.url} />
 <meta property="twitter:title" content={title} />
 <meta property="twitter:description" content={description} />
-<meta property="twitter:image" content={new URL(finalCover, Astro.url)} />
+<meta property="twitter:image" content={new URL(finalOgImage, Astro.url)} />
 
 <!-- Start of HubSpot Embed Code -->
 <script type="text/javascript" id="hs-script-loader" async defer src="//js-na1.hs-scripts.com/47965561.js"></script>

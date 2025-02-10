@@ -14,7 +14,7 @@ const { title, description, pubDate, updatedDate, cover, category } =
   Astro.props.data;
 ---
 
-<MainLayout title={title} description={description}>
+<MainLayout title={title} description={description} ogImage={cover}>
   <div class="relative container max-w-screen-md py-10">
     <button
       onclick="history.back()"
