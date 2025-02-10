@@ -2,7 +2,7 @@
 title: "How to Cache Primary Keys on Clickhouse"
 description: "Clickhouse 24.12 is fresh out of the oven with some really cool new features that enable even more efficient queries and cluster performance."
 pubDate: "Dec 28 2024"
-cover: "/blog/primary-key-cache.png"
+cover: "/blog/blog-cover-cache.png"
 category: "insights"
 ---
 

@@ -2,7 +2,7 @@
 title: "Use cases for Clickhouse’s spicy new JSON column type"
 description: "In October of 2024, Clickhouse announced a powerful new JSON data type that has been causing the community to buzz with excitement and anticipation over the possible use-cases and potential POCs."
 pubDate: "Dec 16 2024"
-cover: "/blog/blog-cover-01.png"
+cover: "/blog/blog-cover-json.png"
 category: "insights"
 ---
 

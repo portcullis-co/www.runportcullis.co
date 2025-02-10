@@ -2,7 +2,7 @@
 title: "Clickhouse Use Case Guide: Digital Twins"
 description: "As the world becomes more tech-driven, we rely more and more on rare earth metals to power our phones, appliances, and even lifesaving devices. The mining operations to gather these minerals have grown increasingly complex and sophisticated."
 pubDate: "Dec 18 2024"
-cover: "/blog/blog-cover-17.png"
+cover: "/blog/blog-cover-digital-twins.png"
 category: "insights"
 ---
 

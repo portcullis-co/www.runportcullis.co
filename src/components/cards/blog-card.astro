@@ -12,13 +12,13 @@ const post = Astro.props;
 <article class="group space-y-4">
   <a
     href={`/blog/${post.slug}/`}
-    class="flex h-60  group-hover:-translate-y-2 group-hover:shadow-xl transition duration-300"
+    class="block aspect-[2/1] group-hover:-translate-y-2 group-hover:shadow-xl transition duration-300"
   >
     <Image
       loading="eager"
-      class="w-full h-full object-cover rounded-xl overflow-hidden"
-      width={720}
-      height={360}
+      class="w-full h-full object-cover rounded-lg overflow-hidden"
+      width={360}
+      height={180}
       src={post.data.cover}
       alt="descriptive text"
       transition:name={`img-${post.slug}`}

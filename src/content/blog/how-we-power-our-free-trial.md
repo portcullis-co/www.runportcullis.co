@@ -1,6 +1,6 @@
 ---
 title: "How we power the smooth operation of a services-based free trial with Slack Connect"
-description: "We just launched our free trial for Portcullis's on-demand clickhouse support offering, and it's been a game changer. We've been able to get a lot of value out of it, and we're excited to share how we've been using it to power our free trial."
+description: "We just launched our free trial for Portcullis's on-demand Clickhouse support offering, and it's been a game changer. We've been able to get a lot of value out of it, and we're excited to share how we've been using it to power our free trial."
 pubDate: "Jan 23 2025"
 cover: "/blog/blog-cover-slack.png"
 category: "insights"

@@ -2,7 +2,7 @@
 title: "The 2025 Clickhouse Roadmap: An Overview"
 description: "From performance optimizations to new features that will make this real-time warehouse even more powerful, 2025 is shaping up to be a transformative year for the platform. Let's dive into some of the key areas we'll be focusing on."
 pubDate: "Jan 2 2025"
-cover: "/blog/new-year-2025.png"
+cover: "/blog/blog-cover-2025.png"
 category: "insights"
 ---
 
