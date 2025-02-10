@@ -56,5 +56,11 @@ export const navMenuConfig: NavMenuConfig = {
     },
   ],
   links: [
+    {
+      title: "Get a free trial",
+      href: "/pricing",
+      description: "Get a free trial of our enterprise-grade support",
+      image: "/images/examples/pricing.jpg",
+    },
   ],
 };

@@ -3,7 +3,7 @@ import { buttonVariants } from "@/components/ui/button";
 import MainLayout from "@/layouts/main-layout.astro";
 import { cn } from "@/lib/utils";
 import { Icon } from "astro-icon/components";
-import SlackConnectDialog from "@/components/slack-connect-dialog";
+import { Button } from "@/components/ui/button";
 ---
 
 <MainLayout title="Pricing" mainClass="flex-1 bg-background-200">
@@ -53,8 +53,16 @@ import SlackConnectDialog from "@/components/slack-connect-dialog";
         <div>
           <h4 class="text-4xl font-bold">$268/hr</h4>
         </div>
-        <SlackConnectDialog client:load />
+        <a href="/get-started">
+        <Button 
+        size="lg"
+        className="flex items-center"
+      >
+       <img class="h-11 w-11" src="https://cdn.brandfetch.io/idJ_HhtG0Z/theme/dark/symbol.svg?c=1dxbfHSJFAPEGdCLU4o5B" />
+        <span class="text-xs">Start Trial</span>
+      </Button>
       </div>
+      </a>
     </div>
     <!-- <div
     class="grid w-full items-start gap-10 rounded-3xl overflow-hidden border p-10 md:grid-cols-[1fr_200px] bg-background"
@@ -96,6 +104,7 @@ import SlackConnectDialog from "@/components/slack-connect-dialog";
         Join the waitlist
       </a>
     </div> -->
+  </div>
     <div class="mx-auto flex w-full max-w-[58rem] flex-col gap-4">
     </div>
   </section>
