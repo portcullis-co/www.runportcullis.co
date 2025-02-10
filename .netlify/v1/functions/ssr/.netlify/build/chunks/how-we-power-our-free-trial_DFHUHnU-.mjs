@@ -1,0 +1,9 @@
+async function getMod() {
+						return import('./how-we-power-our-free-trial_ZdF6kOqJ.mjs');
+					}
+					const collectedLinks = [];
+					const collectedStyles = [];
+					const collectedScripts = [];
+					const defaultMod = { __astroPropagation: true, getMod, collectedLinks, collectedStyles, collectedScripts };
+
+export { defaultMod as default };
