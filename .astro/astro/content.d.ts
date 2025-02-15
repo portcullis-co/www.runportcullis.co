@@ -151,6 +151,13 @@ declare module 'astro:content' {
 
 	type ContentEntryMap = {
 		"blog": {
+"2025-clickhouse-support-report.md": {
+	id: "2025-clickhouse-support-report.md";
+  slug: "2025-clickhouse-support-report";
+  body: string;
+  collection: "blog";
+  data: InferEntrySchema<"blog">
+} & { render(): Render[".md"] };
 "bulk-data-clickhouse.md": {
 	id: "bulk-data-clickhouse.md";
   slug: "bulk-data-clickhouse";
