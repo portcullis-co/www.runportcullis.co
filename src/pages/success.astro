@@ -2,7 +2,6 @@
 import MainLayout from "@/layouts/main-layout.astro";
 import { Button } from "@/components/ui/button";
 import { createMessageDeepLink } from "@/pages/utils/deepLinks.ts";
-import { updateCustomer } from "@/pages/utils/updateCustomer.ts";
 // Get URL parameters
 const { searchParams } = Astro.url;
 const teamId = searchParams.get('team_id');
@@ -44,19 +43,28 @@ const slackDeepLink = deepLink;
 </MainLayout>
 
 <script>
-  import { updateCustomer } from "@/pages/utils/updateCustomer";
-  
   const link = document.getElementById('return-link');
   const params = new URLSearchParams(window.location.search);
   
   link?.addEventListener('click', async (e) => {
     e.preventDefault();
-    await updateCustomer({
-      customerId: params.get('customer_id')!,
-      teamId: params.get('team_id')!,
-      channelId: params.get('channel_id')!,
-      messageTs: params.get('message_ts')!
+    const response = await fetch('/api/stripe/customer', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        customerId: params.get('customer_id'),
+        teamId: params.get('team_id'),
+        channelId: params.get('channel_id'),
+        messageTs: params.get('message_ts')
+      })
     });
+
+    if (!response.ok) {
+      console.error('Failed to update customer');
+    }
+    
     window.location.href = link.getAttribute('href')!;
   });
 </script> 
