@@ -1,16 +1,22 @@
 ---
 import MainLayout from "@/layouts/main-layout.astro";
 import { Button } from "@/components/ui/button";
+import { createMessageDeepLink } from "@/pages/utils/deepLinks.ts";
 
 // Get URL parameters
 const { searchParams } = Astro.url;
-const userId = searchParams.get('user_id');
-const threadTs = searchParams.get('thread_ts');
-const sessionId = searchParams.get('session_id');
+const teamId = searchParams.get('team_id');
+const channelId = searchParams.get('channel_id');
+const messageTs = searchParams.get('message_ts');
+const deepLink = await createMessageDeepLink({
+        teamId: teamId!,
+        channelId: channelId!,
+        messageTs: messageTs!
+      });
 
 // Construct Slack deep link
 // Using app_redirect to open the specific thread
-const slackDeepLink = `https://slack.com/app_redirect?channel=${userId}&message_ts=${threadTs}`;
+const slackDeepLink = deepLink;
 ---
 <MainLayout 
   title="Payment Successful" 
