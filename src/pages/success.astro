@@ -1,0 +1,37 @@
+---
+import MainLayout from "@/layouts/main-layout.astro";
+import { Button } from "@/components/ui/button";
+
+// Get URL parameters
+const { searchParams } = Astro.url;
+const userId = searchParams.get('user_id');
+const threadTs = searchParams.get('thread_ts');
+const sessionId = searchParams.get('session_id');
+
+// Construct Slack deep link
+// Using app_redirect to open the specific thread
+const slackDeepLink = `https://slack.com/app_redirect?channel=${userId}&message_ts=${threadTs}`;
+---
+<MainLayout 
+  title="Payment Successful" 
+  description="Your payment was successful. Return to Slack to continue."
+  mainClass="container max-w-3xl py-10"
+>
+  <div class="flex flex-col items-center justify-center text-center space-y-8">
+    <div class="space-y-3">
+      <h1 class="text-4xl font-bold tracking-tighter">Payment Successful!</h1>
+      <p class="text-muted-foreground">
+        Thank you for your payment. Your subscription has been activated.
+      </p>
+    </div>
+
+    <div class="space-y-4">
+      <a href={slackDeepLink} class="btn btn-lg btn-secondary">
+        Return to Conversation
+      </a>
+      <p class="text-sm text-muted-foreground">
+        You'll be redirected back to your Slack conversation
+      </p>
+    </div>
+  </div>
+</MainLayout> 
