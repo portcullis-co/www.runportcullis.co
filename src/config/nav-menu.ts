@@ -21,8 +21,8 @@ export const navMenuConfig: NavMenuConfig = {
          },
         {
           title: "Discuss a project",
-          href: "https://cal.com/portcullisjames/content-discussion",
-          description: "Talk to us about a Clickhouse project you have in mind",
+          href: "https://cal.com/portcullisjames",
+          description: "Talk to us about a project you need help with",
           image: "/images/examples/pricing.jpg",
         },
       ],
@@ -33,10 +33,10 @@ export const navMenuConfig: NavMenuConfig = {
       title: "Services",
       items: [
         {
-          title: "OSS Clickhouse Deployment",
-          href: "/services/oss-support",
+          title: "Project Planning",
+          href: "/services/project-planning",
           description:
-            "Trouble deploying OSS Clickhouse? We can help.",
+            "Get high-level project planning and architecture design to ensure your data warehouse is built to last",
           image: "/images/examples/waitlist.jpg",
           forceReload: true,
         },

@@ -4,6 +4,7 @@ import MainLayout from "@/layouts/main-layout.astro";
 import { cn } from "@/lib/utils";
 import { Icon } from "astro-icon/components";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 ---
 
 <MainLayout title="Pricing" mainClass="flex-1 bg-background-200">
@@ -12,12 +13,12 @@ import { Button } from "@/components/ui/button";
   >
     <div class="mx-auto flex w-full flex-col gap-4 md:max-w-[58rem]">
       <h2 class="font-heading text-3xl leading-[1.1] sm:text-3xl md:text-6xl">
-       Flat subscription fee with a one-week free trial
+        Consulting fee + Usage = <span class="text-primary">Transparent Pricing</span>
       </h2>
       <p
         class="max-w-[85%] leading-normal text-muted-foreground sm:text-lg sm:leading-7"
       >
-       Ask us anything, we'll get back to you within 12 hours, guaranteed.
+        Flat subscription fee with fair question-based usage and a 1-week free trial
       </p>
     </div>
     <div
@@ -25,44 +26,52 @@ import { Button } from "@/components/ui/button";
     >
       <div class="grid gap-6">
         <h3 class="text-xl font-bold sm:text-2xl">
-          Support Plan
+          Gateway Plan
         </h3>
         <ul class="grid gap-3 text-sm text-muted-foreground sm:grid-cols-2">
           <li class="flex items-center">
-            <Icon name="lucide:check" class="mr-2 size-4" /> 12 hour response time
+            <Icon name="lucide:check" class="mr-2 size-4" /> 1000% faster than #help channels
           </li>
           <li class="flex items-center">
-            <Icon name="lucide:check" class="mr-2 size-4" /> Expert Clickhouse Knowledge
+            <Icon name="lucide:check" class="mr-2 size-4" /> 4 complex knowledge items per month
           </li>
           <li class="flex items-center">
-            <Icon name="lucide:check" class="mr-2 size-4" /> 65% faster than #help channels
+            <Icon name="lucide:check" class="mr-2 size-4" /> Realtime AI-powered insights using GPT-4o
           </li>
 
           <li class="flex items-center">
-            <Icon name="lucide:check" class="mr-2 size-4" /> AI Support Liason (Coming Soon)
+            <Icon name="lucide:check" class="mr-2 size-4" /> Citations from the latest channels and docs
           </li>
           <li class="flex items-center">
-            <Icon name="lucide:check" class="mr-2 size-4" /> Query optimization and anything in between
+            <Icon name="lucide:check" class="mr-2 size-4" /> Function calling for agentic workflows (Coming soon)
           </li>
           <li class="flex items-center">
-            <Icon name="lucide:check" class="mr-2 size-4" /> Instant proposals for deep research projects
+            <Icon name="lucide:check" class="mr-2 size-4" /> Fun and engaging human support
           </li>
         </ul>
       </div>
-      <div class="flex flex-col gap-4 text-center">
+      <div class="flex flex-col mt-6 gap-4 mr-6 text-center">
         <div>
-          <h4 class="text-4xl font-bold">$250/mo</h4>
+          <h4 class="text-3xl font-bold">$5400/mo</h4>
+          <p class="text-sm font-medium text-muted-foreground">+ $0.95/LLM Query</p>
         </div>
-        <a href="https://buy.stripe.com/test_aEUcO4g2P0Hdc5W9AA">
-        <Button 
-        size="lg"
-        className="flex items-center"
-      >
-       <img class="h-11 w-11" src="https://cdn.brandfetch.io/idJ_HhtG0Z/theme/dark/symbol.svg?c=1dxbfHSJFAPEGdCLU4o5B" />
-        <span class="text-xs">Start Trial</span>
-      </Button>
+        <form id="invite-form" class="flex flex-col gap-2">
+          <Input 
+            type="email" 
+            name="email"
+            placeholder="Enter your work email" 
+            required
+          />
+          <Button 
+            type="submit"
+            size="lg"
+            className="flex bg-white border-2 text-black items-center"
+          >
+            <img class="h-9 w-9" src="https://cdn.brandfetch.io/idJ_HhtG0Z/theme/dark/symbol.svg?c=1dxbfHSJFAPEGdCLU4o5B" />
+            <span class="text-sm">Get Invite</span>
+          </Button>
+        </form>
       </div>
-      </a>
     </div>
     <!-- <div
     class="grid w-full items-start gap-10 rounded-3xl overflow-hidden border p-10 md:grid-cols-[1fr_200px] bg-background"
@@ -109,3 +118,40 @@ import { Button } from "@/components/ui/button";
     </div>
   </section>
 </MainLayout>
+
+<script>
+  const form = document.getElementById('invite-form') as HTMLFormElement;
+  
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(form);
+    const email = formData.get('email') as string;
+
+    try {
+      const response = await fetch('/api/slack/invite', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email })
+      });
+
+      const data = await response.json();
+      
+      if (data.ok) {
+        // Only redirect on successful invite
+        const params = new URLSearchParams({
+          email: email,
+          invite_id: data.inviteId,
+          channel_id: data.channelId
+        });
+        window.location.href = `/success?${params.toString()}`;
+      } else {
+        alert('Failed to create Slack invite: ' + (data.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Failed to send invitation');
+    }
+  });
+</script>

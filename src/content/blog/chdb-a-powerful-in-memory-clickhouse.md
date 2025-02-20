@@ -81,4 +81,4 @@ Another feature on my wishlist would be enhanced integration with streaming data
 
 chDB represents a significant step forward in the evolution of embedded analytics and data processing capabilities. By combining Clickhouse's proven performance with the simplicity of an in-process engine, it offers developers a powerful tool for building modern data-intensive applications. As the project continues to mature and gain adoption, we can expect to see even more innovative use cases and implementations that push the boundaries of what's possible with local data processing.
 
-If you’d like to explore how we’re using chDB at Portcullis and how it can help you in your organization, [schedule a free consultation](https://www.runportcullis.co/schedule-a-chat).
+If you’d like to explore how we’re using chDB at Portcullis and how it can help you in your organization, [schedule a free consultation](https://www.runportcullis.co/pricing).

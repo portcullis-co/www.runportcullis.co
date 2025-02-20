@@ -2,9 +2,9 @@ import type { InfoLdg } from "@/types";
 
 export const infos: InfoLdg[] = [
   {
-    title: "Get the most value out of your Clickhouse investment",
+    title: "Get the most value out of your Data Warehouse investment",
     description:
-      "Portcullis is here to help you with reaching maximum ROI on your commitment to Clickhouse as a data warehouse",
+      "Portcullis is here to help you with reaching maximum ROI on your commitment to data warehousing",
     image: "/images/blog/placeholder-about.jpg",
     list: [
       {
@@ -56,43 +56,43 @@ export const features = [
   {
     title: "Migration Support",
     description:
-      "We love building tools and supporting clients with migrations to Clickhouse.",
-    link: "/schedule-a-chat",
+      "We love building tools and supporting clients with migrations to various platforms.",
+    link: "/pricing",
     icon: "lucide:folder-sync",
   },
   {
     title: "Analytics",
     description:
       "Contact us for support optimizing and gaining insights into your analytics",
-    link: "/schedule-a-chat",
+    link: "/pricing",
     icon: "lucide:activity",
   },
   {
     title: "Custom Dashboards",
     description:
       "Use our methodology and tools or let us support you with custom dashboards",
-    link: "/schedule-a-chat",
+    link: "/pricing",
     icon: "lucide:layers",
   },
   {
     title: "Bespoke Behaviour and UDFs",
     description:
       "Connect with us to see how we can help you extract unique behaviour out of your Clickhouse instances",
-    link: "/schedule-a-chat",
+    link: "/pricing",
     icon: "lucide:wand-sparkles",
   },
   {
     title: "Optimization",
     description:
       "Need help optimizing your queries? Let us help you with that.",
-    link: "/schedule-a-chat",
+    link: "/pricinf",
     icon: "lucide:database",
   },
   {
     title: "Product Development",
     description:
       "Have something special you'd like developed? Give us a shout and we'll come up with a feasibility report.",
-    link: "/schedule-a-chat",
+    link: "/pricinf",
     icon: "lucide:code",
   },
 ];

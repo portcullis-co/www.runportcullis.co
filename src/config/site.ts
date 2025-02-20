@@ -23,7 +23,7 @@ export const footerLinks: SidebarNavItem[] = [
   {
     title: "Company",
     items: [
-      { title: "Contact", href: "/schedule-a-chat" },
+      { title: "Contact", href: "/pricing" },
       { title: "Free Trial", href: "/pricing" },
       { title: "Blog", href: "/blog" },
     ],
@@ -31,7 +31,7 @@ export const footerLinks: SidebarNavItem[] = [
   {
     title: "Services",
     items: [
-      { title: "OSS Deployments", href: "/services/oss-support" },
+      { title: "Project Planning", href: "/services/project-planning" },
       { title: "Content Writing", href: "/services/content-writing" },
       { title: "General Clickhouse Support", href: "/services/clickhouse-support" },
       { title: "Query Optimization", href: "/services/query-optimization" },
