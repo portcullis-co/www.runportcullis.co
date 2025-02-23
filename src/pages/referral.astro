@@ -1,0 +1,150 @@
+---
+import MainLayout from "@/layouts/main-layout.astro";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { createClient } from '@clickhouse/client-web';
+
+interface Partner {
+  id: string;
+  name: string;
+  email: string;
+  referral_code: string;
+  partner_name: string;
+}
+
+const referral_code = Astro.url.searchParams.get('referral_code');
+
+// Initialize ClickHouse client
+const client = createClient({
+  host: import.meta.env.CLICKHOUSE_HOST ?? 'http://localhost:8123',
+  username: import.meta.env.CLICKHOUSE_USER ?? 'default',
+  password: import.meta.env.CLICKHOUSE_PASSWORD ?? '',
+  database: import.meta.env.CLICKHOUSE_DATABASE ?? 'default',
+});
+
+let partner: Partner | null = null;
+let error;
+
+try {
+  console.log('Executing query with params:', { referral_code });
+
+  const result = await client.query({
+    query: `
+      SELECT id, name, email, referral_code, name AS partner_name
+      FROM partners 
+      WHERE referral_code = {referral_code: String}
+    `,
+    query_params: {
+      referral_code: referral_code
+    },
+    format: 'JSONEachRow'
+  });
+
+  const data = await result.json();
+
+  if (!data.length) {
+    error = 'Invalid referral code';
+  } else {
+    partner = data[0] as Partner;
+  }
+} catch (e) {
+  console.error('Error fetching partner data:', e);
+  error = "Failed to load partner data";
+}
+
+---
+<MainLayout 
+  title={partner ? `${partner.partner_name} Referral` : "Referral Program"}
+  description="Join Portcullis through our partner referral program"
+  mainClass="container max-w-4xl py-10"
+>
+  {error ? (
+    <div class="flex flex-col items-center justify-center text-center space-y-4">
+      <h1 class="text-4xl font-bold tracking-tighter text-red-600">
+        Invalid Referral Link
+      </h1>
+      <p class="text-muted-foreground">
+        This referral link appears to be invalid or has expired.
+      </p>
+      <Button variant="outline">
+        <a href="/">Return Home</a>
+      </Button>
+    </div>
+  ) : (
+    <div class="flex flex-col items-center justify-center text-center space-y-8">
+      <div class="space-y-4">
+        <h1 class="text-4xl font-bold tracking-tighter">
+          {partner?.partner_name ?? 'Our Partner'} has invited you to try Portcullis
+        </h1>
+        <p class="text-xl text-muted-foreground">
+          Get 2 weeks free access to expert ClickHouse support
+        </p>
+      </div>
+
+      <div class="w-full max-w-md space-y-8">
+        <div class="rounded-lg border bg-muted/50 p-8">
+          <form id="invite-form" class="flex flex-col gap-4">
+            <Input 
+              type="email" 
+              name="email"
+              placeholder="Enter your work email" 
+              required
+            />
+            <Button 
+              type="submit"
+              size="lg"
+              className="flex bg-white border-2 text-black items-center justify-center w-full"
+            >
+              <img class="h-9 w-9" src="https://cdn.brandfetch.io/idJ_HhtG0Z/theme/dark/symbol.svg?c=1dxbfHSJFAPEGdCLU4o5B" />
+              <span class="text-sm">Join via Slack</span>
+            </Button>
+          </form>
+        </div>
+      </div>
+    </div>
+  )}
+</MainLayout>
+
+<script define:vars={{ partnerId: partner?.id, referralCode: referral_code }}>
+  const form = document.getElementById('invite-form');
+  
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(form);
+    const email = formData.get('email');
+    const domain = email.split('@')[1];
+
+    try {
+      // Create client and referral records
+      const response = await fetch('/api/referrals/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email,
+          domain,
+          partnerId,
+          referralCode
+        })
+      });
+
+      const data = await response.json();
+      
+      if (data.ok) {
+        // Redirect to Slack invite flow with referral data
+        const params = new URLSearchParams({
+          email: email,
+          referral_code: referralCode,
+          client_id: data.clientId
+        });
+        window.location.href = `/success?${params.toString()}`;
+      } else {
+        alert('Failed to process referral: ' + (data.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Failed to process referral');
+    }
+  });
+</script>

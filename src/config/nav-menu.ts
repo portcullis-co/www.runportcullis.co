@@ -21,7 +21,7 @@ export const navMenuConfig: NavMenuConfig = {
          },
         {
           title: "Referral Program",
-          href: "/referrals",
+          href: "/referral-program",
           description: "Refer a friend and earn a reward",
           image: "/images/examples/pricing.jpg",
         },

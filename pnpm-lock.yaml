@@ -32,6 +32,9 @@ dependencies:
   '@clickhouse/client':
     specifier: ^1.10.1
     version: 1.10.1
+  '@clickhouse/client-web':
+    specifier: ^1.10.1
+    version: 1.10.1
   '@cloudflare/workers-types':
     specifier: ^4.20250214.0
     version: 4.20250214.0
@@ -740,6 +743,12 @@ packages:
 
   /@clickhouse/client-common@1.10.1:
     resolution: {integrity: sha512-Duh3cign2ChvXABpjVj9Hkz5y20Zf48OE0Y50S4qBVPdhI81S4Rh4MI/bEwvwMnzHubSkiEQ+VhC5HzV8ybnpg==}
+    dev: false
+
+  /@clickhouse/client-web@1.10.1:
+    resolution: {integrity: sha512-ai1GxYG/QgaitRvQi01O9NONgeJccKMnUn1j30rECaEDwkLf1er5Jv5jpDA7abBaYinBpgWgOStb1jG2UVQP2Q==}
+    dependencies:
+      '@clickhouse/client-common': 1.10.1
     dev: false
 
   /@clickhouse/client@1.10.1:
