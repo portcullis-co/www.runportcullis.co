@@ -135,51 +135,33 @@ try {
     e.preventDefault();
     const formData = new FormData(form);
     const email = formData.get('email');
-    const domain = email.split('@')[1];
 
     try {
-      // Create client and referral records
-      const referralResponse = await fetch('/api/referrals/create', {
+      // Create client, referral, and Slack channel in one request
+      const response = await fetch('/api/client/invite', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
+        body: JSON.stringify({ 
           email,
-          domain,
-          partnerId,
-          referralCode
+          partnerId // This will trigger referral creation
         })
       });
 
-      const referralData = await referralResponse.json();
+      const data = await response.json();
       
-      if (!referralData.ok) {
-        throw new Error(referralData.error || 'Failed to create referral');
-      }
-
-      // Create Slack channel and send invite
-      const slackResponse = await fetch('/api/client/invite', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email })
-      });
-
-      const slackData = await slackResponse.json();
-
-      if (!slackData.ok) {
-        throw new Error(slackData.error || 'Failed to create Slack channel');
+      if (!data.ok) {
+        throw new Error(data.error || 'Failed to process request');
       }
 
       // Redirect with all necessary data
       const params = new URLSearchParams({
         email: email,
         referral_code: referralCode,
-        client_id: referralData.clientId,
-        invite_id: slackData.inviteId,
-        channel_id: slackData.channelId
+        client_id: data.clientId,
+        invite_id: data.inviteId,
+        channel_id: data.channelId
       });
       window.location.href = `/success?${params.toString()}`;
     } catch (error) {
