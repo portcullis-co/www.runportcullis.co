@@ -1,0 +1,76 @@
+---
+import { buttonVariants } from "@/components/ui/button";
+import MainLayout from "@/layouts/main-layout.astro";
+import { cn } from "@/lib/utils";
+import { Icon } from "astro-icon/components";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+---
+
+<MainLayout title="Referrals" mainClass="flex-1 bg-background-200">
+  <section
+    class="container flex flex-col gap-6 py-8 md:max-w-[64rem] md:py-12 lg:py-24"
+  >
+    <div class="mx-auto flex w-full flex-col gap-4 md:max-w-[58rem]">
+      <h2 class="font-heading text-3xl leading-[1.1] sm:text-3xl md:text-6xl">
+        Get $500 when you refer customers to Portcullis
+      </h2>
+      <p
+        class="max-w-[85%] leading-normal text-muted-foreground sm:text-lg sm:leading-7"
+      >
+        Want to join one of the most engaging referral programs in the data industry?
+      </p>
+    </div>
+    <div
+      class="grid w-full items-start gap-10 rounded-3xl overflow-hidden border p-10 md:grid-cols-[1fr_200px] bg-background"
+    >
+      <div class="grid gap-6">
+        <h3 class="text-xl font-bold sm:text-2xl">
+          Referral Program Benefits
+        </h3>
+        <ul class="grid gap-3 text-sm text-muted-foreground sm:grid-cols-2">
+          <li class="flex items-center">
+            <Icon name="lucide:check" class="mr-2 size-4" /> Earn $500 per referral
+          </li>
+          <li class="flex items-center">
+            <Icon name="lucide:check" class="mr-2 size-4" /> Access to exclusive resources
+          </li>
+          <li class="flex items-center">
+            <Icon name="lucide:check" class="mr-2 size-4" /> Priority support
+          </li>
+          <li class="flex items-center">
+            <Icon name="lucide:check" class="mr-2 size-4" /> Networking opportunities
+          </li>
+          <li class="flex items-center">
+            <Icon name="lucide:check" class="mr-2 size-4" /> Recognition in our network and blog
+          </li>
+          <li class="flex items-center">
+            <Icon name="lucide:check" class="mr-2 size-4" /> Fun and engaging activities
+          </li>
+        </ul>
+      </div>
+      <div class="flex flex-col mt-6 gap-4 text-center">
+        <div>
+          <h4 class="text-3xl font-bold">Join Now</h4>
+          <p class="text-sm font-medium text-muted-foreground">Start referring today!</p>
+        </div>
+        <form id="referral-form" class="flex flex-col gap-2">
+          <Input 
+            type="email" 
+            name="email"
+            placeholder="Enter your email to join" 
+            required
+          />
+          <Button 
+            type="submit"
+            size="lg"
+            className="flex bg-white border-2 text-black items-center"
+          >
+            <img class="h-9 w-9" src="https://cdn.brandfetch.io/idJ_HhtG0Z/theme/dark/symbol.svg?c=1dxbfHSJFAPEGdCLU4o5B" />
+            <span class="text-sm">Get Invite</span>
+          </Button>
+        </form>
+      </div>
+    </div>
+  </section>
+</MainLayout>

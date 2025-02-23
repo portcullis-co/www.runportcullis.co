@@ -13,7 +13,7 @@ dependencies:
     version: 11.2.0(astro@4.16.18)
   '@astrojs/db':
     specifier: ^0.11.7
-    version: 0.11.7(@types/react@18.3.18)(react@18.3.1)
+    version: 0.11.7(@cloudflare/workers-types@4.20250214.0)(@types/react@18.3.18)(react@18.3.1)
   '@astrojs/mdx':
     specifier: ^2.3.1
     version: 2.3.1(astro@4.16.18)
@@ -32,6 +32,9 @@ dependencies:
   '@clickhouse/client':
     specifier: ^1.10.1
     version: 1.10.1
+  '@cloudflare/workers-types':
+    specifier: ^4.20250214.0
+    version: 4.20250214.0
   '@hookform/resolvers':
     specifier: ^3.9.0
     version: 3.10.0(react-hook-form@7.54.2)
@@ -283,7 +286,7 @@ packages:
   /@astrojs/compiler@2.10.4:
     resolution: {integrity: sha512-86B3QGagP99MvSNwuJGiYSBHnh8nLvm2Q1IFI15wIUJJsPeQTO3eb2uwBmrqRsXykeR/mBzH8XCgz5AAt1BJrQ==}
 
-  /@astrojs/db@0.11.7(@types/react@18.3.18)(react@18.3.1):
+  /@astrojs/db@0.11.7(@cloudflare/workers-types@4.20250214.0)(@types/react@18.3.18)(react@18.3.1):
     resolution: {integrity: sha512-upJfu/GpW0AwFIIkWPmIzLRrXibmyKdtjUB+T/9FvuH25Bgk4ym62d87clh+0acBgGQw98mezSOtBCenWTAT0Q==}
     dependencies:
       '@astrojs/studio': 0.1.1
@@ -291,7 +294,7 @@ packages:
       async-listen: 3.1.0
       ci-info: 4.1.0
       deep-diff: 1.0.2
-      drizzle-orm: 0.31.4(@libsql/client@0.6.2)(@types/react@18.3.18)(react@18.3.1)
+      drizzle-orm: 0.31.4(@cloudflare/workers-types@4.20250214.0)(@libsql/client@0.6.2)(@types/react@18.3.18)(react@18.3.1)
       github-slugger: 2.0.0
       kleur: 4.1.5
       nanoid: 5.1.0
@@ -4148,7 +4151,7 @@ packages:
       domhandler: 5.0.3
     dev: false
 
-  /drizzle-orm@0.31.4(@libsql/client@0.6.2)(@types/react@18.3.18)(react@18.3.1):
+  /drizzle-orm@0.31.4(@cloudflare/workers-types@4.20250214.0)(@libsql/client@0.6.2)(@types/react@18.3.18)(react@18.3.1):
     resolution: {integrity: sha512-VGD9SH9aStF2z4QOTnVlVX/WghV/EnuEzTmsH3fSVp2E4fFgc8jl3viQrS/XUJx1ekW4rVVLJMH42SfGQdjX3Q==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
@@ -4237,6 +4240,7 @@ packages:
       sqlite3:
         optional: true
     dependencies:
+      '@cloudflare/workers-types': 4.20250214.0
       '@libsql/client': 0.6.2
       '@types/react': 18.3.18
       react: 18.3.1

@@ -6,23 +6,23 @@ export const navMenuConfig: NavMenuConfig = {
       title: "About",
       items: [
         {
-          title: "Contact",
-          href: "/contact",
+          title: "Pricing",
+          href: "/pricing",
           description:
-            "Questions, concerns, airing of greivances? Shoot us an email.",
+            "Transparent pricing for all our services",
           image: "/images/examples/waitlist.jpg",
           forceReload: true,
         },
          {
-           title: "Free Trial",
-           href: "/pricing",
-           description: "Get a free trial of our enterprise-grade support",
+           title: "Startup Plan",
+           href: "/startups",
+           description: "We offer a special price for startups and early-stage companies",
            image: "/images/examples/pricing.jpg",
          },
         {
-          title: "Discuss a project",
-          href: "https://cal.com/portcullisjames",
-          description: "Talk to us about a project you need help with",
+          title: "Referral Program",
+          href: "/referrals",
+          description: "Refer a friend and earn a reward",
           image: "/images/examples/pricing.jpg",
         },
       ],

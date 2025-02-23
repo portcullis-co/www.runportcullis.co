@@ -24,7 +24,7 @@ export const footerLinks: SidebarNavItem[] = [
     title: "Company",
     items: [
       { title: "Contact", href: "/pricing" },
-      { title: "Free Trial", href: "/pricing" },
+      { title: "Startup Plan", href: "/startups" },
       { title: "Blog", href: "/blog" },
     ],
   },
