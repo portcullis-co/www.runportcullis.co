@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
-import { createClient } from '@clickhouse/client-web';
+import { createClient } from '@clickhouse/client';
+import { v4 as uuidv4 } from 'uuid';
 
 const client = createClient({
   host: import.meta.env.CLICKHOUSE_HOST ?? 'http://localhost:8123',
@@ -8,58 +9,52 @@ const client = createClient({
   database: import.meta.env.CLICKHOUSE_DATABASE ?? 'default',
 });
 
-interface ClientData {
-  id: string;
-}
-
 export const POST: APIRoute = async ({ request }) => {
   try {
-    const { email, domain, partnerId } = await request.json();
+    const { email, domain, partnerId, referralCode } = await request.json();
+    const clientId = uuidv4();
 
-    // Generate client ID
-    const clientId = crypto.randomUUID();
-
-    // Create client record
-    await client.query({
-      query: `
-        INSERT INTO clients (id, domain, billing_email)
-        VALUES ({client_id: String}, {domain: String}, {email: String})
-      `,
-      query_params: {
-        client_id: clientId,
-        domain,
-        email
+    // Insert into clients table using native format
+    await client.exec({
+      query: `INSERT INTO clients (id, billing_email, domain) VALUES ('${clientId}', '${email}', '${domain}')`,
+      clickhouse_settings: {
+        input_format_values_interpret_expressions: 0
       }
     });
 
-    // Use clientId directly for further operations
-    // Create referral record
-    await client.query({
-      query: `
-        INSERT INTO referrals (partner_id, client_id)
-        VALUES ({partner_id: UUID}, {client_id: UUID})
-      `,
-      query_params: {
-        partner_id: partnerId,
-        client_id: clientId
+    // Insert into referrals table using native format
+    await client.exec({
+      query: `INSERT INTO referrals (partner_id, client_id) VALUES ('${partnerId}', '${clientId}')`,
+      clickhouse_settings: {
+        input_format_values_interpret_expressions: 0
       }
     });
 
-    return new Response(JSON.stringify({
-      ok: true,
-      clientId
-    }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
-    });
-
+    return new Response(
+      JSON.stringify({ 
+        ok: true,
+        clientId
+      }),
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    );
   } catch (error: any) {
-    return new Response(JSON.stringify({
-      ok: false,
-      error: error.message
-    }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    console.error('Error creating referral:', error);
+    return new Response(
+      JSON.stringify({
+        ok: false,
+        error: error.message
+      }),
+      {
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    );
   }
 }; 

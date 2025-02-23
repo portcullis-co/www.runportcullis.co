@@ -40,12 +40,18 @@ try {
     format: 'JSONEachRow'
   });
 
-  const data = await result.json();
+  const rawData = await result.json();
+  console.log('Query response:', rawData);
 
-  if (!data.length) {
+  const rows = Array.isArray(rawData) ? rawData : [rawData];
+  console.log('Processed rows:', rows);
+
+  if (rows.length === 0) {
     error = 'Invalid referral code';
+    console.log('No rows found for referral code:', referral_code);
   } else {
-    partner = data[0] as Partner;
+    partner = rows[0] as Partner;
+    console.log('Found partner:', partner);
   }
 } catch (e) {
   console.error('Error fetching partner data:', e);

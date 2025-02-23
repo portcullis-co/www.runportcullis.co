@@ -84,7 +84,7 @@ import { Button } from "@/components/ui/button";
     const email = formData.get('email') as string;
 
     try {
-      const response = await fetch('/api/slack/partner/invite', {
+      const response = await fetch('/api/partner/invite', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
