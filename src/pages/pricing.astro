@@ -131,7 +131,7 @@ import { Input } from "@/components/ui/input";
     const email = formData.get('email') as string;
 
     try {
-      const response = await fetch('/api/slack/invite', {
+      const response = await fetch('/api/slack/client/invite', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

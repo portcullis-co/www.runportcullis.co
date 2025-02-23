@@ -42,7 +42,7 @@ import { Button } from "@/components/ui/button";
             <Icon name="lucide:check" class="mr-2 size-4" /> Networking opportunities
           </li>
           <li class="flex items-center">
-            <Icon name="lucide:check" class="mr-2 size-4" /> Recognition in our network and blog
+            <Icon name="lucide:check" class="mr-2 size-4" /> Recognition in our community
           </li>
           <li class="flex items-center">
             <Icon name="lucide:check" class="mr-2 size-4" /> Fun and engaging activities
@@ -58,7 +58,7 @@ import { Button } from "@/components/ui/button";
           <Input 
             type="email" 
             name="email"
-            placeholder="Enter your email to join" 
+            placeholder="Enter your work email" 
             required
           />
           <Button 
@@ -74,3 +74,40 @@ import { Button } from "@/components/ui/button";
     </div>
   </section>
 </MainLayout>
+
+<script>
+  const form = document.getElementById('referral-form') as HTMLFormElement;
+  
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(form);
+    const email = formData.get('email') as string;
+
+    try {
+      const response = await fetch('/api/slack/partner/invite', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email })
+      });
+
+      const data = await response.json();
+      
+      if (data.ok) {
+        // Only redirect on successful invite
+        const params = new URLSearchParams({
+          email: email,
+          invite_id: data.inviteId,
+          channel_id: data.channelId
+        });
+        window.location.href = `/success?${params.toString()}`;
+      } else {
+        alert('Failed to create Slack invite: ' + (data.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Failed to send invitation');
+    }
+  });
+</script>
