@@ -16,7 +16,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     // Insert into clients table using native format
     await client.exec({
-      query: `INSERT INTO clients (id, billing_email, domain) VALUES ('${clientId}', '${email}', '${domain}')`,
+      query: `INSERT INTO clients (id, intake_email, domain) VALUES ('${clientId}', '${email}', '${domain}')`,
       clickhouse_settings: {
         input_format_values_interpret_expressions: 0
       }
