@@ -43,43 +43,6 @@ const isInitialLoad = !inviteId;
   </div>
 </MainLayout>
 
-{isInitialLoad && email && (
-  <script define:vars={{ email }}>
-    async function setupWorkspace() {
-      try {
-        const response = await fetch('/api/client/invite', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ email })
-        });
-
-        const data = await response.json();
-        
-        if (data.ok) {
-          // Redirect to success page with invite details
-          window.location.href = `/success?invite_id=${data.inviteId}&channel_id=${data.channelId}&email=${email}`;
-        } else {
-          throw new Error(data.error);
-        }
-      } catch (error) {
-        const container = document.getElementById('status-container');
-        if (container) {
-          container.innerHTML = `
-            <div class="text-red-600">
-              <p>Something went wrong. Please try again or contact support.</p>
-            </div>
-          `;
-        }
-      }
-    }
-
-    // Start the setup process
-    setupWorkspace();
-  </script>
-)}
-
 <style>
   .loading-spinner {
     /* Add your spinner styling here */
