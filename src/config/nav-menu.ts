@@ -13,12 +13,6 @@ export const navMenuConfig: NavMenuConfig = {
           image: "/images/examples/waitlist.jpg",
           forceReload: true,
         },
-         {
-           title: "Startup Plan",
-           href: "/startups",
-           description: "We offer a special price for startups and early-stage companies",
-           image: "/images/examples/pricing.jpg",
-         },
         {
           title: "Referral Program",
           href: "/referral-program",
