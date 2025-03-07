@@ -36,7 +36,6 @@ export default defineConfig({
     resolve: {
       alias: {
         'node:path': 'path-browserify',
-        'node:crypto': 'crypto-browserify',
         'node:buffer': 'buffer',
         'node:stream': 'stream-browserify'
       }
