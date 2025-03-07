@@ -7,6 +7,10 @@ import PreviewLanding from "@/components/sections/preview-landing.astro";
 import Testimonials from "@/components/sections/testimonials.astro";
 import { infos } from "@/config/landing";
 import MainLayout from "@/layouts/main-layout.astro";
+
+const route = Astro.url.pathname; // Ensure route is defined
+
+const title = route === "/" ? "Portcullis" : "Portcullis - " + route;
 ---
 
 <MainLayout title="Portcullis">

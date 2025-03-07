@@ -1,103 +1,108 @@
-import { TIERS } from "@/config";
+// src/components/pricing/PricingCard.tsx
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import NumberFlow from "@number-flow/react";
 import { ArrowRight, BadgeCheck } from "lucide-react";
-import { MultiStepForm } from "@/components/MultiStepForm";
 import * as React from "react";
-
+import { navigate } from "astro/virtual-modules/transitions-router.js";
+import { SparklesText } from "@/components/ui/sparkle-text";
 
 interface PricingCardProps {
-  tier: typeof TIERS[number];
-  paymentFrequency: "usage-based" | "prepaid";
+  tier: any;
+  paymentFrequency: "monthly" | "yearly";
 }
 
-export const PricingCard = ({ tier, paymentFrequency }: PricingCardProps) => {
-  const [isFormOpen, setFormOpen] = React.useState(false);
+export const PricingCard: React.FC<PricingCardProps> = ({ tier, paymentFrequency }) => {
   const price = tier.price[paymentFrequency];
   const isHighlighted = tier.highlighted;
   const isPopular = tier.popular;
+  const paymentLink = tier.href[paymentFrequency];
+  const buttonText = tier.buttonText || "Get Started";
+  
+  const fifteenBucksLittleMan = () => {
+    console.log("Put that money in my hand!");
+    navigate(paymentLink);
+  }
 
   return (
-    <div
-      className={cn(
-        "relative flex flex-col gap-8 overflow-hidden rounded-2xl border p-6 shadow",
-        isHighlighted
-          ? "bg-foreground text-background"
-          : "bg-background text-foreground",
-        isPopular && "outline outline-[rgba(120,119,198)]",
-      )}
-    >
+    <div className={cn(
+      "relative rounded-xl border p-6",
+      isHighlighted ? "border-primary bg-primary/5" : "border-border"
+    )}>
       {/* Background Decoration */}
       {isHighlighted && <HighlightedBackground />}
       {isPopular && <PopularBackground />}
 
       {/* Card Header */}
-      <h2 className="flex items-center gap-3 text-xl font-medium capitalize">
-        {tier.name}
+      <div className="mb-4 flex items-center justify-between">
+        <h3 className="text-xl font-semibold flex items-center">
+          {tier.name}
+          {tier.name === "Portcullis" && (
+            <SparklesText colors={{ first: "#FFD700", second: "#D4AF37" }} text="Gold" className="ml-1 text-yellow-500 text-xl font-bold" />
+          )}
+        </h3>
         {isPopular && (
-          <Badge className="mt-1 bg-orange-900 px-1 py-0 text-white hover:bg-orange-900">
+          <Badge className="ml-2 bg-secondary text-secondary-foreground">
             🔥 Most Popular
           </Badge>
         )}
-      </h2>
-
-      {/* Price Section */}
-      <div className="relative h-12">
+      </div>
+      
+      {/* Price Section - Fixed height container */}
+      <div className="mb-6 min-h-20 flex flex-col justify-start">
         {typeof price === "number" ? (
           <>
-            <NumberFlow
-              format={{
-                style: "currency",
-                currency: "USD",
-                trailingZeroDisplay: "stripIfInteger",
-              }}
-              value={price}
-              className="text-4xl font-medium"
-            />
-            <p className="-mt-2 text-xs font-medium">Per {tier.metric} | Monthly invoices</p>
+            <div className="flex items-baseline">
+              <span className="text-3xl font-bold">$</span>
+              <NumberFlow 
+                value={price}
+                duration={1000}
+                className="text-3xl font-bold"
+              />
+            </div>
+            <p className="text-sm text-muted-foreground mt-1">
+              Per {tier.metric} | Billed {paymentFrequency}
+            </p>
           </>
         ) : (
-          <h1 className="text-4xl font-medium">{price}</h1>
-        )}
-      </div>
-
-      {/* Features */}
-      <div className="flex flex-col gap-4">
-        {tier.features.map((feature, i) => (
-          <div key={i} className="flex items-center gap-2">
-            <BadgeCheck className="size-5 shrink-0" />
-            <p className="text-sm">{feature}</p>
+          <div className="text-2xl font-semibold">
+            {price}
           </div>
-        ))}
+        )}
       </div>
 
-      {/* Add the CTA Button */}
-      <Button
-        variant="default"
-        Icon={ArrowRight}
-        iconPlacement="right"
-        className={cn(
-          "mt-auto w-full cursor-pointer",
-          isHighlighted && "bg-background text-foreground hover:bg-background/90"
-        )}
-        onClick={() => setFormOpen(true)} // Open the form on click
+      {/* Features with fixed height */}
+      <div className="mb-6 min-h-60">
+        <ul className="space-y-3">
+          {tier.features.map((feature: string, i: number) => (
+            <li key={i} className="flex items-center gap-2">
+              <BadgeCheck className="h-5 w-5 text-primary" />
+              <span className="text-sm">
+                {feature}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <Button 
+        onClick={fifteenBucksLittleMan}
+        className="w-full"
+        variant={isHighlighted ? "default" : "outline"}
       >
-        {tier.cta}
+        {buttonText} <ArrowRight className="ml-2 h-4 w-4" />
       </Button>
-      {/* Multi-Step Form Dialog */}
-      <MultiStepForm isOpen={isFormOpen} onClose={() => setFormOpen(false)} />
     </div>
   );
 };
 
 // Highlighted Background Component
 const HighlightedBackground = () => (
-  <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:45px_45px] opacity-100 [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_70%,transparent_110%)] dark:opacity-30" />
+  <div className="absolute inset-0 rounded-xl bg-primary/5 -z-10" />
 );
 
 // Popular Background Component
 const PopularBackground = () => (
-  <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.1),rgba(255,255,255,0))] dark:bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.3),rgba(255,255,255,0))]" />
+  <div className="absolute -top-3 -right-3 h-6 w-6 rounded-full bg-secondary" />
 );

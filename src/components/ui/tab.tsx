@@ -3,9 +3,9 @@ import { motion } from "motion/react";
 import { Badge } from "./badge";
 
 interface TabProps {
-  text: "usage-based" | "prepaid";
+  text: "monthly" | "yearly";
   selected: boolean;
-  setSelected: (text: "usage-based" | "prepaid") => void;
+  setSelected: (text: "monthly" | "yearly") => void;
   discount?: boolean;
 }
 
@@ -40,7 +40,7 @@ export const Tab = ({
               : "bg-gray-300 hover:bg-gray-300",
           )}
         >
-          Save 35%
+          Save up to 35%
         </Badge>
       )}
     </button>

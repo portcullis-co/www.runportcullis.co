@@ -54,11 +54,11 @@ export const infos: InfoLdg[] = [
 
 export const features = [
   {
-    title: "Migration Support",
+    title: "Project Scoping",
     description:
-      "We love building tools and supporting clients with migrations to various platforms.",
+      "We thrive in high level, tip of the spear advisory roles for complex data warehousing projects",
     link: "/pricing",
-    icon: "lucide:folder-sync",
+    icon: "lucide:microscope",
   },
   {
     title: "Analytics",
@@ -85,15 +85,15 @@ export const features = [
     title: "Optimization",
     description:
       "Need help optimizing your queries? Let us help you with that.",
-    link: "/pricinf",
+    link: "/pricing",
     icon: "lucide:database",
   },
   {
-    title: "Product Development",
+    title: "Report Creation",
     description:
-      "Have something special you'd like developed? Give us a shout and we'll come up with a feasibility report.",
-    link: "/pricinf",
-    icon: "lucide:code",
+      "We can help you with writing implementation reports for your POCs",
+    link: "/pricing",
+    icon: "lucide:file-chart-column",
   },
 ];
 

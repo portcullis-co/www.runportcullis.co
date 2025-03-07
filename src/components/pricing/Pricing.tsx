@@ -6,8 +6,8 @@ import { PAYMENT_FREQUENCIES, TIERS } from "@/config";
 import { useState } from "react";
 
 export const Pricing = () => {
-  const [selectedPaymentFreq, setSelectedPaymentFreq] = useState<"usage-based" | "prepaid">(
-    "usage-based"
+  const [selectedPaymentFreq, setSelectedPaymentFreq] = useState<"monthly" | "yearly">(
+    "monthly"
   );
 
   return (
@@ -22,7 +22,7 @@ export const Pricing = () => {
       />
 
       {/* Pricing Cards */}
-      <div className="grid w-full max-w-6xl gap-6 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid w-full max-w-6xl gap-6 sm:grid-cols-2 xl:grid-cols-3">
         {TIERS.map((tier, i) => (
           <PricingCard
             key={i}

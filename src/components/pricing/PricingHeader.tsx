@@ -3,9 +3,9 @@ import { Tab } from "@/components/ui/tab";
 interface PricingHeaderProps {
   title: string;
   subtitle: string;
-  frequencies: readonly ["usage-based", "prepaid"];
-  selectedFrequency: "usage-based" | "prepaid";
-  onFrequencyChange: (frequency: "usage-based" | "prepaid") => void;
+  frequencies: readonly ["monthly", "yearly"];
+  selectedFrequency: "monthly" | "yearly";
+  onFrequencyChange: (frequency: "monthly" | "yearly") => void;
 }
 
 export const PricingHeader = ({
@@ -27,7 +27,7 @@ export const PricingHeader = ({
           text={freq}
           selected={selectedFrequency === freq}
           setSelected={onFrequencyChange}
-          discount={freq === "prepaid"}
+          discount={freq === "yearly"}
         />
       ))}
     </div>

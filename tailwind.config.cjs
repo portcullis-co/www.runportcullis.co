@@ -14,8 +14,14 @@ module.exports = {
   	},
   	extend: {
   		fontFamily: {
-  			sans: ["Inter", ...fontFamily.sans],
-  			heading: ["CalSans Semibold", ...fontFamily.sans]
+  			sans: [
+  				'Inter',
+                    ...fontFamily.sans
+                ],
+  			heading: [
+  				'CalSans Semibold',
+                    ...fontFamily.sans
+                ]
   		},
   		marquee: 'marquee var(--duration, 30s) linear infinite',
   		orbit: 'orbit calc(var(--duration)*1s) linear infinite',
@@ -111,8 +117,8 @@ module.exports = {
   			'accordion-down': 'accordion-down 0.2s ease-out',
   			'accordion-up': 'accordion-up 0.2s ease-out',
   			ripple: 'ripple var(--duration,2s) ease calc(var(--i, 0)*.2s) infinite'
-  		}
+  		},
   	}
   },
-  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
+  plugins: [],
 };

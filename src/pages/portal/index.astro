@@ -1,0 +1,137 @@
+---
+import MainLayout from "@/layouts/main-layout.astro";
+import { AvatarComponent } from "@/components/AvatarComponent";
+import { Icon } from "astro-icon/components";
+import { BentoGrid, BentoCard } from "@/components/magicui/bento-grid";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import { SignedIn, SignedOut, SignIn, SignUpButton } from '@clerk/astro/components'
+import { SignUp } from '@clerk/astro/components'
+// Define your dashboard items with icon names as strings
+const dashboardItems = [
+  {
+    name: "Analytics Overview",
+    className: "md:col-span-1",
+    iconName: "BarChart",
+    description: "View overall performance metrics and KPIs at a glance",
+    href: "/analytics",
+    cta: "View Analytics",
+    backgroundClass: "bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/30 dark:to-indigo-950/30"
+  },
+  {
+    name: "Recent Projects",
+    className: "md:col-span-1",
+    iconName: "FileText",
+    description: "Access your most recent projects and activities",
+    href: "/projects",
+    cta: "See Projects",
+    backgroundClass: "bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950/30 dark:to-emerald-950/30"
+  },
+  {
+    name: "Team Activity",
+    className: "md:col-span-1",
+    iconName: "Users",
+    description: "Monitor your team's recent activities and contributions",
+    href: "/team",
+    cta: "View Team",
+    backgroundClass: "bg-gradient-to-br from-purple-50 to-violet-100 dark:from-purple-950/30 dark:to-violet-950/30"
+  },
+  {
+    name: "Data Insights",
+    className: "md:col-span-2",
+    iconName: "PieChart",
+    description: "Discover patterns and insights from your data with advanced visualizations",
+    href: "/insights",
+    cta: "Explore Insights",
+    backgroundClass: "bg-gradient-to-br from-amber-50 to-orange-100 dark:from-amber-950/30 dark:to-orange-950/30"
+  },
+  {
+    name: "Performance Metrics",
+    className: "md:col-span-1",
+    iconName: "LineChart",
+    description: "Track key performance indicators over time",
+    href: "/metrics",
+    cta: "View Metrics",
+    backgroundClass: "bg-gradient-to-br from-red-50 to-rose-100 dark:from-red-950/30 dark:to-rose-950/30"
+  },
+  {
+    name: "System Status",
+    className: "md:col-span-1",
+    iconName: "Bell",
+    description: "Check the health and status of your systems and services",
+    href: "/status",
+    cta: "View Status",
+    backgroundClass: "bg-gradient-to-br from-teal-50 to-cyan-100 dark:from-teal-950/30 dark:to-cyan-950/30"
+  },
+  {
+    name: "Database Management",
+    className: "md:col-span-1",
+    iconName: "Database",
+    description: "Manage your database connections and monitor performance",
+    href: "/database",
+    cta: "Manage Databases",
+    backgroundClass: "bg-gradient-to-br from-slate-50 to-gray-100 dark:from-slate-950/30 dark:to-gray-950/30"
+  },
+  {
+    name: "Scheduled Tasks",
+    className: "md:col-span-1",
+    iconName: "Clock",
+    description: "View and manage your scheduled tasks and automations",
+    href: "/tasks",
+    cta: "Manage Tasks",
+    backgroundClass: "bg-gradient-to-br from-pink-50 to-fuchsia-100 dark:from-pink-950/30 dark:to-fuchsia-950/30"
+  }
+];
+---
+
+<MainLayout title="Dashboard">
+  <section class="container flex flex-col gap-6 py-8 md:max-w-[64rem] md:py-12 lg:py-24">
+    <div class="flex w-full flex-col gap-4 md:max-w-[58rem]">
+      <SignedIn>
+      <!-- Breadcrumb Navigation -->
+      <Breadcrumb client:load>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/">Home</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Dashboard</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+      
+      <!-- Dashboard Header -->
+      <div class="mb-8">
+        <h1 class="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <p class="text-muted-foreground">
+          Welcome to your dashboard. Monitor performance, analyze data, and manage your projects.
+        </p>
+      </div>
+      
+      <!-- BentoGrid Dashboard -->
+      <BentoGrid className="grid-cols-1 md:grid-cols-3" client:load>
+        {dashboardItems.map((item) => (
+          <BentoCard
+            name={item.name}
+            className={item.className}
+            iconName={item.iconName}
+            description={item.description}
+            href={item.href}
+            cta={item.cta}
+            backgroundClass={item.backgroundClass}
+            client:load
+          />
+        ))}
+      </BentoGrid>
+      </SignedIn>
+      <SignedOut>
+        <div class="mx-auto flex w-full flex-col items-center justify-center gap-4 md:max-w-[58rem]">
+          <SignIn appearance={{ elements: { footer: "hidden" } }} />
+        </div>
+        <p class="text-center text-sm text-muted-foreground">
+          Don't have an account? <a href="/pricing" class="text-black">Visit our pricing page</a> to get started.
+        </p>
+      </SignedOut>
+    </div>
+  </section>
+</MainLayout>
