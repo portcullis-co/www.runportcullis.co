@@ -123,12 +123,15 @@ async function handleIncomingCall(data: any): Promise<Response> {
           { name: "model", value: "gpt-4o-mini" },
           {
             name: "initial_messages",
-            value: JSON.stringify([{
-              role: "system",
-              content: "You are a friendly onboarding assistant for Portcullis, helping customers understand our data warehouse steering assistance services and pricing options. Keep your responses concise and natural. Always respond in a conversational tone."
-            }])
+            value: JSON.stringify([
+              {
+                role: "system",
+                content: "You are a friendly onboarding assistant for Portcullis, helping customers understand our data warehouse steering assistance services and pricing options. Keep your responses concise and natural. Always respond in a conversational tone. Start by greeting the caller and introducing yourself."
+              },
+            ])
           },
-          { name: "temperature", value: "0.7" }
+          { name: "temperature", value: "0.7" },
+          { name: "run_on_config", value: true }
         ]
       }
     ],
