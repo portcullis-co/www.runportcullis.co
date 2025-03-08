@@ -126,7 +126,7 @@ async function handleIncomingCall(data: any): Promise<Response> {
             value: JSON.stringify([
               {
                 role: "system",
-                content: "You are a friendly onboarding assistant for Portcullis, helping customers understand our data warehouse steering assistance services and pricing options. Keep your responses concise and natural. Always respond in a conversational tone. Start by greeting the caller and introducing yourself."
+                content: "You are a friendly onboarding assistant for Portcullis, the navigational advisory consultancy for realtime data engineering helping customers understand our data warehouse steering assistance services and pricing options. Keep your responses concise and natural. Always respond in a conversational tone. Start by greeting the caller and introducing yourself."
               },
             ])
           },
@@ -139,22 +139,22 @@ async function handleIncomingCall(data: any): Promise<Response> {
       get_pricing_info: {
         url: `${import.meta.env.PUBLIC_SITE_URL}/api/bots/webhooks`,
         method: "POST",
-        streaming: false
+        streaming: true
       },
       collect_qualification_info: {
-        url: `${import.meta.env.PUBLIC_SITE_URL}/api/bots/webhooks`,
+        url: `https://www.runportcullis.co/api/bots/webhooks`,
         method: "POST",
-        streaming: false
+        streaming: true
       },
       send_meeting_link: {
-        url: `${import.meta.env.PUBLIC_SITE_URL}/api/bots/webhooks`,
+        url: `https://www.runportcullis.co/api/bots/webhooks`,
         method: "POST",
-        streaming: false
+        streaming: true
       },
       check_interest: {
-        url: `${import.meta.env.PUBLIC_SITE_URL}/api/bots/webhooks`,
+        url: `https://www.runportcullis.co/api/bots/webhooks`,
         method: "POST",
-        streaming: false
+        streaming: true
       }
     }
   };
