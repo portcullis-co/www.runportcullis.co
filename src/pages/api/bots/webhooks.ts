@@ -55,96 +55,7 @@ type BillingType = 'monthly' | 'annual';
 export const POST: APIRoute = async ({ request }) => {
   try {
     const data = await request.json();
-
-    // Handle test requests
-    if (data.test) {
-      return new Response(JSON.stringify({ test: true }));
-    }
-
-    // Validate required fields for incoming calls
-    if (!data.callId || !data.callDomain) {
-      return new Response(
-        JSON.stringify({ error: 'Missing required call parameters' }),
-        { status: 400 }
-      );
-    }
-
-    // Configure and start the bot
-    const botConfig = {
-      bot_profile: "voice_2024_frontdesk",
-      max_duration: 600,
-      dialin_settings: {
-        callerPhone: data.callerPhone,
-        callId: data.callId,
-        callDomain: data.callDomain
-      },
-      services: {
-        llm: "openai",
-        tts: "elevenlabs"
-      },
-      webhook_tools: {
-        get_pricing_info: {
-          url: `${import.meta.env.PUBLIC_SITE_URL}/api/bots/webhooks`,
-          method: "POST",
-          streaming: false
-        },
-        collect_qualification_info: {
-          url: `${import.meta.env.PUBLIC_SITE_URL}/api/bots/webhooks`,
-          method: "POST",
-          streaming: false
-        },
-        send_meeting_link: {
-          url: `${import.meta.env.PUBLIC_SITE_URL}/api/bots/webhooks`,
-          method: "POST",
-          streaming: false
-        },
-        check_interest: {
-          url: `${import.meta.env.PUBLIC_SITE_URL}/api/bots/webhooks`,
-          method: "POST",
-          streaming: false
-        }
-      },
-      config: [
-        {
-          service: "tts",
-          options: [
-            { name: "voice", value: "en-US-Neural2-F" },
-            { name: "model", value: "neural2" },
-            { name: "language", value: "en-US" }
-          ]
-        },
-        {
-          service: "llm",
-          options: [
-            { name: "model", value: "gpt-4" },
-            {
-              name: "initial_messages",
-              value: JSON.stringify([{
-                role: "system",
-                content: "You are a friendly onboarding assistant for Portcullis, helping customers understand our data warehouse steering assistance services and pricing options."
-              }])
-            },
-            { name: "temperature", value: "0.7" }
-          ]
-        }
-      ]
-    };
-
-    const response = await fetch("https://api.daily.co/v1/bots/start", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${import.meta.env.DAILY_API_KEY}`,
-      },
-      body: JSON.stringify(botConfig),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      return new Response(JSON.stringify(error), { status: response.status });
-    }
-
-    return new Response(JSON.stringify(await response.json()));
+    return handleFunctionCall(data);
   } catch (error) {
     console.error('API error:', error);
     return new Response(
@@ -216,7 +127,6 @@ async function handleSendMeetingLink(args: Record<string, any>): Promise<Respons
   }
 }
 
-
 function handleQualificationInfo(args: Record<string, any>): Response {
   try {
     const info = {
@@ -238,7 +148,6 @@ function handleQualificationInfo(args: Record<string, any>): Response {
     );
   }
 }
-
 
 function handleInterestCheck(args: Record<string, any>): Response {
   return new Response(JSON.stringify({
