@@ -89,13 +89,26 @@ async function handleIncomingCall(data: any): Promise<Response> {
     max_duration: 600,
     dialin_settings: {
       callId: data.callId,
-      callDomain: data.callDomain
+      callDomain: data.callDomain,
+      callerPhone: data.From
     },
     services: {
       llm: "openai",
       tts: "elevenlabs",
+      stt: "deepgram"
+    },
+    api_keys: {
+      openai: import.meta.env.OPENAI_API_KEY,
+      elevenlabs: import.meta.env.ELEVENLABS_API_KEY,
+      deepgram: import.meta.env.DEEPGRAM_API_KEY
     },
     config: [
+      {
+        service: "stt",
+        options: [
+          { name: "language", value: "en-US" }
+        ]
+      },
       {
         service: "tts",
         options: [
@@ -117,7 +130,7 @@ async function handleIncomingCall(data: any): Promise<Response> {
           },
           { name: "temperature", value: "0.7" }
         ]
-      },
+      }
     ],
     webhook_tools: {
       get_pricing_info: {
