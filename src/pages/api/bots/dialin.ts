@@ -93,8 +93,32 @@ async function handleIncomingCall(data: any): Promise<Response> {
     },
     services: {
       llm: "openai",
-      tts: "elevenlabs"
+      tts: "elevenlabs",
     },
+    config: [
+      {
+        service: "tts",
+        options: [
+          { name: "voice", value: "en-US-Neural2-F" },
+          { name: "model", value: "neural2" },
+          { name: "language", value: "en-US" }
+        ]
+      },
+      {
+        service: "llm",
+        options: [
+          { name: "model", value: "gpt-4o-mini" },
+          {
+            name: "initial_messages",
+            value: JSON.stringify([{
+              role: "system",
+              content: "You are a friendly onboarding assistant for Portcullis, helping customers understand our data warehouse steering assistance services and pricing options. Keep your responses concise and natural. Always respond in a conversational tone."
+            }])
+          },
+          { name: "temperature", value: "0.7" }
+        ]
+      },
+    ],
     webhook_tools: {
       get_pricing_info: {
         url: `${import.meta.env.PUBLIC_SITE_URL}/api/bots/webhooks`,
