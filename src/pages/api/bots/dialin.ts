@@ -85,7 +85,7 @@ async function handleIncomingCall(data: any): Promise<Response> {
   }
 
   const botConfig = {
-    bot_profile: "voice_2024_frontdesk",
+    bot_profile: "natural_conversation_2024_11",
     max_duration: 600,
     dialin_settings: {
       callerPhone: data.callerPhone,
