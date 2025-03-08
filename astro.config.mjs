@@ -17,6 +17,9 @@ export default defineConfig({
   adapter: netlify(),
   integrations: [
     clerk(),
+    react({
+      include: ['**/*.{jsx,tsx}'],
+    }),
     mdx({
       syntaxHighlight: "shiki",
       shikiConfig: { theme: "github-dark-dimmed" },
@@ -24,7 +27,6 @@ export default defineConfig({
     }),
     icon(),
     sitemap(),
-    react(),
     tailwind({ applyBaseStyles: false }),
     simpleStackForm(),
   ],
@@ -41,7 +43,12 @@ export default defineConfig({
       }
     },
     optimizeDeps: {
-      exclude: ['@slack/web-api', '@hubspot/api-client']
+      exclude: ['@slack/web-api', '@hubspot/api-client'],
+      esbuildOptions: {
+        loader: {
+          '.js': 'jsx',
+        },
+      },
     }
   },
 });

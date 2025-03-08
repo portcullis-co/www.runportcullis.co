@@ -31,8 +31,8 @@ Here’s a [gist](https://gist.github.com/jdbohrman/065477d6644fe70dd9613f2935bb
 1. Checks for the required environment variables for the Slack and Hubspot APIs
 
 ```typescript
-    const slackToken = process.env.SLACK_BOT_TOKEN;
-    const hubspotToken = process.env.HUBSPOT_ACCESS_TOKEN;
+    const slackToken = import.meta.env.SLACK_BOT_TOKEN;
+    const hubspotToken = import.meta.env.HUBSPOT_ACCESS_TOKEN;
 
     if (!slackToken || !hubspotToken) {
         console.error('Environment variables not found', {

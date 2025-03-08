@@ -19,8 +19,8 @@ export const TIERS = [
     highlighted: true,
     popular: false,
     href: {
-      monthly: "https://buy.stripe.com/dR6fZe4R1e5R4owcMS",
-      yearly: "https://buy.stripe.com/8wM28o1EP2n94ow8wA",
+      monthly: "https://cal.com/team/portcullis/insights-intro",
+      yearly: "https://cal.com/team/portcullis/insights-intro",
     }
   },
   {
@@ -41,8 +41,8 @@ export const TIERS = [
     highlighted: true,
     popular: true,
     href: {
-      monthly: "https://buy.stripe.com/7sI9AQ6Z9aTFbQYdQS",
-      yearly: "https://buy.stripe.com/eVa00g5V5aTFbQY4gj",
+      monthly: "https://cal.com/team/portcullis/insights-plus-intro",
+      yearly: "https://cal.com/team/portcullis/insights-plus-intro",
     },
   },
   {
@@ -63,8 +63,8 @@ export const TIERS = [
     highlighted: true,
     popular: false,
     href: {
-      monthly: "https://buy.stripe.com/aEU14k6Z91j57AI8wx",
-      yearly: "https://cal.com/portcullis/insights",
+      monthly: "https://cal.com/team/portcullis/portcullis-gold-intro",
+      yearly: "https://cal.com/team/portcullis/portcullis-gold-intro",
     },
   },
   // Add more tiers as needed
