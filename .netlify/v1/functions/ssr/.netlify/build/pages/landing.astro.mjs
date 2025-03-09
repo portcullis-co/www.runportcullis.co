@@ -1,6 +1,6 @@
 import { a as createComponent, r as renderComponent, b as renderTemplate } from "../chunks/astro/server_aMtVhhw-.mjs";
 import { $ as $$Bentogrid } from "../chunks/bentogrid_CyHOjrBJ.mjs";
-import { $ as $$HeroLanding, a as $$InfoLanding, i as infos, b as $$Features } from "../chunks/info-landing_D6rY0ixd.mjs";
+import { $ as $$HeroLanding, a as $$InfoLanding, i as infos, b as $$Features } from "../chunks/info-landing_YVCrNXzg.mjs";
 import { $ as $$MainLayout } from "../chunks/main-layout_C4s2EEtb.mjs";
 import { renderers } from "../renderers.mjs";
 const $$Landing = createComponent(($$result, $$props, $$slots) => {

@@ -2,7 +2,7 @@ import { a as createComponent, b as renderTemplate, r as renderComponent, m as m
 import { $ as $$HeroSection } from "../../chunks/hero-section_CiVjkpkU.mjs";
 import { $ as $$ProcessSteps } from "../../chunks/process-steps_CHD84ZFa.mjs";
 import { $ as $$MainLayout, d as Button } from "../../chunks/main-layout_C4s2EEtb.mjs";
-import { $ as $$Icon } from "../../chunks/Icon_BSkDhzxi.mjs";
+import { $ as $$Icon } from "../../chunks/Icon_DxtqSiHY.mjs";
 import { $ as $$HeaderSection } from "../../chunks/header-section_Va4gOp5y.mjs";
 import { renderers } from "../../renderers.mjs";
 var __freeze = Object.freeze;

@@ -1,5 +1,5 @@
 import { a as createComponent, r as renderComponent, b as renderTemplate, m as maybeRenderHead } from "../chunks/astro/server_aMtVhhw-.mjs";
-import { g as getPosts, $ as $$BlogHeader, a as $$BlogCard } from "../chunks/blog-card_Dl6nt5bm.mjs";
+import { g as getPosts, $ as $$BlogHeader, a as $$BlogCard } from "../chunks/blog-card_BVJNVqS_.mjs";
 import { $ as $$MainLayout } from "../chunks/main-layout_C4s2EEtb.mjs";
 import { renderers } from "../renderers.mjs";
 const $$Index = createComponent(async ($$result, $$props, $$slots) => {
