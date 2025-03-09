@@ -159,7 +159,7 @@ export function Assistant() {
           enableMic: true,
           enableCam: false,
           params: {
-            baseUrl: import.meta.env.PUBLIC_PIPECAT_API_URL || 'https://www.runportcullis.co/api',
+            baseUrl: import.meta.env.PUBLIC_PIPECAT_API_URL || 'https://www.runportcullis.co/api/assistant',
             endpoint: {
               connect: '/connect',
             },
