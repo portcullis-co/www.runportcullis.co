@@ -159,10 +159,11 @@ export function Assistant() {
           enableMic: true,
           enableCam: false,
           params: {
-            baseUrl: import.meta.env.PUBLIC_PIPECAT_API_URL || 'https://www.runportcullis.co/api/assistant',
+            baseUrl: import.meta.env.PIPECAT_API_URL || '/api/assistant',
             endpoint: {
               connect: '/connect',
-            },
+            }
+            // The transport will automatically use the room_url and token from the API response
           },
         });
         

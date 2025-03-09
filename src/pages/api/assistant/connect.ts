@@ -10,7 +10,6 @@ export const POST: APIRoute = async ({ request }) => {
     const botConfig = {
       bot_profile: "natural_conversation_2024_11",
       max_duration: 600,
-      room_url: import.meta.env.DAILY_ROOM_URL,
       services: {
         llm: "openai",
         tts: "elevenlabs",
