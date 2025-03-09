@@ -35,7 +35,7 @@ export default defineConfig({
   vite: {
     ssr: {
       noExternal: ['path-to-regexp'],
-      external: ['@slack/web-api', '@hubspot/api-client']
+      external: ['@slack/web-api', '@hubspot/api-client', 'realtime-ai', 'realtime-ai-react']
     },
     resolve: {
       alias: {
@@ -47,8 +47,8 @@ export default defineConfig({
       }
     },
     optimizeDeps: {
-      include: ['realtime-ai', 'realtime-ai-react'],
-      exclude: ['@slack/web-api', '@hubspot/api-client'],
+      include: [],
+      exclude: ['@slack/web-api', '@hubspot/api-client', 'realtime-ai', 'realtime-ai-react'],
       esbuildOptions: {
         loader: {
           '.js': 'jsx',

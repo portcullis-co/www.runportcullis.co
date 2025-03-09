@@ -1,6 +1,23 @@
 import { createRequire } from 'module';
+import React from 'react';
 const require = createRequire(import.meta.url);
-const reactPkg = require('realtime-ai-react');
+
+let reactPkg;
+try {
+  reactPkg = require('realtime-ai-react');
+} catch (error) {
+  // Provide mock implementations for SSR/build
+  reactPkg = {
+    useRTVIClient: () => null,
+    useRTVIClientEvent: () => {},
+    useRTVIClientTransportState: () => 'idle',
+    useRTVIClientMediaDevices: () => ({ audioInputDevices: [], audioOutputDevices: [] }),
+    RTVIClientProvider: ({ children }: { children: React.ReactNode }) => children,
+    RTVIClientAudio: () => null,
+    VoiceVisualizer: () => null
+  };
+  console.warn('realtime-ai-react package not available, using mock implementation');
+}
 
 // Re-export all properties as named exports
 export const {

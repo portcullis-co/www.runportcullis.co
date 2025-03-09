@@ -1,6 +1,20 @@
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
-const rtviPkg = require('realtime-ai');
+
+let rtviPkg;
+try {
+  rtviPkg = require('realtime-ai');
+} catch (error) {
+  // Provide mock implementations for SSR/build
+  rtviPkg = {
+    RTVIClient: class RTVIClient {},
+    RTVIError: class RTVIError extends Error {},
+    RTVIEvent: { Error: 'error' },
+    RTVIMessage: class RTVIMessage {}
+  };
+  console.warn('realtime-ai package not available, using mock implementation');
+}
+
 import type { RTVIClientConfigOption } from 'realtime-ai';
 
 // Re-export all properties as named exports

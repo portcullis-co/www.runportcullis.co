@@ -21,10 +21,39 @@ import clsx from "clsx";
 import { Sparklines, SparklinesBars, SparklinesLine, SparklinesReferenceLine } from "react-sparklines";
 import { renderers } from "../renderers.mjs";
 const require$1 = createRequire(import.meta.url);
-const rtviPkg = require$1("realtime-ai");
+let rtviPkg;
+try {
+  rtviPkg = require$1("realtime-ai");
+} catch (error) {
+  rtviPkg = {
+    RTVIClient: class RTVIClient {
+    },
+    RTVIError: class RTVIError extends Error {
+    },
+    RTVIEvent: { Error: "error" },
+    RTVIMessage: class RTVIMessage {
+    }
+  };
+  console.warn("realtime-ai package not available, using mock implementation");
+}
 const { RTVIClient, RTVIError, RTVIEvent, RTVIMessage } = rtviPkg;
 const require2 = createRequire(import.meta.url);
-const reactPkg = require2("realtime-ai-react");
+let reactPkg;
+try {
+  reactPkg = require2("realtime-ai-react");
+} catch (error) {
+  reactPkg = {
+    useRTVIClient: () => null,
+    useRTVIClientEvent: () => {
+    },
+    useRTVIClientTransportState: () => "idle",
+    useRTVIClientMediaDevices: () => ({ audioInputDevices: [], audioOutputDevices: [] }),
+    RTVIClientProvider: ({ children }) => children,
+    RTVIClientAudio: () => null,
+    VoiceVisualizer: () => null
+  };
+  console.warn("realtime-ai-react package not available, using mock implementation");
+}
 const {
   useRTVIClient,
   useRTVIClientEvent,
