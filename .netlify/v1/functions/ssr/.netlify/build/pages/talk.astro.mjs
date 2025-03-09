@@ -1,5 +1,5 @@
 import { a as createComponent, r as renderComponent, b as renderTemplate, m as maybeRenderHead } from "../chunks/astro/server_aMtVhhw-.mjs";
-import { a as cn, d as Button, $ as $$MainLayout } from "../chunks/main-layout_MwNyqyy3.mjs";
+import { a as cn, d as Button, $ as $$MainLayout } from "../chunks/main-layout_BsXR2W6X.mjs";
 import { jsx, jsxs, Fragment } from "react/jsx-runtime";
 import { CircleHelp, ChevronDown, Languages, Mic, Loader2, X, Pause, MicOff, StopCircle, LineChart, Settings, LogOut, CircleAlert, Ear } from "lucide-react";
 import * as React from "react";
@@ -1236,7 +1236,7 @@ function Assistant() {
   ] }) });
 }
 const $$Talk = createComponent(($$result, $$props, $$slots) => {
-  return renderTemplate`${renderComponent($$result, "MainLayout", $$MainLayout, { "title": "Referrals", "mainClass": "flex-1 bg-background-200" }, { "default": ($$result2) => renderTemplate` ${maybeRenderHead()}<section class="container flex flex-col gap-6 py-8 md:max-w-[64rem] md:py-12 lg:py-24"> <div class="mx-auto flex w-full flex-col gap-4 md:max-w-[58rem]"> ${renderComponent($$result2, "Assistant", Assistant, {})} </div> </section> ` })}`;
+  return renderTemplate`${renderComponent($$result, "MainLayout", $$MainLayout, { "title": "Talk to Portcullis", "mainClass": "flex-1 bg-background-200" }, { "default": ($$result2) => renderTemplate` ${maybeRenderHead()}<section class="flex items-center justify-center min-h-screen"> <div class="flex flex-col gap-4 w-full max-w-[58rem] items-center"> ${renderComponent($$result2, "Assistant", Assistant, {})} </div> </section> ` })}`;
 }, "/Users/jdbohrman/www.runportcullis.co/src/pages/talk.astro", void 0);
 const $$file = "/Users/jdbohrman/www.runportcullis.co/src/pages/talk.astro";
 const $$url = "/talk";

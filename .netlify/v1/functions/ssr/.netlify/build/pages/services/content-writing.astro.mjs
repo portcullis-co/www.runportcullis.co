@@ -1,7 +1,7 @@
 import { a as createComponent, b as renderTemplate, r as renderComponent, m as maybeRenderHead } from "../../chunks/astro/server_aMtVhhw-.mjs";
-import { $ as $$HeroSection } from "../../chunks/hero-section_U7JxhtLs.mjs";
-import { $ as $$MainLayout, d as Button } from "../../chunks/main-layout_MwNyqyy3.mjs";
-import { $ as $$Icon } from "../../chunks/Icon_DJkOzyrx.mjs";
+import { $ as $$HeroSection } from "../../chunks/hero-section_WSqrwR9G.mjs";
+import { $ as $$MainLayout, d as Button } from "../../chunks/main-layout_BsXR2W6X.mjs";
+import { $ as $$Icon } from "../../chunks/Icon_BKgXN8Eh.mjs";
 import { $ as $$HeaderSection } from "../../chunks/header-section_Va4gOp5y.mjs";
 import { renderers } from "../../renderers.mjs";
 var __freeze = Object.freeze;

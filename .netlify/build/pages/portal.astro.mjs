@@ -1,5 +1,5 @@
 import { a as createComponent, c as createAstro, r as renderComponent, f as renderSlot, b as renderTemplate, g as defineScriptVars, d as addAttribute, m as maybeRenderHead } from "../chunks/astro/server_aMtVhhw-.mjs";
-import { a as cn, d as Button, $ as $$MainLayout } from "../chunks/main-layout_MwNyqyy3.mjs";
+import { a as cn, d as Button, $ as $$MainLayout } from "../chunks/main-layout_BsXR2W6X.mjs";
 import { jsx, jsxs } from "react/jsx-runtime";
 import { ArrowRightIcon, ChevronRightIcon } from "@radix-ui/react-icons";
 import { Bell, Database, FileText, Users, Settings, Clock, LineChart, PieChart, BarChart } from "lucide-react";

@@ -1,5 +1,5 @@
 import { c as createAstro, a as createComponent, r as renderComponent, b as renderTemplate, m as maybeRenderHead, d as addAttribute } from "../chunks/astro/server_aMtVhhw-.mjs";
-import { $ as $$MainLayout } from "../chunks/main-layout_MwNyqyy3.mjs";
+import { $ as $$MainLayout } from "../chunks/main-layout_BsXR2W6X.mjs";
 import { renderers } from "../renderers.mjs";
 const $$Astro = createAstro("https://www.runportcullis.co");
 const $$Cancel = createComponent(($$result, $$props, $$slots) => {

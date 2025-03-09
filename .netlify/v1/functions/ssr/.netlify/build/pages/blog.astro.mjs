@@ -1,6 +1,6 @@
 import { a as createComponent, r as renderComponent, b as renderTemplate, m as maybeRenderHead } from "../chunks/astro/server_aMtVhhw-.mjs";
-import { g as getPosts, $ as $$BlogHeader, a as $$BlogCard } from "../chunks/blog-card_DLSpj6HX.mjs";
-import { $ as $$MainLayout } from "../chunks/main-layout_MwNyqyy3.mjs";
+import { g as getPosts, $ as $$BlogHeader, a as $$BlogCard } from "../chunks/blog-card_s5NB-PVN.mjs";
+import { $ as $$MainLayout } from "../chunks/main-layout_BsXR2W6X.mjs";
 import { renderers } from "../renderers.mjs";
 const $$Index = createComponent(async ($$result, $$props, $$slots) => {
   const posts = await getPosts();
