@@ -1,0 +1,146 @@
+---
+import BentoGrid from "@/components/sections/bentogrid.astro";
+import Features from "@/components/sections/features.astro";
+import HeroSection from "@/components/sections/hero-section.astro";
+import ProcessSteps from "@/components/sections/process-steps.astro";
+import MainLayout from "@/layouts/main-layout.astro";
+import { Button } from "@/components/ui/button";
+import { Icon } from "astro-icon/components";
+import HeaderSection from "@/components/sections/header-section.astro";
+
+const pageTitle = "Query Optomization | Your Company Name";
+const pageDescription = "Professional query optomization for your data warehouse environments";
+---
+
+<MainLayout title={pageTitle} description={pageDescription}>
+    <HeroSection 
+        title="Query Optimization Advisory"
+        subtitle="Task us with identifying key improvement areas in your query strategy"
+        heroImg="https://thumbs.dreamstime.com/b/network-servers-data-center-white-background-reflections-top-view-65346928.jpg"
+        overlay=""
+    />
+    <section>
+        <div class="pb-6 pt-28">
+          <div class="container max-w-6xl">
+            <HeaderSection
+              label="How we optimize"
+              title="Squeeze every last bit of juice from your data warehouse 🍊"
+              subtitle="Let us find hidden optimization opportunities in your data warehouse"
+            />
+      
+            <div class="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <!-- Feature 1 -->
+              <div class="group relative overflow-hidden rounded-2xl border bg-background p-5 md:p-8">
+                <div
+                  aria-hidden="true"
+                  class="absolute inset-0 aspect-video -translate-y-1/2 rounded-full border bg-gradient-to-b from-black to-white opacity-25 blur-2xl duration-300 group-hover:-translate-y-1/4 dark:from-white dark:to-white dark:opacity-5 dark:group-hover:opacity-10"
+                />
+                <div class="relative">
+                  <div class="relative flex size-12 rounded-2xl border border-border shadow-sm *:relative *:m-auto *:size-6">
+                    <Icon name="lucide:cloud" class="m-auto text-foreground" />
+                  </div>
+      
+                  <h3 class="mt-4 text-xl font-semibold text-foreground">Format Analysis</h3>
+                  <p class="mt-6 pb-6 text-muted-foreground">
+                    We'll make sure you're using the best query format for the job and if not, we'll help you switch to a new one.
+                  </p>
+      
+                  <div class="-mb-5 flex gap-3 border-t border-muted py-4 md:-mb-7">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      rounded="xl"
+                      className="px-4"
+                    >
+                      <a id="null" class="flex items-center gap-2 cursor-pointer">
+                        <span>Talk to us</span>
+                        <Icon name="lucide:arrow-up-right" class="size-4" />
+                      </a>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+      
+              <!-- Feature 2 -->
+              <div class="group relative overflow-hidden rounded-2xl border bg-background p-5 md:p-8">
+                <div
+                  aria-hidden="true"
+                  class="absolute inset-0 aspect-video -translate-y-1/2 rounded-full border bg-gradient-to-b from-black to-white opacity-25 blur-2xl duration-300 group-hover:-translate-y-1/4 dark:from-white dark:to-white dark:opacity-5 dark:group-hover:opacity-10"
+                />
+                <div class="relative">
+                  <div class="relative flex size-12 rounded-2xl border border-border shadow-sm *:relative *:m-auto *:size-6">
+                    <Icon name="lucide:database" class="m-auto text-foreground" />
+                  </div>
+      
+                  <h3 class="mt-4 text-xl font-semibold text-foreground">Table Engine</h3>
+                  <p class="mt-6 pb-6 text-muted-foreground">
+                    We'll look at how you're using your chosen table engine and see if there are any improvements to be made
+                  </p>
+      
+                  <div class="-mb-5 flex gap-3 border-t border-muted py-4 md:-mb-7">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      rounded="xl"
+                      className="px-4"
+                    >
+                      <a id="intercom-button-2" class="flex items-center gap-2 cursor-pointer">
+                        <span>Talk to us</span>
+                        <Icon name="lucide:arrow-up-right" class="size-4" />
+                      </a>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+      
+              <!-- Feature 3 -->
+              <div class="group relative overflow-hidden rounded-2xl border bg-background p-5 md:p-8">
+                <div
+                  aria-hidden="true"
+                  class="absolute inset-0 aspect-video -translate-y-1/2 rounded-full border bg-gradient-to-b from-black to-white opacity-25 blur-2xl duration-300 group-hover:-translate-y-1/4 dark:from-white dark:to-white dark:opacity-5 dark:group-hover:opacity-10"
+                />
+                <div class="relative">
+                  <div class="relative flex size-12 rounded-2xl border border-border shadow-sm *:relative *:m-auto *:size-6">
+                    <Icon name="lucide:server" class="m-auto text-foreground" />
+                  </div>
+      
+                  <h3 class="mt-4 text-xl font-semibold text-foreground">Client Audit</h3>
+                  <p class="mt-6 pb-6 text-muted-foreground">
+                    We'll do a full review of your client implementation to see if there is anything slowing down your queries
+                  </p>
+      
+                  <div class="-mb-5 flex gap-3 border-t border-muted py-4 md:-mb-7">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      rounded="xl"
+                      className="px-4"
+                    >
+                      <a id="intercom-button-3" class="flex items-center gap-2 cursor-pointer">
+                        <span>Discuss Project</span>
+                        <Icon name="lucide:arrow-up-right" class="size-4" />
+                      </a>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+      </section>      
+    <BentoGrid />
+</MainLayout>
+
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', () => {
+    const intercomButtons = document.querySelectorAll('[id^="intercom-button"]');
+    intercomButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        if (window.Intercom) {
+          // Open Intercom Messenger
+          window.Intercom('show');
+          console.log('Intercom opened');
+        } else {
+          console.error('Intercom is not initialized');
+        }
+      });
+    });
+  });
+</script>
