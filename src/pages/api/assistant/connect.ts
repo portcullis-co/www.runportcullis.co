@@ -11,15 +11,14 @@ export const POST: APIRoute = async ({ request }) => {
       client_info: client_info || 'Not provided'
     });
 
-    // Configure the bot with improved settings based on Daily Bots documentation
-    // But using your preferred services
+    // Simplified configuration to reduce potential errors
     const botConfig = {
       bot_profile: "natural_conversation_2024_11",
-      max_duration: 1800, // 30 minutes - increased to prevent early termination
+      max_duration: 600, // 10 minutes
       services: {
         // Use your preferred services
         llm: "openai",
-        tts: "elevenlabs", // Using ElevenLabs as per your original config
+        tts: "elevenlabs", 
         stt: "deepgram"
       },
       api_keys: {
@@ -31,22 +30,15 @@ export const POST: APIRoute = async ({ request }) => {
         {
           service: "stt",
           options: [
-            { name: "language", value: "en-US" },
-            { name: "model", value: "nova-2" }
+            { name: "language", value: "en-US" }
           ]
         },
         {
           service: "tts",
           options: [
-            // Using your existing ElevenLabs voice ID with improved settings
+            // Basic ElevenLabs configuration without extra options that might cause issues
             { name: "voice", value: "6IlUNt4hAIP1jMBYQncS" },
-            { name: "model", value: "eleven_turbo_v2_5" },
-            { name: "language", value: "en-US" },
-            // Add stability settings for better audio quality
-            { name: "stability", value: 0.5 },
-            { name: "similarity_boost", value: 0.75 },
-            // Add explicit output format to improve compatibility
-            { name: "output_format", value: "mp3_44100_128" }
+            { name: "model", value: "eleven_turbo_v2" }
           ]
         },
         {
@@ -55,34 +47,18 @@ export const POST: APIRoute = async ({ request }) => {
             { name: "model", value: "gpt-4o-mini" },
             {
               name: "initial_messages",
-              // For OpenAI, the format is different than for Anthropic
               value: [
                 {
                   role: "system",
-                  content: "You are a friendly assistant for Portcullis, helping users understand our data warehouse steering assistance services. Keep your responses concise and natural. Always respond in a conversational tone. If you encounter any errors or don't understand a question, politely ask for clarification."
+                  content: "You are a friendly assistant for Portcullis, helping users understand our data warehouse steering assistance services. Keep your responses concise and natural. Always respond in a conversational tone."
                 }
               ]
             },
-            { name: "temperature", value: 0.7 },  // Changed from string to number
+            { name: "temperature", value: 0.7 },
             { name: "run_on_config", value: true }
           ]
         }
       ],
-      // Add service-specific options that can improve audio reliability
-      service_options: {
-        elevenlabs: {
-          // Ensure optimal audio output settings
-          output_format: "mp3_44100_128",
-          latency_optimization: true
-        },
-        daily: {
-          // Improve connection stability with these Daily-specific settings
-          audio_bitrate: 128000,
-          enable_prejoin_ui: false,
-          start_video_off: true,
-          start_audio_off: false
-        }
-      },
       rtvi_client_version,
       webhook_tools: {
         get_pricing_info: {
@@ -105,27 +81,10 @@ export const POST: APIRoute = async ({ request }) => {
           method: "POST",
           streaming: false
         }
-      },
-      // Add Daily.co specific configuration
-      daily: {
-        // Properties to improve reliability and prevent early termination
-        start_audio_off: false,
-        start_video_off: true,
-        enable_network_ui: false,
-        enable_prejoin_ui: false,
-        enable_screenshare: false,
-        enable_chat: false,
-        // Add heartbeat to prevent connection timeouts
-        exp_heartbeat_interval: 30,
-        // Configure tracks to improve audio quality
-        audio_bitrate: 128000,
-        audio_processing: true,
-        audio_quality_mode: "music"
-      },
-      heartbeat_interval: 30000 // Send heartbeats every 30 seconds
+      }
     };
 
-    console.log('Starting Daily.co bot with configuration');
+    console.log('Starting Daily.co bot with configuration:', JSON.stringify(botConfig, null, 2));
 
     // Start the bot with improved error handling
     const response = await fetch("https://api.daily.co/v1/bots/start", {
@@ -138,13 +97,17 @@ export const POST: APIRoute = async ({ request }) => {
     });
 
     // Handle non-JSON responses
-    const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      console.error('Non-JSON response from Daily API:', await response.text());
+    const responseText = await response.text();
+    let responseData;
+    
+    try {
+      responseData = JSON.parse(responseText);
+    } catch (error) {
+      console.error('Non-JSON response from Daily API:', responseText);
       return new Response(JSON.stringify({
         error: 'Invalid response from Daily.co API',
         status: response.status,
-        contentType: contentType || 'unknown'
+        responseText
       }), {
         status: 500,
         headers: {
@@ -153,8 +116,6 @@ export const POST: APIRoute = async ({ request }) => {
         }
       });
     }
-
-    const responseData = await response.json();
 
     if (!response.ok) {
       console.error("Error starting bot:", responseData);

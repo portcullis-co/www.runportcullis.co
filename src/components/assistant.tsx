@@ -244,6 +244,7 @@ function AssistantContent() {
     
     try {
       if (transportState === 'disconnected') {
+        console.log('Attempting to connect to assistant...');
         await rtviClient.connect();
         setConversationStatus('Connecting...');
       } else if (transportState === 'connected') {
@@ -441,18 +442,19 @@ export function Assistant() {
           }
         });
         
-        // Create the client instance with improved configuration
+        // Create the client instance with minimal configuration
+        // to reduce potential errors
         const rtviClient = new RTVIClient({
           transport,
           enableMic: true,
           enableCam: false,
           params: {
             baseUrl: '/api/assistant',
+            // IMPORTANT: This field needs to be "endpoints" not "endpoint"
             endpoints: {
-              connect: '/connect',
+              connect: '/connect'
             },
             requestData: {
-              // Add any additional data needed by your backend
               client_info: {
                 platform: navigator.platform,
                 userAgent: navigator.userAgent
