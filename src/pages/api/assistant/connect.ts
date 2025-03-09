@@ -55,7 +55,6 @@ export const POST: APIRoute = async ({ request }) => {
               ]
             },
             { name: "temperature", value: 0.7 },
-            { name: "run_on_config", value: true }
           ]
         }
       ],
