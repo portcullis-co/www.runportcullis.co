@@ -3,9 +3,10 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Mic, Loader2 } from 'lucide-react';
-import { useRTVIClient, useRTVIClientTransportState } from '@pipecat-ai/client-react';
+import { useRTVIClient, useRTVIClientTransportState, RTVIClientProvider, RTVIClientAudio } from '@pipecat-ai/client-react';
 
-export function Assistant() {
+// Wrapper component to provide the RTVI client context
+function AssistantContent() {
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedDevice, setSelectedDevice] = useState<string>('');
   const [isConnecting, setIsConnecting] = useState(false);
@@ -36,6 +37,19 @@ export function Assistant() {
     getDevices();
   }, []);
 
+  // Configure audio when device is selected
+  useEffect(() => {
+    if (rtviClient && selectedDevice) {
+      // Use type assertion to bypass TypeScript checking
+      // The actual implementation may have this method even if types don't reflect it
+      try {
+        (rtviClient as any).setAudioInput?.(selectedDevice);
+      } catch (err) {
+        console.warn('Failed to set audio input device:', err);
+      }
+    }
+  }, [rtviClient, selectedDevice]);
+
   const handleConnect = async () => {
     if (!rtviClient) return;
     
@@ -43,7 +57,11 @@ export function Assistant() {
     setError(null);
     
     try {
-      await rtviClient.connect();
+      if (transportState === 'disconnected') {
+        await rtviClient.connect();
+      } else if (transportState === 'connected') {
+        await rtviClient.disconnect();
+      }
     } catch (err) {
       setError('Failed to connect to assistant');
       console.error(err);
@@ -55,12 +73,16 @@ export function Assistant() {
   const getButtonText = () => {
     if (isConnecting) return 'Connecting...';
     switch (transportState) {
-      case 'connected': return 'Connected';
+      case 'connected': return 'Disconnect';
       case 'connecting': return 'Connecting...';
       case 'authenticating': return 'Authenticating...';
       case 'disconnected': return 'Start Conversation';
       default: return 'Start Conversation';
     }
+  };
+
+  const isButtonDisabled = () => {
+    return isConnecting || !selectedDevice || !rtviClient;
   };
 
   return (
@@ -100,12 +122,69 @@ export function Assistant() {
         <Button 
           className="w-full" 
           onClick={handleConnect}
-          disabled={isConnecting || !selectedDevice || !rtviClient}
+          disabled={isButtonDisabled()}
         >
           {isConnecting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {getButtonText()}
         </Button>
       </CardFooter>
     </Card>
+  );
+}
+
+// Main component that wraps the content with the RTVI client provider
+export function Assistant() {
+  // Import the necessary modules dynamically to avoid SSR issues
+  const [client, setClient] = useState<any>(null);
+
+  useEffect(() => {
+    async function loadClient() {
+      try {
+        // Dynamically import the modules
+        const { RTVIClient } = await import('@pipecat-ai/client-js');
+        const { DailyTransport } = await import('@pipecat-ai/daily-transport');
+        
+        // Create the transport with the correct options
+        const transport = new DailyTransport({
+          dailyFactoryOptions: {
+            // Daily.co specific configuration
+            // The roomUrl property is used to specify the Daily room URL
+            url: import.meta.env.PUBLIC_DAILY_ROOM_URL || '',
+          }
+        });
+        
+        // Create the client instance
+        const rtviClient = new RTVIClient({
+          transport,
+          enableMic: true,
+          enableCam: false,
+          params: {
+            baseUrl: import.meta.env.PUBLIC_PIPECAT_API_URL || 'https://www.runportcullis.co/api',
+            endpoint: {
+              connect: '/connect',
+            },
+          },
+        });
+        
+        setClient(rtviClient);
+      } catch (error) {
+        console.error('Failed to load Pipecat client:', error);
+      }
+    }
+    
+    loadClient();
+  }, []);
+
+  if (!client) {
+    return <div>Loading assistant...</div>;
+  }
+
+  return (
+    <>
+      <RTVIClientProvider client={client}>
+        <AssistantContent />
+        <RTVIClientAudio />
+      </RTVIClientProvider>
+    </>
   );
 } 
