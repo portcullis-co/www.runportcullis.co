@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Mic, Loader2 } from 'lucide-react';
+import { Mic, Loader2, Volume2, VolumeX } from 'lucide-react';
 import { useRTVIClient, useRTVIClientTransportState, RTVIClientProvider, RTVIClientAudio } from '@pipecat-ai/client-react';
 
 // Define types for RTVI messages
@@ -22,16 +22,69 @@ function AssistantContent() {
   const [botSpeaking, setBotSpeaking] = useState(false);
   const [userSpeaking, setUserSpeaking] = useState(false);
   const [errorCount, setErrorCount] = useState(0);
+  const [audioTestPassed, setAudioTestPassed] = useState<boolean | null>(null);
+  const audioElement = useRef<HTMLAudioElement | null>(null);
 
   const rtviClient = useRTVIClient();
   const transportState = useRTVIClientTransportState();
+
+  // Create an audio element for testing playback
+  useEffect(() => {
+    if (!audioElement.current) {
+      const audio = new Audio();
+      audio.oncanplay = () => {
+        console.log('Audio can play');
+      };
+      audio.onerror = (e) => {
+        console.error('Audio test error:', e);
+        setAudioTestPassed(false);
+      };
+      audioElement.current = audio;
+    }
+  }, []);
 
   // Reset error count when connection state changes
   useEffect(() => {
     if (transportState === 'connected') {
       setErrorCount(0);
+      // Test audio playback once connected
+      testAudioPlayback();
     }
   }, [transportState]);
+
+  // Function to test audio playback
+  const testAudioPlayback = () => {
+    if (!audioElement.current) return;
+    
+    try {
+      // Use a short test tone
+      const testToneUrl = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAADwAD///////////////////////////////////////////8AAAA8TEFNRTMuMTAwAZYAAAAALgAAA8AlZL4XsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//sQRAAP8AAAf4AAAAgAAA/wAAABAAAB/gAAACAAAD/AAAAEFYGRlAD/+5JkAA/wAABpAAAACAAADSAAAAEAAAGkAAAAIAAANIAAAAQMCA+QEOD8gICAyYEI/5AQEHv/2IYQDgf//8MBwQ////3BgP/////4YDwQ//1AgICAQCAQAAAAAAArI=';
+      audioElement.current.src = testToneUrl;
+      
+      // Play the test sound
+      const playPromise = audioElement.current.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            console.log('Audio playback test successful');
+            setAudioTestPassed(true);
+            // Stop it after a short time
+            setTimeout(() => {
+              if (audioElement.current) {
+                audioElement.current.pause();
+              }
+            }, 300);
+          })
+          .catch((err) => {
+            console.error('Audio playback test failed:', err);
+            setAudioTestPassed(false);
+          });
+      }
+    } catch (err) {
+      console.error('Audio test error:', err);
+      setAudioTestPassed(false);
+    }
+  };
 
   // Set up event listeners for RTVI client messages
   useEffect(() => {
@@ -84,14 +137,22 @@ function AssistantContent() {
         case 'error':
           console.error('RTVI error:', message.data);
           
-          // Increment error count
-          setErrorCount(prev => prev + 1);
-          
           // Extract error message
           const errorMessage = message.data?.message || 'Unknown error';
           
-          // Only show error if it's not a TTS error or if we've seen multiple errors
-          if (!errorMessage.includes('tts') || errorCount > 2) {
+          // Increment error count
+          setErrorCount(prev => prev + 1);
+          
+          // Show specific error for audio issues if audio test failed
+          if (audioTestPassed === false && (
+            errorMessage.includes('tts') || 
+            errorMessage.includes('audio') || 
+            errorMessage.includes('playback')
+          )) {
+            setError('Audio playback issue detected. Please check your speakers or headphones and ensure audio is enabled in your browser.');
+          } 
+          // Only show other errors if it's not a TTS error or if we've seen multiple errors
+          else if (!errorMessage.includes('tts') || errorCount > 2) {
             setError(`Error: ${errorMessage}`);
             setConversationStatus('Error occurred');
           } else {
@@ -139,7 +200,7 @@ function AssistantContent() {
       rtviClient.off('disconnected', handleDisconnected);
       rtviClient.off('connected', handleConnected);
     };
-  }, [rtviClient, errorCount]);
+  }, [rtviClient, errorCount, audioTestPassed]);
 
   // Get available microphones
   useEffect(() => {
@@ -179,6 +240,7 @@ function AssistantContent() {
     
     setIsConnecting(true);
     setError(null);
+    setAudioTestPassed(null);
     
     try {
       if (transportState === 'disconnected') {
@@ -238,6 +300,25 @@ function AssistantContent() {
         </div>
       );
     }
+
+    // Show audio status if available
+    if (audioTestPassed !== null && transportState === 'connected') {
+      return (
+        <div className={`flex items-center text-sm ${audioTestPassed ? 'text-green-500' : 'text-red-500'}`}>
+          {audioTestPassed ? (
+            <>
+              <Volume2 className="h-4 w-4 mr-2" />
+              Audio working
+            </>
+          ) : (
+            <>
+              <VolumeX className="h-4 w-4 mr-2" />
+              Audio issue detected
+            </>
+          )}
+        </div>
+      );
+    }
     
     if (transportState === 'connected') {
       return (
@@ -251,6 +332,12 @@ function AssistantContent() {
     }
     
     return null;
+  };
+
+  // Retry audio test
+  const handleRetryAudio = () => {
+    setAudioTestPassed(null);
+    testAudioPlayback();
   };
 
   return (
@@ -290,8 +377,17 @@ function AssistantContent() {
         {error && (
           <div className="text-sm text-red-500">
             {error}
-            {errorCount > 3 && (
-              <div className="mt-1">
+            {(errorCount > 3 || audioTestPassed === false) && (
+              <div className="mt-2 flex space-x-2">
+                {audioTestPassed === false && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleRetryAudio}
+                  >
+                    Test Audio
+                  </Button>
+                )}
                 <Button 
                   variant="outline" 
                   size="sm" 
@@ -352,7 +448,7 @@ export function Assistant() {
           enableCam: false,
           params: {
             baseUrl: '/api/assistant',
-            endpoint: {
+            endpoints: {
               connect: '/connect',
             },
             requestData: {
