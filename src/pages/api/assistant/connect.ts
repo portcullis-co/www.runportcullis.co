@@ -4,66 +4,51 @@ import type { APIRoute } from 'astro';
 export const POST: APIRoute = async ({ request }) => {
   try {
     const data = await request.json();
-    const { rtvi_client_version, client_info } = data;
+    const { rtvi_client_version } = data;
 
-    console.log('Connect request received:', { 
-      rtvi_client_version, 
-      client_info: client_info || 'Not provided'
-    });
-
-    // Configure the bot with improved settings based on Daily Bots documentation
+    // Configure the bot directly without complex merging
     const botConfig = {
       bot_profile: "natural_conversation_2024_11",
-      max_duration: 600, // 10 minutes
+      max_duration: 600,
       services: {
-        // Use the correct service names from Daily Bots documentation
-        llm: "anthropic", // Using Anthropic instead of OpenAI
-        tts: "cartesia", // Using Cartesia instead of ElevenLabs
+        llm: "openai",
+        tts: "elevenlabs",
         stt: "deepgram"
       },
       api_keys: {
-        anthropic: import.meta.env.ANTHROPIC_API_KEY,
-        cartesia: import.meta.env.CARTESIA_API_KEY,
+        openai: import.meta.env.OPENAI_API_KEY,
+        elevenlabs: import.meta.env.ELEVENLABS_API_KEY,
         deepgram: import.meta.env.DEEPGRAM_API_KEY
       },
       config: [
         {
           service: "stt",
           options: [
-            { name: "language", value: "en-US" },
-            { name: "model", value: "nova-2" }
+            { name: "language", value: "en-US" }
           ]
         },
         {
           service: "tts",
           options: [
-            // Using a standard Cartesia voice that's known to work
-            { name: "voice", value: "11labs-cooper" },
-            { name: "language", value: "en-US" },
-            // Add stability settings to improve TTS reliability
-            { name: "stability", value: 0.5 },
-            { name: "similarity_boost", value: 0.75 }
+            { name: "voice", value: "en-US-Neural2-F" },
+            { name: "model", value: "neural2" },
+            { name: "language", value: "en-US" }
           ]
         },
         {
           service: "llm",
           options: [
-            { name: "model", value: "claude-3-5-sonnet-latest" }, // Using Claude 3.5 Sonnet
+            { name: "model", value: "gpt-4o-mini" },
             {
               name: "initial_messages",
-              value: [
+              value: JSON.stringify([
                 {
                   role: "system",
-                  content: [
-                    {
-                      type: "text",
-                      text: "You are a friendly assistant for Portcullis, helping users understand our data warehouse steering assistance services. Keep your responses concise and natural. Always respond in a conversational tone. If you encounter any errors or don't understand a question, politely ask for clarification."
-                    }
-                  ]
-                }
-              ]
+                  content: "You are a friendly assistant for Portcullis, helping users understand our data warehouse steering assistance services. Keep your responses concise and natural. Always respond in a conversational tone."
+                },
+              ])
             },
-            { name: "temperature", value: 0.7 },
+            { name: "temperature", value: "0.7" },
             { name: "run_on_config", value: true }
           ]
         }
@@ -90,22 +75,10 @@ export const POST: APIRoute = async ({ request }) => {
           method: "POST",
           streaming: false
         }
-      },
-      // Add Daily.co specific configuration
-      daily: {
-        // Set properties to improve reliability
-        start_audio_off: false,
-        start_video_off: true,
-        enable_network_ui: false,
-        enable_prejoin_ui: false,
-        enable_screenshare: false,
-        enable_chat: false
       }
     };
 
-    console.log('Starting Daily.co bot with configuration');
-
-    // Start the bot with improved error handling
+    // Start the bot
     const response = await fetch("https://api.daily.co/v1/bots/start", {
       method: "POST",
       headers: {
@@ -119,13 +92,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     if (!response.ok) {
       console.error("Error starting bot:", responseData);
-      
-      // Return a more detailed error response
-      return new Response(JSON.stringify({
-        error: 'Failed to start Daily.co bot',
-        details: responseData,
-        status: response.status
-      }), {
+      return new Response(JSON.stringify(responseData), {
         status: response.status,
         headers: {
           'Content-Type': 'application/json',
@@ -134,44 +101,24 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    console.log('Bot started successfully, room URL:', responseData.room_url);
-
-    // Add additional metadata to the response
-    const enhancedResponse = {
-      ...responseData,
-      success: true,
-      timestamp: new Date().toISOString()
-    };
-
-    return new Response(JSON.stringify(enhancedResponse), {
+    return new Response(JSON.stringify(responseData), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        'Cache-Control': 'no-cache, no-store, must-revalidate'
+        'Access-Control-Allow-Origin': '*'
       }
     });
 
   } catch (error: unknown) {
     console.error("Connect API error:", error);
-    
-    // Provide detailed error information
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    const errorStack = error instanceof Error ? error.stack : undefined;
-    
     return new Response(
-      JSON.stringify({ 
-        error: 'Internal Server Error', 
-        message: errorMessage,
-        stack: process.env.NODE_ENV === 'development' ? errorStack : undefined,
-        timestamp: new Date().toISOString()
-      }), 
+      JSON.stringify({ error: 'Internal Server Error', message: errorMessage }), 
       {
         status: 500,
         headers: {
           'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Cache-Control': 'no-cache, no-store, must-revalidate'
+          'Access-Control-Allow-Origin': '*'
         }
       }
     );
