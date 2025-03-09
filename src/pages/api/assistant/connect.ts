@@ -3,12 +3,14 @@ import type { APIRoute } from 'astro';
 
 export const POST: APIRoute = async ({ request }) => {
   try {
-    const { services, config, rtvi_client_version } = await request.json();
+    const data = await request.json();
+    const { rtvi_client_version } = data;
 
-    // Simple bot configuration
+    // Configure the bot directly without complex merging
     const botConfig = {
       bot_profile: "natural_conversation_2024_11",
       max_duration: 600,
+      url: import.meta.env.DAILY_ROOM_URL,
       services: {
         llm: "openai",
         tts: "elevenlabs",
@@ -40,22 +42,44 @@ export const POST: APIRoute = async ({ request }) => {
             { name: "model", value: "gpt-4o-mini" },
             {
               name: "initial_messages",
-              value: [
+              value: JSON.stringify([
                 {
                   role: "system",
-                  content: "You are a friendly assistant for Portcullis, helping customers understand our data warehouse steering assistance services. Keep your responses concise and natural. Always respond in a conversational tone. Start by greeting the user and introducing yourself."
-                }
-              ]
+                  content: "You are a friendly assistant for Portcullis, helping users understand our data warehouse steering assistance services. Keep your responses concise and natural. Always respond in a conversational tone."
+                },
+              ])
             },
-            { name: "temperature", value: 0.7 },
+            { name: "temperature", value: "0.7" },
             { name: "run_on_config", value: true }
           ]
         }
       ],
-      rtvi_client_version
+      rtvi_client_version,
+      webhook_tools: {
+        get_pricing_info: {
+          url: `${import.meta.env.PUBLIC_SITE_URL || 'https://www.runportcullis.co'}/api/assistant/webhooks`,
+          method: "POST",
+          streaming: false
+        },
+        collect_qualification_info: {
+          url: `${import.meta.env.PUBLIC_SITE_URL || 'https://www.runportcullis.co'}/api/assistant/webhooks`,
+          method: "POST",
+          streaming: false
+        },
+        send_meeting_link: {
+          url: `${import.meta.env.PUBLIC_SITE_URL || 'https://www.runportcullis.co'}/api/assistant/webhooks`,
+          method: "POST",
+          streaming: false
+        },
+        check_interest: {
+          url: `${import.meta.env.PUBLIC_SITE_URL || 'https://www.runportcullis.co'}/api/assistant/webhooks`,
+          method: "POST",
+          streaming: false
+        }
+      }
     };
 
-    // Call the Daily API to start the bot
+    // Start the bot
     const response = await fetch("https://api.daily.co/v1/bots/start", {
       method: "POST",
       headers: {
@@ -65,11 +89,11 @@ export const POST: APIRoute = async ({ request }) => {
       body: JSON.stringify(botConfig),
     });
 
-    const data = await response.json();
+    const responseData = await response.json();
 
     if (!response.ok) {
-      console.error("Daily API error:", data);
-      return new Response(JSON.stringify(data), {
+      console.error("Error starting bot:", responseData);
+      return new Response(JSON.stringify(responseData), {
         status: response.status,
         headers: {
           'Content-Type': 'application/json',
@@ -78,7 +102,7 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    return new Response(JSON.stringify(data), {
+    return new Response(JSON.stringify(responseData), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
@@ -87,7 +111,7 @@ export const POST: APIRoute = async ({ request }) => {
     });
 
   } catch (error: unknown) {
-    console.error("Connect endpoint error:", error);
+    console.error("Connect API error:", error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return new Response(
       JSON.stringify({ error: 'Internal Server Error', message: errorMessage }), 
@@ -100,4 +124,16 @@ export const POST: APIRoute = async ({ request }) => {
       }
     );
   }
+};
+
+// Add OPTIONS handler for CORS preflight requests
+export const OPTIONS: APIRoute = async () => {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+    }
+  });
 };
