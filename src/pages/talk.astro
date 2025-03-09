@@ -1,6 +1,6 @@
 ---
 import MainLayout from "@/layouts/main-layout.astro";
-import Assistant from "@/components/bot/Assistant";
+import { Assistant } from "@/components/assistant";
 import { Image } from "astro:assets";
 import { hobbies } from "@/config/about";
 import { Button } from "@/components/ui/button";
@@ -10,8 +10,8 @@ import { Icon } from "astro-icon/components";
     <section
       class="flex items-center justify-center min-h-screen"
     >
-      <div class="flex flex-col gap-4 w-full max-w-[58rem] items-center">
-        <Assistant />
+      <div class="flex flex-col gap-4 w-full max-w-[58rem] items-center p-4">
+          <Assistant client:load />
       </div>
     </section>
 </MainLayout>
