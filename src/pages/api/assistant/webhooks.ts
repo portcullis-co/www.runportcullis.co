@@ -55,14 +55,119 @@ type BillingType = 'monthly' | 'annual';
 export const POST: APIRoute = async ({ request }) => {
   try {
     const data = await request.json();
-    return handleFunctionCall(data);
-  } catch (error) {
-    console.error('API error:', error);
+    console.log('Webhook received:', data);
+
+    // Extract the tool name and parameters
+    const { tool_name, parameters } = data;
+
+    let responseData = {};
+
+    // Handle different webhook tools
+    switch (tool_name) {
+      case 'get_pricing_info':
+        responseData = {
+          success: true,
+          pricing: {
+            starter: {
+              price: '$499/month',
+              features: ['Basic data warehouse monitoring', 'Weekly reports', 'Email support']
+            },
+            professional: {
+              price: '$999/month',
+              features: ['Advanced monitoring', 'Daily reports', 'Priority support', 'Custom alerts']
+            },
+            enterprise: {
+              price: 'Custom pricing',
+              features: ['Full-service management', '24/7 support', 'Dedicated account manager']
+            }
+          }
+        };
+        break;
+
+      case 'collect_qualification_info':
+        // Store qualification info if needed
+        // This would typically connect to a CRM or database
+        responseData = {
+          success: true,
+          message: 'Information collected successfully'
+        };
+        break;
+
+      case 'send_meeting_link':
+        // In a real implementation, this would send an email or notification
+        responseData = {
+          success: true,
+          meeting_link: 'https://calendly.com/portcullis/demo',
+          message: 'Meeting link ready to share'
+        };
+        break;
+
+      case 'check_interest':
+        responseData = {
+          success: true,
+          message: 'Interest recorded'
+        };
+        break;
+
+      default:
+        return new Response(
+          JSON.stringify({ 
+            error: 'Unknown tool', 
+            message: `Tool '${tool_name}' is not supported` 
+          }),
+          {
+            status: 400,
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*'
+            }
+          }
+        );
+    }
+
+    // Return success response
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      { status: 500 }
+      JSON.stringify(responseData),
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
+      }
+    );
+
+  } catch (error: unknown) {
+    console.error('Webhook error:', error);
+    
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    
+    return new Response(
+      JSON.stringify({ 
+        error: 'Internal Server Error', 
+        message: errorMessage 
+      }),
+      {
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
+      }
     );
   }
+};
+
+// Add OPTIONS handler for CORS preflight requests
+export const OPTIONS: APIRoute = async () => {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+    }
+  });
 };
 
 async function handleFunctionCall(data: FunctionCallRequest): Promise<Response> {

@@ -4,51 +4,63 @@ import type { APIRoute } from 'astro';
 export const POST: APIRoute = async ({ request }) => {
   try {
     const data = await request.json();
-    const { rtvi_client_version } = data;
+    const { rtvi_client_version, client_info } = data;
 
-    // Configure the bot directly without complex merging
+    console.log('Connect request received:', { 
+      rtvi_client_version, 
+      client_info: client_info || 'Not provided'
+    });
+
+    // Configure the bot with improved settings based on Daily Bots documentation
     const botConfig = {
       bot_profile: "natural_conversation_2024_11",
-      max_duration: 600,
+      max_duration: 600, // 10 minutes
       services: {
-        llm: "openai",
-        tts: "elevenlabs",
+        // Use the correct service names from Daily Bots documentation
+        llm: "anthropic", // Using Anthropic instead of OpenAI
+        tts: "cartesia", // Using Cartesia instead of ElevenLabs
         stt: "deepgram"
       },
       api_keys: {
-        openai: import.meta.env.OPENAI_API_KEY,
-        elevenlabs: import.meta.env.ELEVENLABS_API_KEY,
+        anthropic: import.meta.env.ANTHROPIC_API_KEY,
+        cartesia: import.meta.env.CARTESIA_API_KEY,
         deepgram: import.meta.env.DEEPGRAM_API_KEY
       },
       config: [
         {
           service: "stt",
           options: [
-            { name: "language", value: "en-US" }
+            { name: "language", value: "en-US" },
+            { name: "model", value: "nova-2" }
           ]
         },
         {
           service: "tts",
           options: [
-            { name: "voice", value: "en-US-Neural2-F" },
-            { name: "model", value: "neural2" },
+            // Cartesia voice options
+            { name: "voice", value: "79a125e8-cd45-4c13-8a67-188112f4dd22" }, // Example voice ID
             { name: "language", value: "en-US" }
           ]
         },
         {
           service: "llm",
           options: [
-            { name: "model", value: "gpt-4o-mini" },
+            { name: "model", value: "claude-3-5-sonnet-latest" }, // Using Claude 3.5 Sonnet
             {
               name: "initial_messages",
-              value: JSON.stringify([
+              value: [
                 {
                   role: "system",
-                  content: "You are a friendly assistant for Portcullis, helping users understand our data warehouse steering assistance services. Keep your responses concise and natural. Always respond in a conversational tone."
-                },
-              ])
+                  content: [
+                    {
+                      type: "text",
+                      text: "You are a friendly assistant for Portcullis, helping users understand our data warehouse steering assistance services. Keep your responses concise and natural. Always respond in a conversational tone. If you encounter any errors or don't understand a question, politely ask for clarification."
+                    }
+                  ]
+                }
+              ]
             },
-            { name: "temperature", value: "0.7" },
+            { name: "temperature", value: 0.7 },
             { name: "run_on_config", value: true }
           ]
         }
@@ -78,7 +90,9 @@ export const POST: APIRoute = async ({ request }) => {
       }
     };
 
-    // Start the bot
+    console.log('Starting Daily.co bot with configuration');
+
+    // Start the bot with improved error handling
     const response = await fetch("https://api.daily.co/v1/bots/start", {
       method: "POST",
       headers: {
@@ -92,7 +106,13 @@ export const POST: APIRoute = async ({ request }) => {
 
     if (!response.ok) {
       console.error("Error starting bot:", responseData);
-      return new Response(JSON.stringify(responseData), {
+      
+      // Return a more detailed error response
+      return new Response(JSON.stringify({
+        error: 'Failed to start Daily.co bot',
+        details: responseData,
+        status: response.status
+      }), {
         status: response.status,
         headers: {
           'Content-Type': 'application/json',
@@ -101,24 +121,44 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    return new Response(JSON.stringify(responseData), {
+    console.log('Bot started successfully, room URL:', responseData.room_url);
+
+    // Add additional metadata to the response
+    const enhancedResponse = {
+      ...responseData,
+      success: true,
+      timestamp: new Date().toISOString()
+    };
+
+    return new Response(JSON.stringify(enhancedResponse), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
+        'Access-Control-Allow-Origin': '*',
+        'Cache-Control': 'no-cache, no-store, must-revalidate'
       }
     });
 
   } catch (error: unknown) {
     console.error("Connect API error:", error);
+    
+    // Provide detailed error information
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    
     return new Response(
-      JSON.stringify({ error: 'Internal Server Error', message: errorMessage }), 
+      JSON.stringify({ 
+        error: 'Internal Server Error', 
+        message: errorMessage,
+        stack: process.env.NODE_ENV === 'development' ? errorStack : undefined,
+        timestamp: new Date().toISOString()
+      }), 
       {
         status: 500,
         headers: {
           'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
+          'Access-Control-Allow-Origin': '*',
+          'Cache-Control': 'no-cache, no-store, must-revalidate'
         }
       }
     );
