@@ -34,26 +34,28 @@ export default defineConfig({
   ],
   vite: {
     ssr: {
-      noExternal: ['path-to-regexp'],
-      external: ['@slack/web-api', '@hubspot/api-client', 'realtime-ai', 'realtime-ai-react']
+      noExternal: ['@pipecat-ai/*', 'realtime-ai', 'realtime-ai-react'],
+      external: ['@slack/web-api', '@hubspot/api-client', ]
     },
     resolve: {
       alias: {
         'node:path': 'path-browserify',
         'node:buffer': 'buffer',
         'node:stream': 'stream-browserify',
-        'realtime-ai': path.resolve('./src/lib/realtime-ai-proxy.ts'),
-        'realtime-ai-react': path.resolve('./src/lib/realtime-ai-react-proxy.ts')
-      }
+      },
+      dedupe: ['react', 'react-dom']
     },
     optimizeDeps: {
-      include: [],
-      exclude: ['@slack/web-api', '@hubspot/api-client', 'realtime-ai', 'realtime-ai-react'],
+      include: ['realtime-ai-react'],
+      exclude: ['@slack/web-api', '@hubspot/api-client',],
       esbuildOptions: {
         loader: {
           '.js': 'jsx',
         },
       },
+      loaders: {
+        '.js': 'jsx',
+      }
     },
     build: {
       commonjsOptions: {

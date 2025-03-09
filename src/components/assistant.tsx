@@ -3,7 +3,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Mic, Loader2 } from 'lucide-react';
-import { useRTVIClient, useRTVIClientTransportState } from 'realtime-ai-react';
+import { useRTVIClient, useRTVIClientTransportState } from '@pipecat-ai/client-react';
 
 export function Assistant() {
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
