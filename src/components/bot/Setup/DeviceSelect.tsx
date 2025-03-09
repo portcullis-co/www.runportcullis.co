@@ -14,26 +14,28 @@ interface DeviceSelectProps {
 export const DeviceSelect: React.FC<DeviceSelectProps> = ({
   hideMeter = false,
 }) => {
-  const { availableMics, selectedMic, updateMic } = useRTVIClientMediaDevices();
+  const { availableMics = [], selectedMic, updateMic } = useRTVIClientMediaDevices() || {};
 
   useEffect(() => {
-    updateMic(selectedMic?.deviceId);
+    if (updateMic && selectedMic?.deviceId) {
+      updateMic(selectedMic.deviceId);
+    }
   }, [updateMic, selectedMic]);
 
   return (
     <div className="flex flex-col flex-wrap gap-4">
       <Field label="Microphone" error={false}>
         <Select
-          onChange={(e) => updateMic(e.currentTarget.value)}
-          value={selectedMic?.deviceId}
+          onChange={(e) => updateMic && updateMic(e.currentTarget.value)}
+          value={selectedMic?.deviceId || ""}
           icon={<Mic size={24} />}
         >
-          {availableMics.length === 0 ? (
+          {!availableMics || availableMics.length === 0 ? (
             <option value="">Loading devices...</option>
           ) : (
             availableMics.map((mic) => (
               <option key={mic.deviceId} value={mic.deviceId}>
-                {mic.label}
+                {mic.label || `Microphone ${mic.deviceId}`}
               </option>
             ))
           )}

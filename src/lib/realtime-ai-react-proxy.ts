@@ -11,7 +11,13 @@ try {
     useRTVIClient: () => null,
     useRTVIClientEvent: () => {},
     useRTVIClientTransportState: () => 'idle',
-    useRTVIClientMediaDevices: () => ({ audioInputDevices: [], audioOutputDevices: [] }),
+    useRTVIClientMediaDevices: () => ({
+      availableMics: [],
+      selectedMic: null,
+      updateMic: () => {},
+      audioInputDevices: [], 
+      audioOutputDevices: []
+    }),
     RTVIClientProvider: ({ children }: { children: React.ReactNode }) => children,
     RTVIClientAudio: () => null,
     VoiceVisualizer: () => null
