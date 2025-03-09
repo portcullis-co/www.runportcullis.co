@@ -30,8 +30,8 @@ export const POST: APIRoute = async ({ request }) => {
         {
           service: "tts",
           options: [
-            { name: "voice", value: "en-US-Neural2-F" },
-            { name: "model", value: "neural2" },
+            { name: "voice", value: "lNABL6eI3BpPT8BvSqjK" },
+            { name: "model", value: "eleven_turbo_v2_5" },
             { name: "language", value: "en-US" }
           ]
         },
