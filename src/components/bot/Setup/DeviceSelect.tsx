@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Mic, AlertCircle } from "lucide-react";
-import { useRTVIClientMediaDevices } from "realtime-ai-react";
+import { Mic, AlertCircle, RefreshCw } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -25,32 +24,24 @@ interface MicDevice {
 export const DeviceSelect: React.FC<DeviceSelectProps> = ({
   hideMeter = false,
 }) => {
-  // State for direct device detection
-  const [directDevices, setDirectDevices] = useState<MediaDeviceInfo[]>([]);
+  // State for microphone devices
+  const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>("");
   const [permissionState, setPermissionState] = useState<
     "initial" | "requesting" | "granted" | "denied"
   >("initial");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   
-  // Get devices from the hook (may be using mock implementation)
-  const hookResult = useRTVIClientMediaDevices();
-  const { availableMics = [], selectedMic, updateMic } = hookResult || {};
-  
-  // Log hook result for debugging
-  useEffect(() => {
-    console.log("DeviceSelect: RTVI hook result:", hookResult);
-    console.log("DeviceSelect: availableMics from hook:", availableMics);
-    console.log("DeviceSelect: selectedMic from hook:", selectedMic);
-  }, [hookResult, availableMics, selectedMic]);
-
-  // Direct device detection using the browser's MediaDevices API
-  const detectDevices = async () => {
-    console.log("DeviceSelect: Starting direct device detection");
+  // Function to detect and enumerate microphones
+  const detectMicrophones = async () => {
+    setIsLoading(true);
     setErrorMessage(null);
     
+    console.log("DeviceSelect: Starting microphone detection");
+    
     try {
-      if (!navigator.mediaDevices) {
+      if (typeof navigator === 'undefined' || !navigator.mediaDevices) {
         throw new Error("MediaDevices API not available in this browser");
       }
 
@@ -58,64 +49,55 @@ export const DeviceSelect: React.FC<DeviceSelectProps> = ({
       
       // Request microphone permission
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      console.log("DeviceSelect: Microphone permission granted, stream:", stream);
+      console.log("DeviceSelect: Microphone permission granted");
       
-      // Get all devices after permission is granted
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      console.log("DeviceSelect: All devices:", devices);
+      // Enumerate all devices
+      const allDevices = await navigator.mediaDevices.enumerateDevices();
+      console.log("DeviceSelect: All devices:", allDevices);
       
-      // Filter for audio input devices
-      const microphones = devices.filter(device => device.kind === 'audioinput');
+      // Filter for microphones only
+      const microphones = allDevices.filter(device => device.kind === 'audioinput');
       console.log("DeviceSelect: Found microphones:", microphones);
       
-      // Stop tracks from the permission request
+      // Stop the stream tracks
       stream.getTracks().forEach(track => {
         console.log(`DeviceSelect: Stopping track: ${track.kind}`);
         track.stop();
       });
       
-      setDirectDevices(microphones);
+      // Update state with devices
+      setDevices(microphones);
       setPermissionState("granted");
       
-      // Select the first device if we have one and none is currently selected
+      // Auto-select first device if available
       if (microphones.length > 0 && !selectedDeviceId) {
+        console.log("DeviceSelect: Auto-selecting first device:", microphones[0].deviceId);
         setSelectedDeviceId(microphones[0].deviceId);
-        
-        // Update the RTVI client if the hook provides the function
-        if (updateMic) {
-          console.log("DeviceSelect: Auto-selecting first device:", microphones[0].deviceId);
-          updateMic(microphones[0].deviceId);
-        }
       }
     } catch (error) {
-      console.error("DeviceSelect: Error detecting devices:", error);
-      setErrorMessage(error instanceof Error ? error.message : "Unknown error detecting microphones");
+      console.error("DeviceSelect: Error detecting microphones:", error);
+      setErrorMessage(error instanceof Error ? error.message : "Unknown error");
       setPermissionState("denied");
+    } finally {
+      setIsLoading(false);
     }
   };
   
-  // Initial device detection
+  // Initialize microphone detection on component mount
   useEffect(() => {
-    if (permissionState === "initial") {
-      detectDevices();
-    }
-  }, [permissionState]);
+    detectMicrophones();
+  }, []);
   
-  // Handle device selection
+  // Handle microphone selection
   const handleDeviceSelect = (deviceId: string) => {
-    console.log(`DeviceSelect: Device selected: ${deviceId}`);
+    console.log("DeviceSelect: Selected device:", deviceId);
     setSelectedDeviceId(deviceId);
     
-    // Update the RTVI client if the hook provides the function
-    if (updateMic) {
-      updateMic(deviceId);
-    }
+    // You would normally call updateMic here, but we're avoiding the RTVI hook
+    // Instead, we'll store the selection in state and let the parent handle it if needed
   };
   
-  // Effective devices: prefer direct devices if available, fall back to hook devices
-  const effectiveDevices = directDevices.length > 0 ? directDevices : availableMics;
-  const isLoading = permissionState === "requesting";
-  const noDevices = permissionState === "granted" && effectiveDevices.length === 0;
+  const noDevices = permissionState === "granted" && devices.length === 0;
   
   return (
     <div className="space-y-3">
@@ -132,20 +114,20 @@ export const DeviceSelect: React.FC<DeviceSelectProps> = ({
       </div>
       
       <Select 
-        value={selectedDeviceId || selectedMic?.deviceId || ''} 
+        value={selectedDeviceId} 
         onValueChange={handleDeviceSelect}
         disabled={isLoading || noDevices}
       >
         <SelectTrigger className="w-full">
           <SelectValue placeholder={
-            isLoading ? "Requesting access..." : 
-            noDevices ? "No microphones detected" : 
+            isLoading ? "Detecting microphones..." : 
+            noDevices ? "No microphones found" : 
             "Select a microphone"
           } />
         </SelectTrigger>
         <SelectContent>
-          {effectiveDevices.length > 0 ? (
-            effectiveDevices.map((device) => (
+          {devices.length > 0 ? (
+            devices.map((device) => (
               <SelectItem key={device.deviceId} value={device.deviceId}>
                 <div className="flex items-center gap-2">
                   <Mic className="h-4 w-4" />
@@ -155,7 +137,7 @@ export const DeviceSelect: React.FC<DeviceSelectProps> = ({
             ))
           ) : (
             <SelectItem value="no-devices" disabled>
-              {isLoading ? "Requesting access..." : "No microphones detected"}
+              {isLoading ? "Detecting microphones..." : "No microphones found"}
             </SelectItem>
           )}
         </SelectContent>
@@ -179,7 +161,7 @@ export const DeviceSelect: React.FC<DeviceSelectProps> = ({
         </p>
       )}
       
-      {!hideMeter && permissionState === "granted" && (
+      {!hideMeter && permissionState === "granted" && selectedDeviceId && (
         <div className="mt-2">
           <AudioIndicatorBar />
         </div>
@@ -188,11 +170,21 @@ export const DeviceSelect: React.FC<DeviceSelectProps> = ({
       <Button 
         variant="outline" 
         size="sm" 
-        onClick={detectDevices} 
+        onClick={detectMicrophones} 
         disabled={isLoading}
-        className="w-full mt-2"
+        className="w-full mt-2 flex items-center justify-center gap-2"
       >
-        {isLoading ? "Detecting..." : "Refresh Microphones"}
+        {isLoading ? (
+          <>
+            <RefreshCw className="h-4 w-4 animate-spin" />
+            Detecting...
+          </>
+        ) : (
+          <>
+            <RefreshCw className="h-4 w-4" />
+            Refresh Microphones
+          </>
+        )}
       </Button>
     </div>
   );

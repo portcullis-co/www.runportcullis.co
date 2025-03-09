@@ -56,12 +56,12 @@ const tileCX = cx(
 );
 const tileActiveCX = cx("*:opacity-100 bg-primary-100/70 border-transparent");
 
-export const ConfigSelect: React.FC<ConfigSelectProps> = ({
+export default function ConfigSelect({
   onConfigUpdate,
   onServiceUpdate,
   state,
   inSession = false,
-}) => {
+}: ConfigSelectProps) {
   const { character, setCharacter, language, setLanguage, clientParams } =
     useContext(AppContext);
 
@@ -339,6 +339,4 @@ export const ConfigSelect: React.FC<ConfigSelectProps> = ({
       </div>
     </>
   );
-};
-
-export default ConfigSelect;
+}

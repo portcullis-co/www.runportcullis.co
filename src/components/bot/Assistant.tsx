@@ -17,7 +17,6 @@ import { Button } from "@/components/ui/button";
 import * as Card from "@/components/ui/card";
 import React from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { RTVIClientProvider } from "realtime-ai-react";
 
 const status_text = {
   idle: "Initializing...",
@@ -28,7 +27,7 @@ const status_text = {
 };
 
 export default function Assistant() {
-  const voiceClient = useRTVIClient()!;
+  const voiceClient = useRTVIClient();
   const transportState = useRTVIClientTransportState();
 
   const [appState, setAppState] = useState<
@@ -49,13 +48,20 @@ export default function Assistant() {
   );
 
   useEffect(() => {
-    // Initialize local audio devices
+    // Initialize local audio devices 
     if (!voiceClient || mountedRef.current) return;
     mountedRef.current = true;
-    voiceClient.initDevices();
-  }, [appState, voiceClient]);
+    try {
+      console.log("Initializing voice client devices");
+      voiceClient.initDevices();
+    } catch (error) {
+      console.error("Error initializing devices:", error);
+    }
+  }, [voiceClient]);
 
   useEffect(() => {
+    if (!voiceClient) return;
+    
     voiceClient.params = {
       ...voiceClient.params,
       requestData: {
@@ -63,13 +69,11 @@ export default function Assistant() {
         ...clientParams,
       },
     };
-  }, [voiceClient, appState, clientParams]);
+  }, [voiceClient, clientParams]);
 
   useEffect(() => {
     // Update app state based on voice client transport state.
-    // We only need a subset of states to determine the ui state,
-    // so this effect helps avoid excess inline conditionals.
-    console.log(transportState);
+    console.log("Transport state:", transportState);
     switch (transportState) {
       case "initialized":
       case "disconnected":
@@ -98,13 +102,13 @@ export default function Assistant() {
       voiceClient.enableMic(false);
       await voiceClient.connect();
     } catch (e) {
-      setError((e as RTVIError).message || "Unknown error occured");
+      setError((e as RTVIError).message || "Unknown error occurred");
       voiceClient.disconnect();
     }
   }
 
   async function leave() {
-    await voiceClient.disconnect();
+    await voiceClient?.disconnect();
   }
 
   /**
@@ -135,7 +139,6 @@ export default function Assistant() {
   const isReady = appState === "ready";
 
   return (
-    <RTVIClientProvider client={voiceClient}>
     <TooltipProvider>
       <Card.Card className="animate-appear max-w-lg">
         <Card.CardHeader>
@@ -144,7 +147,7 @@ export default function Assistant() {
         <Card.CardContent>
           <div className="flex flex-row gap-2 bg-primary-50 px-4 py-2 md:p-2 text-sm items-center justify-center rounded-md font-medium text-pretty">
             <Ear className="size-7 md:size-5 text-primary-400" />
-            Works best in a quiet environment with a good internet.
+            Works best in a quiet environment with a good internet connection.
           </div>
           <Configure
             startAudioOff={startAudioOff}
@@ -153,13 +156,12 @@ export default function Assistant() {
           />
         </Card.CardContent>
         <Card.CardFooter>
-          <Button key="start" onClick={() => start()} disabled={!isReady}>
-            {!isReady && <Loader2 className="animate-spin" />}
-            {status_text[transportState as keyof typeof status_text]}
+          <Button key="start" onClick={() => start()} disabled={!isReady} className="w-full">
+            {!isReady && <Loader2 className="mr-2 animate-spin" />}
+            {status_text[transportState as keyof typeof status_text] || "Start"}
           </Button>
         </Card.CardFooter>
       </Card.Card>
     </TooltipProvider>
-    </RTVIClientProvider>
   );
 }

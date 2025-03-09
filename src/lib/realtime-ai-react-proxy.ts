@@ -1,8 +1,9 @@
-import { createRequire } from 'module';
 import React, { useEffect, useState } from 'react';
-const require = createRequire(import.meta.url);
 
-// Mock implementation of media devices hook for development
+// Detect if we're in browser environment
+const isBrowser = typeof window !== 'undefined';
+
+// Mock implementation of media devices hook for development and SSR
 const createMockMediaDevicesHook = () => {
   // Create a stateful hook for the mock implementation
   return () => {
@@ -32,7 +33,7 @@ const createMockMediaDevicesHook = () => {
 
     // Initialize with real browser devices if available
     useEffect(() => {
-      if (typeof navigator !== 'undefined' && navigator.mediaDevices && !initialized) {
+      if (isBrowser && navigator.mediaDevices && !initialized) {
         console.log("[Proxy] Initializing media devices...");
         
         // First try to get permission which helps get device labels
@@ -81,51 +82,56 @@ const createMockMediaDevicesHook = () => {
   };
 };
 
-// Create an object to hold our exports
-let rtviPackage = {
+// Empty component to use as provider in SSR
+const EmptyProvider = ({ children }: { children: React.ReactNode }) => {
+  return React.createElement(React.Fragment, null, children);
+};
+
+// Create a base mock implementation
+const mockImplementation = {
   useRTVIClient: () => null,
   useRTVIClientEvent: () => {},
   useRTVIClientTransportState: () => 'idle',
   useRTVIClientMediaDevices: createMockMediaDevicesHook(),
-  RTVIClientProvider: ({ children }: { children: React.ReactNode }) => children,
+  RTVIClientProvider: EmptyProvider,
   RTVIClientAudio: () => null,
   VoiceVisualizer: () => null
 };
 
-// Try to load the real package if available
-try {
-  console.log("[Proxy] Attempting to load @pipecat-ai/client-react...");
-  // First try named imports
+// Create an object to hold our exports
+let rtviPackage = { ...mockImplementation };
+
+// Only try to load the real package in browser
+if (isBrowser) {
   try {
-    const imported = require('@pipecat-ai/client-react');
-    if (imported) {
+    console.log("[Proxy] Attempting to dynamically import @pipecat-ai/client-react in browser...");
+    
+    // Using dynamic import would be better, but for now we'll use a safer approach
+    const importModule = () => {
+      try {
+        // Access window.require if available - this is a simplified approach
+        const windowWithRequire = window as unknown as { require?: (id: string) => any };
+        const mod = windowWithRequire.require ? windowWithRequire.require('@pipecat-ai/client-react') : null;
+        return mod;
+      } catch (e) {
+        console.warn("[Proxy] Cannot import @pipecat-ai/client-react:", e);
+        return null;
+      }
+    };
+    
+    const importedModule = importModule();
+    
+    if (importedModule) {
       console.log("[Proxy] Successfully loaded @pipecat-ai/client-react");
-      // Use the imported package or fall back to our mock implementations
       rtviPackage = {
         ...rtviPackage,
-        ...imported.default || imported
+        ...(importedModule.default || importedModule)
       };
     }
-  } catch (namedError) {
-    console.warn("[Proxy] Error with named imports:", namedError);
-    // Try default import
-    try {
-      const defaultImported = require('@pipecat-ai/client-react').default;
-      if (defaultImported) {
-        console.log("[Proxy] Successfully loaded default export");
-        rtviPackage = {
-          ...rtviPackage,
-          ...defaultImported
-        };
-      }
-    } catch (defaultError) {
-      console.warn("[Proxy] Error with default import:", defaultError);
-      console.warn("[Proxy] Using mock implementation for @pipecat-ai/client-react");
-    }
+  } catch (error) {
+    console.warn("[Proxy] Package @pipecat-ai/client-react not available, using mock implementation");
+    console.error("[Proxy] Error:", error);
   }
-} catch (error) {
-  console.warn("[Proxy] Package @pipecat-ai/client-react not available, using mock implementation");
-  console.error("[Proxy] Error:", error);
 }
 
 // Export everything from our package object
