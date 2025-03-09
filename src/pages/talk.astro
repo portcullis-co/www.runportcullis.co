@@ -1,0 +1,17 @@
+---
+import MainLayout from "@/layouts/main-layout.astro";
+import Assistant from "@/components/bot/Assistant";
+import { Image } from "astro:assets";
+import { hobbies } from "@/config/about";
+import { Button } from "@/components/ui/button";
+import { Icon } from "astro-icon/components";
+---
+<MainLayout title="Referrals" mainClass="flex-1 bg-background-200">
+    <section
+      class="container flex flex-col gap-6 py-8 md:max-w-[64rem] md:py-12 lg:py-24"
+    >
+      <div class="mx-auto flex w-full flex-col gap-4 md:max-w-[58rem]">
+        <Assistant />
+      </div>
+    </section>
+  </MainLayout>

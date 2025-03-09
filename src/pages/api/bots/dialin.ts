@@ -1,5 +1,12 @@
 import type { APIRoute } from 'astro';
 import twilio from 'twilio';
+// localhost/api/dialin [POST]
+import {
+  defaultBotProfile,
+  defaultConfig,
+  defaultMaxDuration,
+  defaultServices,
+} from "../../../../rtvi.config";
 
 const twilioClient = twilio(
   import.meta.env.TWILIO_ACCOUNT_SID,
