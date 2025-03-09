@@ -37,9 +37,12 @@ export const POST: APIRoute = async ({ request }) => {
         {
           service: "tts",
           options: [
-            // Cartesia voice options
-            { name: "voice", value: "79a125e8-cd45-4c13-8a67-188112f4dd22" }, // Example voice ID
-            { name: "language", value: "en-US" }
+            // Using a standard Cartesia voice that's known to work
+            { name: "voice", value: "11labs-cooper" },
+            { name: "language", value: "en-US" },
+            // Add stability settings to improve TTS reliability
+            { name: "stability", value: 0.5 },
+            { name: "similarity_boost", value: 0.75 }
           ]
         },
         {
@@ -87,6 +90,16 @@ export const POST: APIRoute = async ({ request }) => {
           method: "POST",
           streaming: false
         }
+      },
+      // Add Daily.co specific configuration
+      daily: {
+        // Set properties to improve reliability
+        start_audio_off: false,
+        start_video_off: true,
+        enable_network_ui: false,
+        enable_prejoin_ui: false,
+        enable_screenshare: false,
+        enable_chat: false
       }
     };
 

@@ -19,9 +19,19 @@ function AssistantContent() {
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [conversationStatus, setConversationStatus] = useState<string>('');
+  const [botSpeaking, setBotSpeaking] = useState(false);
+  const [userSpeaking, setUserSpeaking] = useState(false);
+  const [errorCount, setErrorCount] = useState(0);
 
   const rtviClient = useRTVIClient();
   const transportState = useRTVIClientTransportState();
+
+  // Reset error count when connection state changes
+  useEffect(() => {
+    if (transportState === 'connected') {
+      setErrorCount(0);
+    }
+  }, [transportState]);
 
   // Set up event listeners for RTVI client messages
   useEffect(() => {
@@ -39,12 +49,57 @@ function AssistantContent() {
           break;
         case 'user-transcription':
           console.log('Transcription:', message.data);
-          setConversationStatus('Listening...');
+          setConversationStatus(`You: ${message.data?.text || 'Listening...'}`);
+          break;
+        case 'bot-transcription':
+          console.log('Bot transcription:', message.data);
+          setConversationStatus(`Portcullis: ${message.data?.text || 'Speaking...'}`);
+          break;
+        case 'bot-llm-text':
+          console.log('Bot LLM text:', message.data);
+          break;
+        case 'bot-llm-started':
+          console.log('Bot LLM started');
+          setConversationStatus('Thinking...');
+          break;
+        case 'bot-llm-stopped':
+          console.log('Bot LLM stopped');
+          break;
+        case 'bot-tts-started':
+          console.log('Bot TTS started');
+          setBotSpeaking(true);
+          break;
+        case 'bot-tts-stopped':
+          console.log('Bot TTS stopped');
+          setBotSpeaking(false);
+          break;
+        case 'user-started-speaking':
+          console.log('User started speaking');
+          setUserSpeaking(true);
+          break;
+        case 'user-stopped-speaking':
+          console.log('User stopped speaking');
+          setUserSpeaking(false);
           break;
         case 'error':
           console.error('RTVI error:', message.data);
-          setError(`Error: ${message.data?.message || 'Unknown error'}`);
-          setConversationStatus('Error occurred');
+          
+          // Increment error count
+          setErrorCount(prev => prev + 1);
+          
+          // Extract error message
+          const errorMessage = message.data?.message || 'Unknown error';
+          
+          // Only show error if it's not a TTS error or if we've seen multiple errors
+          if (!errorMessage.includes('tts') || errorCount > 2) {
+            setError(`Error: ${errorMessage}`);
+            setConversationStatus('Error occurred');
+          } else {
+            console.log('Suppressing TTS error display to user');
+          }
+          break;
+        case 'metrics':
+          // Don't log metrics to avoid console spam
           break;
         default:
           // Log other message types for debugging
@@ -61,11 +116,14 @@ function AssistantContent() {
     const handleDisconnected = () => {
       console.log('Disconnected from assistant');
       setConversationStatus('');
+      setBotSpeaking(false);
+      setUserSpeaking(false);
     };
 
     const handleConnected = () => {
       console.log('Connected to assistant');
       setConversationStatus('Connected');
+      setError(null);
     };
 
     // Add event listeners
@@ -81,7 +139,7 @@ function AssistantContent() {
       rtviClient.off('disconnected', handleDisconnected);
       rtviClient.off('connected', handleConnected);
     };
-  }, [rtviClient]);
+  }, [rtviClient, errorCount]);
 
   // Get available microphones
   useEffect(() => {
@@ -155,6 +213,46 @@ function AssistantContent() {
     return isConnecting || !selectedDevice || !rtviClient;
   };
 
+  // Get status indicator
+  const getStatusIndicator = () => {
+    if (botSpeaking) {
+      return (
+        <div className="flex items-center text-sm text-green-500">
+          <span className="relative flex h-3 w-3 mr-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+          </span>
+          Portcullis is speaking
+        </div>
+      );
+    }
+    
+    if (userSpeaking) {
+      return (
+        <div className="flex items-center text-sm text-blue-500">
+          <span className="relative flex h-3 w-3 mr-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+          </span>
+          Listening to you
+        </div>
+      );
+    }
+    
+    if (transportState === 'connected') {
+      return (
+        <div className="flex items-center text-sm text-gray-500">
+          <span className="relative flex h-3 w-3 mr-2">
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-gray-500"></span>
+          </span>
+          Ready
+        </div>
+      );
+    }
+    
+    return null;
+  };
+
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
@@ -181,8 +279,10 @@ function AssistantContent() {
           </Select>
         </div>
 
+        {getStatusIndicator()}
+
         {conversationStatus && (
-          <div className="text-sm text-blue-500">
+          <div className="text-sm text-blue-500 min-h-[3rem] max-h-[6rem] overflow-y-auto">
             {conversationStatus}
           </div>
         )}
@@ -190,6 +290,20 @@ function AssistantContent() {
         {error && (
           <div className="text-sm text-red-500">
             {error}
+            {errorCount > 3 && (
+              <div className="mt-1">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => {
+                    setError(null);
+                    setErrorCount(0);
+                  }}
+                >
+                  Dismiss
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </CardContent>
