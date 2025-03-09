@@ -66,7 +66,7 @@ export const POST: APIRoute = async ({ request }) => {
       webhook_tools: webhookTools,
     };
 
-    const response = await fetch(import.meta.env.DAILY_BOTS_URL, {
+    const response = await fetch("https://api.daily.co/v1/bots/start", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
