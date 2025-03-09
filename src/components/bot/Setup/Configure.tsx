@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 
 import { RTVIClientConfigOption } from "realtime-ai";
-import { useRTVIClient } from "realtime-ai-react";
+import { useRTVIClient, RTVIClientProvider } from "realtime-ai-react";
 import { AppContext } from "@/components/bot/context";
 import ConfigSelect from "./ConfigSelect";
 import DeviceSelect from "@/components/bot/Setup/DeviceSelect";

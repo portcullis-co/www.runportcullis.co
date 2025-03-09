@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import * as Card from "@/components/ui/card";
 import React from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { RTVIClientProvider } from "realtime-ai-react";
 
 const status_text = {
   idle: "Initializing...",
@@ -134,6 +135,7 @@ export default function Assistant() {
   const isReady = appState === "ready";
 
   return (
+    <RTVIClientProvider client={voiceClient}>
     <TooltipProvider>
       <Card.Card className="animate-appear max-w-lg">
         <Card.CardHeader>
@@ -158,5 +160,6 @@ export default function Assistant() {
         </Card.CardFooter>
       </Card.Card>
     </TooltipProvider>
+    </RTVIClientProvider>
   );
 }
