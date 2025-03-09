@@ -40,10 +40,15 @@ function AssistantContent() {
   // Configure audio when device is selected
   useEffect(() => {
     if (rtviClient && selectedDevice) {
-      // Use type assertion to bypass TypeScript checking
-      // The actual implementation may have this method even if types don't reflect it
       try {
-        (rtviClient as any).setAudioInput?.(selectedDevice);
+        // Try different methods to set audio input
+        if (typeof (rtviClient as any).setAudioInput === 'function') {
+          (rtviClient as any).setAudioInput(selectedDevice);
+        } else if (typeof (rtviClient as any).selectAudioInputDevice === 'function') {
+          (rtviClient as any).selectAudioInputDevice(selectedDevice);
+        } else {
+          console.warn('No method available to set audio input device');
+        }
       } catch (err) {
         console.warn('Failed to set audio input device:', err);
       }
@@ -147,9 +152,8 @@ export function Assistant() {
         // Create the transport with the correct options
         const transport = new DailyTransport({
           dailyFactoryOptions: {
-            // Daily.co specific configuration
-            // The roomUrl property is used to specify the Daily room URL
-            url: import.meta.env.PUBLIC_DAILY_ROOM_URL || '',
+            // Use the roomUrl property for Daily.co
+            url: import.meta.env.DAILY_ROOM_URL || '',
           }
         });
         
@@ -159,7 +163,8 @@ export function Assistant() {
           enableMic: true,
           enableCam: false,
           params: {
-            baseUrl: import.meta.env.PUBLIC_PIPECAT_API_URL || 'https://www.runportcullis.co/api/assistant',
+            // Use the correct API endpoint
+            baseUrl: '/api/assistant',
             endpoint: {
               connect: '/connect',
             },
