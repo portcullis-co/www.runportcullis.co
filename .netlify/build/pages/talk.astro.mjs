@@ -1,12 +1,11 @@
 import { a as createComponent, r as renderComponent, b as renderTemplate, m as maybeRenderHead } from "../chunks/astro/server_aMtVhhw-.mjs";
-import { a as cn, d as Button, $ as $$MainLayout } from "../chunks/main-layout_B4Exvwy_.mjs";
+import { a as cn, d as Button, $ as $$MainLayout } from "../chunks/main-layout_MwNyqyy3.mjs";
 import { jsx, jsxs, Fragment } from "react/jsx-runtime";
 import { CircleHelp, ChevronDown, Languages, Mic, Loader2, X, Pause, MicOff, StopCircle, LineChart, Settings, LogOut, CircleAlert, Ear } from "lucide-react";
 import * as React from "react";
 import React__default, { createContext, useState, useEffect, useContext, useRef, useCallback, memo } from "react";
-import { RTVIEvent } from "realtime-ai";
-import { useRTVIClient, useRTVIClientEvent, useRTVIClientMediaDevices, VoiceVisualizer, useRTVIClientTransportState } from "realtime-ai-react";
-import { d as defaultServices, a as defaultConfig, L as LLM_MODEL_CHOICES, b as LANGUAGES, P as PRESET_CHARACTERS, c as defaultLLMPrompt } from "../chunks/rtvi.config_HO4ZNCI7.mjs";
+import { createRequire } from "module";
+import { d as defaultServices, a as defaultConfig, L as LLM_MODEL_CHOICES, e as LANGUAGES, P as PRESET_CHARACTERS, f as defaultLLMPrompt } from "../chunks/rtvi.config_DBD_TWde.mjs";
 import { createPortal } from "react-dom";
 import { S as StatsAggregator } from "../chunks/stats_aggregator_B-k-k6Vo.mjs";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
@@ -21,6 +20,20 @@ import { s as styles, a as styles$1, b as styles$2, c as styles$3 } from "../chu
 import clsx from "clsx";
 import { Sparklines, SparklinesBars, SparklinesLine, SparklinesReferenceLine } from "react-sparklines";
 import { renderers } from "../renderers.mjs";
+const require$1 = createRequire(import.meta.url);
+const rtviPkg = require$1("realtime-ai");
+const { RTVIClient, RTVIError, RTVIEvent, RTVIMessage } = rtviPkg;
+const require2 = createRequire(import.meta.url);
+const reactPkg = require2("realtime-ai-react");
+const {
+  useRTVIClient,
+  useRTVIClientEvent,
+  useRTVIClientTransportState,
+  useRTVIClientMediaDevices,
+  RTVIClientProvider,
+  RTVIClientAudio,
+  VoiceVisualizer
+} = reactPkg;
 const AppContext = createContext({
   character: 0,
   setCharacter: () => {
@@ -39,6 +52,7 @@ const AppContext = createContext({
   }
 });
 AppContext.displayName = "AppContext";
+const TooltipProvider = TooltipPrimitive.Provider;
 const Tooltip = TooltipPrimitive.Root;
 const TooltipTrigger = TooltipPrimitive.Trigger;
 const TooltipContent = React.forwardRef(({ className, sideOffset = 4, ...props }, ref) => /* @__PURE__ */ jsx(
@@ -162,30 +176,33 @@ const selectVariants = cva(
     }
   }
 );
-const Select = ({
-  variant,
-  className,
-  children,
-  icon,
-  ...props
-}) => {
-  return /* @__PURE__ */ jsxs("div", { className: "relative w-full", children: [
-    icon && /* @__PURE__ */ jsx("div", { className: "absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-primary-500", children: icon }),
-    /* @__PURE__ */ jsx(
-      "select",
-      {
-        className: cn(
-          selectVariants({ variant }),
-          icon ? "pl-11" : "",
-          className
-        ),
-        ...props,
-        children
-      }
-    )
-  ] });
-};
-Select.displayName = "Input";
+const Select = React.forwardRef(
+  ({
+    variant,
+    className,
+    children,
+    icon,
+    ...props
+  }, ref) => {
+    return /* @__PURE__ */ jsxs("div", { className: "relative", children: [
+      icon && /* @__PURE__ */ jsx("div", { className: "absolute size-9 left-0 top-0 flex items-center justify-center", children: icon }),
+      /* @__PURE__ */ jsx(
+        "select",
+        {
+          ref,
+          className: cn(
+            selectVariants({ variant }),
+            icon && "pl-9",
+            className
+          ),
+          ...props,
+          children
+        }
+      )
+    ] });
+  }
+);
+Select.displayName = "Select";
 const Card = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
   "div",
   {
@@ -1196,7 +1213,7 @@ function Assistant() {
     );
   }
   const isReady = appState === "ready";
-  return /* @__PURE__ */ jsxs(Card, { className: "animate-appear max-w-lg", children: [
+  return /* @__PURE__ */ jsx(TooltipProvider, { children: /* @__PURE__ */ jsxs(Card, { className: "animate-appear max-w-lg", children: [
     /* @__PURE__ */ jsx(CardHeader, { children: /* @__PURE__ */ jsx(CardTitle, { children: "Configuration" }) }),
     /* @__PURE__ */ jsxs(CardContent, { children: [
       /* @__PURE__ */ jsxs("div", { className: "flex flex-row gap-2 bg-primary-50 px-4 py-2 md:p-2 text-sm items-center justify-center rounded-md font-medium text-pretty", children: [
@@ -1216,7 +1233,7 @@ function Assistant() {
       !isReady && /* @__PURE__ */ jsx(Loader2, { className: "animate-spin" }),
       status_text[transportState]
     ] }, "start") })
-  ] });
+  ] }) });
 }
 const $$Talk = createComponent(($$result, $$props, $$slots) => {
   return renderTemplate`${renderComponent($$result, "MainLayout", $$MainLayout, { "title": "Referrals", "mainClass": "flex-1 bg-background-200" }, { "default": ($$result2) => renderTemplate` ${maybeRenderHead()}<section class="container flex flex-col gap-6 py-8 md:max-w-[64rem] md:py-12 lg:py-24"> <div class="mx-auto flex w-full flex-col gap-4 md:max-w-[58rem]"> ${renderComponent($$result2, "Assistant", Assistant, {})} </div> </section> ` })}`;

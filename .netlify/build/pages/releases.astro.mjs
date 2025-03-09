@@ -1,7 +1,7 @@
 import { c as createAstro, a as createComponent, m as maybeRenderHead, d as addAttribute, s as spreadAttributes, b as renderTemplate, r as renderComponent } from "../chunks/astro/server_aMtVhhw-.mjs";
-import { a as cn, $ as $$MainLayout, f as formatDate, B as Badge } from "../chunks/main-layout_B4Exvwy_.mjs";
+import { a as cn, $ as $$MainLayout, f as formatDate, B as Badge } from "../chunks/main-layout_MwNyqyy3.mjs";
 import "clsx";
-import { g as getCollection } from "../chunks/_astro_content_BaNjfw_T.mjs";
+import { g as getCollection } from "../chunks/_astro_content_BY_1UFUJ.mjs";
 import { renderers } from "../renderers.mjs";
 const $$Astro$1 = createAstro("https://www.runportcullis.co");
 const $$PageHeader = createComponent(($$result, $$props, $$slots) => {

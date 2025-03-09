@@ -1,3 +1,5 @@
+// astro.config.mjs
+
 import db from "@astrojs/db";
 import mdx from "@astrojs/mdx";
 import react from "@astrojs/react";
@@ -7,9 +9,9 @@ import icon from "astro-icon";
 import { defineConfig } from "astro/config";
 import simpleStackForm from "simple-stack-form";
 import netlify from '@astrojs/netlify';
-import node from '@astrojs/node'
-import clerk from '@clerk/astro'
-
+import node from '@astrojs/node';
+import clerk from '@clerk/astro';
+import path from 'path';
 
 export default defineConfig({
   site: 'https://www.runportcullis.co',
@@ -39,16 +41,24 @@ export default defineConfig({
       alias: {
         'node:path': 'path-browserify',
         'node:buffer': 'buffer',
-        'node:stream': 'stream-browserify'
+        'node:stream': 'stream-browserify',
+        'realtime-ai': path.resolve('./src/lib/realtime-ai-proxy.ts'),
+        'realtime-ai-react': path.resolve('./src/lib/realtime-ai-react-proxy.ts')
       }
     },
     optimizeDeps: {
+      include: ['realtime-ai', 'realtime-ai-react'],
       exclude: ['@slack/web-api', '@hubspot/api-client'],
       esbuildOptions: {
         loader: {
           '.js': 'jsx',
         },
       },
-    }
+    },
+    build: {
+      commonjsOptions: {
+        transformMixedEsModules: true,
+      },
+    },
   },
 });

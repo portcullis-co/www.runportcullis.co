@@ -1,7 +1,7 @@
 import { c as createAstro, a as createComponent, r as renderComponent, b as renderTemplate } from "../chunks/astro/server_aMtVhhw-.mjs";
 import { $ as $$Bentogrid } from "../chunks/bentogrid_CyHOjrBJ.mjs";
-import { $ as $$HeroLanding, b as $$Features, a as $$InfoLanding, i as infos } from "../chunks/info-landing_BhVzfYKK.mjs";
-import { $ as $$MainLayout } from "../chunks/main-layout_B4Exvwy_.mjs";
+import { $ as $$HeroLanding, b as $$Features, a as $$InfoLanding, i as infos } from "../chunks/info-landing_B5KOV35L.mjs";
+import { $ as $$MainLayout } from "../chunks/main-layout_MwNyqyy3.mjs";
 import { renderers } from "../renderers.mjs";
 const $$Astro = createAstro("https://www.runportcullis.co");
 const $$Index = createComponent(($$result, $$props, $$slots) => {

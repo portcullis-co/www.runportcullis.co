@@ -1,5 +1,5 @@
 import { a as createComponent, r as renderComponent, b as renderTemplate, m as maybeRenderHead } from "../chunks/astro/server_aMtVhhw-.mjs";
-import { a as cn, B as Badge, d as Button, $ as $$MainLayout } from "../chunks/main-layout_B4Exvwy_.mjs";
+import { a as cn, B as Badge, d as Button, $ as $$MainLayout } from "../chunks/main-layout_MwNyqyy3.mjs";
 import { jsx, jsxs, Fragment } from "react/jsx-runtime";
 import NumberFlow from "@number-flow/react";
 import { BadgeCheck, ArrowRight } from "lucide-react";

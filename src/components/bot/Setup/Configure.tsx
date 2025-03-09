@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { RTVIClientConfigOption } from "realtime-ai";
 import { useRTVIClient } from "realtime-ai-react";
 import { AppContext } from "@/components/bot/context";
-import ConfigSelect from "@/components/bot/Setup/ConfigSelect";
+import ConfigSelect from "./ConfigSelect";
 import DeviceSelect from "@/components/bot/Setup/DeviceSelect";
 
 interface ConfigureProps {

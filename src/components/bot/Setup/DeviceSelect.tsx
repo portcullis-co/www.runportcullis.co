@@ -3,7 +3,7 @@ import { Mic } from "lucide-react";
 import { useRTVIClientMediaDevices } from "realtime-ai-react";
 
 import { Field } from "@/components/ui/field";
-import { Select } from "@/components/ui/select";
+import { Select } from "@/components/ui/assistant-select";
 
 import { AudioIndicatorBar } from "./AudioIndicator";
 

@@ -16,6 +16,7 @@ import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import * as Card from "@/components/ui/card";
 import React from "react";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const status_text = {
   idle: "Initializing...",
@@ -133,27 +134,29 @@ export default function Assistant() {
   const isReady = appState === "ready";
 
   return (
-    <Card.Card className="animate-appear max-w-lg">
-      <Card.CardHeader>
-        <Card.CardTitle>Configuration</Card.CardTitle>
-      </Card.CardHeader>
-      <Card.CardContent>
-        <div className="flex flex-row gap-2 bg-primary-50 px-4 py-2 md:p-2 text-sm items-center justify-center rounded-md font-medium text-pretty">
-          <Ear className="size-7 md:size-5 text-primary-400" />
-          Works best in a quiet environment with a good internet.
-        </div>
-        <Configure
-          startAudioOff={startAudioOff}
-          handleStartAudioOff={() => setStartAudioOff(!startAudioOff)}
-          state={appState}
-        />
-      </Card.CardContent>
-      <Card.CardFooter>
-        <Button key="start" onClick={() => start()} disabled={!isReady}>
-          {!isReady && <Loader2 className="animate-spin" />}
-          {status_text[transportState as keyof typeof status_text]}
-        </Button>
-      </Card.CardFooter>
-    </Card.Card>
+    <TooltipProvider>
+      <Card.Card className="animate-appear max-w-lg">
+        <Card.CardHeader>
+          <Card.CardTitle>Configuration</Card.CardTitle>
+        </Card.CardHeader>
+        <Card.CardContent>
+          <div className="flex flex-row gap-2 bg-primary-50 px-4 py-2 md:p-2 text-sm items-center justify-center rounded-md font-medium text-pretty">
+            <Ear className="size-7 md:size-5 text-primary-400" />
+            Works best in a quiet environment with a good internet.
+          </div>
+          <Configure
+            startAudioOff={startAudioOff}
+            handleStartAudioOff={() => setStartAudioOff(!startAudioOff)}
+            state={appState}
+          />
+        </Card.CardContent>
+        <Card.CardFooter>
+          <Button key="start" onClick={() => start()} disabled={!isReady}>
+            {!isReady && <Loader2 className="animate-spin" />}
+            {status_text[transportState as keyof typeof status_text]}
+          </Button>
+        </Card.CardFooter>
+      </Card.Card>
+    </TooltipProvider>
   );
 }

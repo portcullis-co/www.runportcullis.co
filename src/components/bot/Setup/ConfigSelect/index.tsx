@@ -20,7 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
-import { Select } from "@/components/ui/select";
+import { Select } from "@/components/ui/assistant-select";
 import {
   defaultLLMPrompt,
   LANGUAGES,
