@@ -40,30 +40,8 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
             endpoints: {
               connect: '/connect',
             },
-            // Use fetch options to set headers and body
-            connectOptions: {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              // This function will be called when connect is executed
-              // It must return a properly formatted JSON string
-              getBody: () => {
-                // Get the client version
-                const version = client.version || '0.3.3';
-                
-                // Create a simple object with just the version
-                const payload = {
-                  rtvi_client_version: version
-                };
-                
-                // Log what we're sending for debugging
-                console.log('Sending to connect API:', JSON.stringify(payload));
-                
-                // Return the stringified payload
-                return JSON.stringify(payload);
-              }
-            }
+            // Let the RTVIClient handle the connection details
+            // No custom connectOptions needed - this follows the Daily Bots demo pattern
           },
         });
         

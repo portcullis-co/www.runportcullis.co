@@ -24,43 +24,20 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
     
-    // Parse request body with error handling
+    // Following the exact pattern from the Daily Bots demo
+    // The RTVIClient automatically sends services, config, and rtvi_client_version
     let requestData;
     try {
-      // Get the raw request body as text first for debugging
-      const rawBody = await request.text();
-      console.log('Raw request body:', rawBody);
-      
-      // Try to parse the JSON
-      try {
-        requestData = JSON.parse(rawBody);
-        console.log('Parsed request data:', JSON.stringify(requestData));
-      } catch (jsonError) {
-        console.error('JSON parse error:', jsonError);
-        return new Response(JSON.stringify({ 
-          error: 'Invalid JSON in request body',
-          details: String(jsonError)
-        }), {
-          status: 400,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
-          }
-        });
-      }
+      requestData = await request.json();
+      console.log('Request data:', JSON.stringify(requestData, null, 2));
     } catch (parseError) {
-      console.error('Failed to read request body:', parseError);
-      return new Response(JSON.stringify({ 
-        error: 'Failed to read request body',
-        details: String(parseError)
-      }), {
-        status: 400,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        }
-      });
+      console.error('Failed to parse request JSON:', parseError);
+      // Even if parsing fails, we'll continue with defaults
+      requestData = {};
     }
+    
+    // Extract services and config from request, with defaults
+    const { services = {}, config = [], rtvi_client_version } = requestData;
     
     // Get the base URL for webhooks
     const baseUrl = import.meta.env.PUBLIC_SITE_URL || 'https://www.runportcullis.co';
@@ -74,28 +51,21 @@ export const POST: APIRoute = async ({ request }) => {
       };
     });
     
-    // Create the bot configuration
+    // Create the bot configuration - following the Daily Bots demo structure
     const botConfig = {
       bot_profile: defaultBotProfile,
       max_duration: defaultMaxDuration,
-      services: defaultServices,
-      config: defaultConfig,
-      rtvi_client_version: requestData?.rtvi_client_version || "0.3.3", // Provide a fallback version
+      services: { ...defaultServices, ...services },
+      config: [...defaultConfig, ...config],
+      rtvi_client_version,
       webhook_tools: webhookTools,
-      api_keys: {
-        openai: import.meta.env.OPENAI_API_KEY,
-        elevenlabs: import.meta.env.ELEVENLABS_API_KEY,
-      }
     };
 
     console.log('Sending bot config to Daily API:', JSON.stringify(botConfig, null, 2));
 
-    // Start the bot with improved error handling and timeout
+    // Start the bot with improved error handling
     let response;
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout for Netlify
-      
       response = await fetch("https://api.daily.co/v1/bots/start", {
         method: "POST",
         headers: {
@@ -103,10 +73,7 @@ export const POST: APIRoute = async ({ request }) => {
           Authorization: `Bearer ${import.meta.env.DAILY_API_KEY}`,
         },
         body: JSON.stringify(botConfig),
-        signal: controller.signal
       });
-      
-      clearTimeout(timeoutId);
     } catch (error) {
       console.error('Error making request to Daily.co API:', error);
       return new Response(JSON.stringify({
@@ -120,12 +87,10 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    // Handle non-JSON responses
+    // Process the response
     let responseData;
     try {
-      const responseText = await response.text();
-      console.log('Daily API response text:', responseText);
-      responseData = JSON.parse(responseText);
+      responseData = await response.json();
     } catch (error) {
       console.error('Non-JSON response from Daily API:', error);
       return new Response(JSON.stringify({
@@ -139,12 +104,9 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    if (!response.ok) {
+    if (response.status !== 200) {
       console.error("Error starting bot:", responseData);
-      return new Response(JSON.stringify({
-        error: 'Failed to start Daily.co bot',
-        details: responseData
-      }), {
+      return new Response(JSON.stringify(responseData), { 
         status: response.status,
         headers: {
           'Content-Type': 'application/json',
@@ -154,10 +116,7 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     // Success response
-    return new Response(JSON.stringify({
-      ...responseData,
-      success: true
-    }), {
+    return new Response(JSON.stringify(responseData), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
