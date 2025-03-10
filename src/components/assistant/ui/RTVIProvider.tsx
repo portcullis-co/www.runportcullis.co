@@ -125,7 +125,7 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
         });
         
         client.on(RTVIEvent.BotLlmText, (data: any) => {
-          console.log('[EVENT] Bot LLM text:', data);
+          console.log('[RTVI Core] BotLlmText event received:', data);
         });
         
         client.on(RTVIEvent.BotTtsStarted, () => {
@@ -151,9 +151,9 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
           console.log('[EVENT] User transcript:', data);
         });
         
-        // Log all RTVI messages for debugging
+        // Add complete event logging for debugging
         client.on(RTVIEvent.ServerMessage, (message: any) => {
-          console.log('[RTVI Message]', message);
+          console.log('[RTVI Core] Server message received:', message);
           
           // Special handling for bot-ready message to ensure proper state transitions
           if (message.type === 'bot-ready') {
@@ -191,6 +191,16 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
           if (message.type === 'bot-llm-chunk' && message.data && message.data.text) {
             console.log('[RTVIProvider] Bot LLM chunk received:', message.data.text);
             setLastBotMessage(prev => prev + message.data.text);
+          }
+          
+          // Specifically log any message that might contain bot responses
+          if (message.type && (
+            message.type.includes('bot') || 
+            message.type.includes('llm') || 
+            message.type.includes('ai') ||
+            message.type.includes('response')
+          )) {
+            console.log('[RTVI Core] Potential bot response detected:', message);
           }
         });
         
