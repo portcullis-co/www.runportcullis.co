@@ -50,7 +50,7 @@ export const POST: APIRoute = async ({ request }) => {
               value: [
                 {
                   role: "system",
-                  content: "You are a friendly assistant for Portcullis, helping users understand our data warehouse steering assistance services. Keep your responses concise and natural. Always respond in a conversational tone."
+                  content: "You are a friendly assistant for Portcullis, helping users understand our data warehouse steering assistance services. Your job is to help the user understand the services we offer and to collect the information we need to provide a quote. You should call the 'check_interest' tool to guage the user's interest and then call the 'provide_quote' tool to provide a quote. You should also call the 'collect_qualification_info' tool to collect the information we need to provide a quote."
                 }
               ]
             },
@@ -60,17 +60,12 @@ export const POST: APIRoute = async ({ request }) => {
       ],
       rtvi_client_version,
       webhook_tools: {
-        get_pricing_info: {
+        provide_quote: {
           url: `${import.meta.env.PUBLIC_SITE_URL || 'https://www.runportcullis.co'}/api/assistant/webhooks`,
           method: "POST",
           streaming: false
         },
         collect_qualification_info: {
-          url: `${import.meta.env.PUBLIC_SITE_URL || 'https://www.runportcullis.co'}/api/assistant/webhooks`,
-          method: "POST",
-          streaming: false
-        },
-        send_meeting_link: {
           url: `${import.meta.env.PUBLIC_SITE_URL || 'https://www.runportcullis.co'}/api/assistant/webhooks`,
           method: "POST",
           streaming: false
