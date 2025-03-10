@@ -1,7 +1,7 @@
 import { c as createAstro, a as createComponent, r as renderComponent, b as renderTemplate, m as maybeRenderHead } from "../../../chunks/astro/server_aMtVhhw-.mjs";
-import { $ as $$BlogHeader, a as $$BlogCard } from "../../../chunks/blog-card_BfSZPbJK.mjs";
+import { $ as $$BlogHeader, a as $$BlogCard } from "../../../chunks/blog-card_DcDTeCdg.mjs";
 import { c as capitalizer, $ as $$MainLayout } from "../../../chunks/main-layout_Dz18vA4v.mjs";
-import { g as getCollection } from "../../../chunks/_astro_content_BJe8J_h-.mjs";
+import { g as getCollection } from "../../../chunks/_astro_content_-eECwGbt.mjs";
 import { renderers } from "../../../renderers.mjs";
 const $$Astro = createAstro("https://www.runportcullis.co");
 async function getStaticPaths() {

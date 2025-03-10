@@ -2,28 +2,22 @@ import { renderers } from "../../../renderers.mjs";
 const POST = async ({ request }) => {
   try {
     if (false) ;
-    const missingKeys = [];
-    if (true) missingKeys.push("OPENAI_API_KEY");
-    if (true) missingKeys.push("ELEVENLABS_API_KEY");
-    if (true) missingKeys.push("DEEPGRAM_API_KEY");
-    if (missingKeys.length > 0) {
-      console.error(`Missing environment variables: ${missingKeys.join(", ")}`);
+    let data;
+    try {
+      data = await request.json();
+    } catch (parseError) {
+      console.error("Failed to parse request JSON:", parseError);
       return new Response(JSON.stringify({
-        error: `Server configuration error: Missing ${missingKeys.join(", ")}`
+        error: "Invalid JSON in request body"
       }), {
-        status: 500,
+        status: 400,
         headers: {
           "Content-Type": "application/json",
           "Access-Control-Allow-Origin": "*"
         }
       });
     }
-    const data = await request.json();
-    const { rtvi_client_version, client_info } = data;
-    console.log("Connect request received:", {
-      rtvi_client_version,
-      client_info: client_info || "Not provided"
-    });
+    const { client } = data;
     const botConfig = {
       bot_profile: "natural_conversation_2024_11",
       max_duration: 600,
@@ -33,11 +27,6 @@ const POST = async ({ request }) => {
         llm: "openai",
         tts: "elevenlabs",
         stt: "deepgram"
-      },
-      api_keys: {
-        openai: void 0,
-        elevenlabs: void 0,
-        deepgram: void 0
       },
       config: [
         {
@@ -74,7 +63,7 @@ const POST = async ({ request }) => {
           ]
         }
       ],
-      rtvi_client_version,
+      rtvi_client_version: client.rtvi_client_version,
       webhook_tools: {
         provide_quote: {
           url: `${"https://www.runportcullis.co"}/api/assistant/webhooks`,
@@ -93,11 +82,10 @@ const POST = async ({ request }) => {
         }
       }
     };
-    console.log("Starting Daily.co bot with configuration:", JSON.stringify(botConfig, null, 2));
     let response;
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 1e4);
+      const timeoutId = setTimeout(() => controller.abort(), 8e3);
       response = await fetch("https://api.daily.co/v1/bots/start", {
         method: "POST",
         headers: {
@@ -111,8 +99,7 @@ const POST = async ({ request }) => {
     } catch (error) {
       console.error("Error making request to Daily.co API:", error);
       return new Response(JSON.stringify({
-        error: error instanceof Error ? error.message : "Error connecting to Daily.co API",
-        details: "Check server logs for more information"
+        error: error instanceof Error ? error.message : "Error connecting to Daily.co API"
       }), {
         status: 500,
         headers: {
@@ -121,16 +108,14 @@ const POST = async ({ request }) => {
         }
       });
     }
-    const responseText = await response.text();
     let responseData;
     try {
+      const responseText = await response.text();
       responseData = JSON.parse(responseText);
     } catch (error) {
-      console.error("Non-JSON response from Daily API:", responseText);
+      console.error("Non-JSON response from Daily API:", error);
       return new Response(JSON.stringify({
-        error: "Invalid response from Daily.co API",
-        status: response.status,
-        responseText
+        error: "Invalid response from Daily.co API"
       }), {
         status: 500,
         headers: {
@@ -143,8 +128,7 @@ const POST = async ({ request }) => {
       console.error("Error starting bot:", responseData);
       return new Response(JSON.stringify({
         error: "Failed to start Daily.co bot",
-        details: responseData,
-        status: response.status
+        details: responseData
       }), {
         status: response.status,
         headers: {
@@ -153,13 +137,10 @@ const POST = async ({ request }) => {
         }
       });
     }
-    console.log("Bot started successfully, room URL:", responseData.room_url);
-    const enhancedResponse = {
+    return new Response(JSON.stringify({
       ...responseData,
-      success: true,
-      timestamp: (/* @__PURE__ */ new Date()).toISOString()
-    };
-    return new Response(JSON.stringify(enhancedResponse), {
+      success: true
+    }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",
@@ -169,21 +150,16 @@ const POST = async ({ request }) => {
     });
   } catch (error) {
     console.error("Connect API error:", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
-    const errorStack = error instanceof Error ? error.stack : void 0;
     return new Response(
       JSON.stringify({
         error: "Internal Server Error",
-        message: errorMessage,
-        stack: process.env.NODE_ENV === "development" ? errorStack : void 0,
-        timestamp: (/* @__PURE__ */ new Date()).toISOString()
+        message: error instanceof Error ? error.message : "Unknown error"
       }),
       {
         status: 500,
         headers: {
           "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-          "Cache-Control": "no-cache, no-store, must-revalidate"
+          "Access-Control-Allow-Origin": "*"
         }
       }
     );

@@ -28,18 +28,7 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
             subscribeToTracksAutomatically: true,
           }
         });
-        
-        // Create metadata that will be sent with connect request
-        const metadata = {
-          rtvi_client_version: '0.3.3', // Match the version used in your app
-          client_info: {
-            browser: navigator?.userAgent || 'unknown',
-            platform: navigator?.platform || 'unknown',
-            timestamp: new Date().toISOString()
-          }
-        };
-        
-        console.log('Initializing RTVI client with metadata:', metadata);
+
         
         // Create RTVI client with proper configuration
         const client = new RTVIClient({
@@ -60,7 +49,7 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
               },
               // This function will be called when connect is executed
               // It must return a stringified JSON object
-              getBody: () => JSON.stringify(metadata)
+              getBody: () => JSON.stringify(client)
             }
           },
         });

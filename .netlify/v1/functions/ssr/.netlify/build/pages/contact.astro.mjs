@@ -1,6 +1,6 @@
 import { a as createComponent, r as renderComponent, b as renderTemplate, m as maybeRenderHead } from "../chunks/astro/server_aMtVhhw-.mjs";
 import { $ as $$MainLayout, d as Button } from "../chunks/main-layout_Dz18vA4v.mjs";
-import { $ as $$Icon } from "../chunks/Icon_BY_CdGcZ.mjs";
+import { $ as $$Icon } from "../chunks/Icon_CIygrEIG.mjs";
 import { renderers } from "../renderers.mjs";
 const $$Contact = createComponent(($$result, $$props, $$slots) => {
   return renderTemplate`${renderComponent($$result, "MainLayout", $$MainLayout, { "title": "About", "description": "Lorem ipsum dolor sit amet" }, { "default": ($$result2) => renderTemplate` ${maybeRenderHead()}<section class="space-y-5"> <section class="relative container max-w-screen-md mb-28 mt-16 sm:mt-20 lg:mt-28"> <div class="flex h-full flex-col justify-between"> <div class="grid gap-8 sm:grid-cols-2"> <div> <h1 class="text-4xl font-heading text-foreground">Portcullis</h1> <p class="text-base text-muted-foreground mt-0.5">

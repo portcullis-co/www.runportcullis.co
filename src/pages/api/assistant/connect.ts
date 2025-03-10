@@ -34,7 +34,7 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
     
-    const { rtvi_client_version, client_info } = data;
+    const { client } = data;
 
     // Simplified configuration to reduce potential errors
     const botConfig = {
@@ -81,7 +81,7 @@ export const POST: APIRoute = async ({ request }) => {
           ]
         }
       ],
-      rtvi_client_version,
+      rtvi_client_version: client.rtvi_client_version,
       webhook_tools: {
         provide_quote: {
           url: `${import.meta.env.PUBLIC_SITE_URL || 'https://www.runportcullis.co'}/api/assistant/webhooks`,
