@@ -104,10 +104,6 @@ export const POST: APIRoute = async ({ request }) => {
       config,
       rtvi_client_version,
       webhook_tools,
-      api_keys: {
-        openai: import.meta.env.OPENAI_API_KEY,
-        elevenlabs: import.meta.env.ELEVENLABS_API_KEY,
-      }
     };
     
     console.log('Sending bot config to Daily API:', JSON.stringify(botConfig, null, 2));

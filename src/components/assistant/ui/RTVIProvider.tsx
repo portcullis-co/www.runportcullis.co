@@ -172,7 +172,7 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
         });
         
         // Log all RTVI messages for debugging
-        client.on(RTVIEvent.ServerMessage , (message: any) => {
+        client.on(RTVIEvent.ServerMessage, (message: any) => {
           console.log('[RTVI Message]', message);
           
           // Special handling for bot-ready message to ensure proper state transitions
