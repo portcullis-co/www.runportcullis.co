@@ -17,14 +17,24 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
     
-    // Define defaults to use if request is empty
-    const defaultServices = {
+    // Parse request data
+    let requestData;
+    try {
+      requestData = await request.json();
+      console.log('Request data received:', JSON.stringify(requestData, null, 2));
+    } catch (error) {
+      console.error('Failed to parse request body:', error);
+      requestData = { services: {}, config: [] };
+    }
+    
+    // Extract data from request, with fallbacks
+    const services = requestData.services || {
       llm: "openai",
       tts: "elevenlabs", 
       stt: "deepgram"
     };
     
-    const defaultConfig = [
+    const config = requestData.config || [
       {
         service: "stt",
         options: [
@@ -34,9 +44,9 @@ export const POST: APIRoute = async ({ request }) => {
       {
         service: "tts",
         options: [
-          { name: "voice", value: "6IlUNt4hAIP1jMBYQncS" },
+          { name: "voice", value: "6IlUNt4hAIP1jMBYQncS" }, // ElevenLabs voice ID
           { name: "model", value: "eleven_turbo_v2" },
-          { name: "output_format", value: "pcm_24000" },
+          { name: "output_format", value: "pcm_24000" }, // Important for audio playback!
           { name: "stability", value: 0.5 },
           { name: "similarity_boost", value: 0.5 },
           { name: "latency", value: 1 }
@@ -51,7 +61,7 @@ export const POST: APIRoute = async ({ request }) => {
             value: [
               {
                 role: "system",
-                content: "You are a friendly assistant for Portcullis, helping users understand our data warehouse steering assistance services. Your job is to help the user understand the services we offer and to collect the information we need to provide a quote."
+                content: "You are a friendly assistant for Portcullis, helping users understand our data warehouse steering assistance services. Your job is to help the user understand the services we offer and to collect the information we need to provide a quote. You should call the 'check_interest' tool to guage the user's interest and then call the 'provide_quote' tool to provide a quote. You should also call the 'collect_qualification_info' tool to collect the information we need to provide a quote."
               }
             ]
           },
@@ -61,34 +71,14 @@ export const POST: APIRoute = async ({ request }) => {
       }
     ];
     
-    // Enhanced error handling for request parsing
-    let data;
-    try {
-      // Try to parse the request, but don't fail if it's empty
-      try {
-        data = await request.json();
-        console.log('Request data received:', JSON.stringify(data));
-      } catch (parseError) {
-        console.log('Using defaults due to parsing error:', parseError);
-        // Continue with empty data if parsing fails
-        data = {};
-      }
-    } catch (error) {
-      console.error('Error reading request:', error);
-      // Continue with empty data if reading fails
-      data = {};
-    }
+    // Get client version if provided
+    const rtvi_client_version = requestData.rtvi_client_version;
     
-    // Extract data from request, falling back to defaults
-    const services = data?.services || defaultServices;
-    const config = data?.config || defaultConfig;
-    const rtvi_client_version = data?.rtvi_client_version || "0.3.3";
-    
-    // Get the base URL for webhooks
+    // Get site base URL
     const baseUrl = import.meta.env.PUBLIC_SITE_URL || 'https://www.runportcullis.co';
     
     // Define webhook tools
-    const webhookTools = {
+    const webhook_tools = {
       provide_quote: {
         url: `${baseUrl}/api/assistant/webhooks`,
         method: "POST",
@@ -105,15 +95,15 @@ export const POST: APIRoute = async ({ request }) => {
         streaming: false
       }
     };
-
-    // Simplified configuration
+    
+    // Create the bot configuration
     const botConfig = {
-      bot_profile: "voice_2024_08",
+      bot_profile: "voice_2024_08", // Use the standard voice profile
       max_duration: 600, // 10 minutes
       services,
       config,
       rtvi_client_version,
-      webhook_tools: webhookTools,
+      webhook_tools,
       api_keys: {
         openai: import.meta.env.OPENAI_API_KEY,
         elevenlabs: import.meta.env.ELEVENLABS_API_KEY,
@@ -121,14 +111,10 @@ export const POST: APIRoute = async ({ request }) => {
     };
     
     console.log('Sending bot config to Daily API:', JSON.stringify(botConfig, null, 2));
-
-    // Start the bot with improved error handling
+    
+    // Start the bot
     let response;
     try {
-      const controller = new AbortController();
-      // Reduce timeout to avoid Netlify function timeouts (from 10s to 8s)
-      const timeoutId = setTimeout(() => controller.abort(), 8000); 
-      
       response = await fetch("https://api.daily.co/v1/bots/start", {
         method: "POST",
         headers: {
@@ -136,15 +122,11 @@ export const POST: APIRoute = async ({ request }) => {
           Authorization: `Bearer ${import.meta.env.DAILY_API_KEY}`,
         },
         body: JSON.stringify(botConfig),
-        signal: controller.signal
       });
-      
-      clearTimeout(timeoutId);
     } catch (error) {
       console.error('Error making request to Daily.co API:', error);
       return new Response(JSON.stringify({
-        error: error instanceof Error ? error.message : 'Error connecting to Daily.co API',
-        details: 'Check server logs for more information'
+        error: error instanceof Error ? error.message : 'Error connecting to Daily.co API'
       }), {
         status: 500,
         headers: {
@@ -153,34 +135,17 @@ export const POST: APIRoute = async ({ request }) => {
         }
       });
     }
-
-    // Handle non-JSON responses
-    const responseText = await response.text();
-    let responseData;
     
+    // Process the response
+    let responseData;
     try {
-      // Check if the response text is empty
-      if (!responseText || responseText.trim() === '') {
-        console.error('Empty response from Daily API');
-        return new Response(JSON.stringify({
-          error: 'Empty response from Daily.co API',
-          status: response.status
-        }), {
-          status: 500,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
-          }
-        });
-      }
-      
+      const responseText = await response.text();
+      console.log('Daily API response:', responseText);
       responseData = JSON.parse(responseText);
     } catch (error) {
-      console.error('Non-JSON response from Daily API:', responseText);
+      console.error('Invalid response from Daily API:', error);
       return new Response(JSON.stringify({
-        error: 'Invalid response from Daily.co API',
-        status: response.status,
-        responseText
+        error: 'Invalid response from Daily.co API'
       }), {
         status: 500,
         headers: {
@@ -189,16 +154,10 @@ export const POST: APIRoute = async ({ request }) => {
         }
       });
     }
-
-    if (!response.ok) {
-      console.error("Error starting bot:", responseData);
-      
-      // Return a more detailed error response
-      return new Response(JSON.stringify({
-        error: 'Failed to start Daily.co bot',
-        details: responseData,
-        status: response.status
-      }), {
+    
+    if (response.status !== 200) {
+      console.error('Error starting bot:', responseData);
+      return new Response(JSON.stringify(responseData), {
         status: response.status,
         headers: {
           'Content-Type': 'application/json',
@@ -206,48 +165,26 @@ export const POST: APIRoute = async ({ request }) => {
         }
       });
     }
-
-    console.log('Bot started successfully, room URL:', responseData.room_url);
-
-    // Add additional metadata to the response
-    const enhancedResponse = {
-      ...responseData,
-      success: true,
-      timestamp: new Date().toISOString()
-    };
-
-    return new Response(JSON.stringify(enhancedResponse), {
+    
+    // Send back only what's needed
+    return new Response(JSON.stringify(responseData), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        'Cache-Control': 'no-cache, no-store, must-revalidate'
+        'Access-Control-Allow-Origin': '*'
       }
     });
-
-  } catch (error: unknown) {
-    console.error("Connect API error:", error);
-    
-    // Provide detailed error information
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    const errorStack = error instanceof Error ? error.stack : undefined;
-    
-    return new Response(
-      JSON.stringify({ 
-        error: 'Internal Server Error', 
-        message: errorMessage,
-        stack: process.env.NODE_ENV === 'development' ? errorStack : undefined,
-        timestamp: new Date().toISOString()
-      }), 
-      {
-        status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Cache-Control': 'no-cache, no-store, must-revalidate'
-        }
+  } catch (error) {
+    console.error('Unhandled error in connect endpoint:', error);
+    return new Response(JSON.stringify({
+      error: 'Internal server error'
+    }), {
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
       }
-    );
+    });
   }
 };
 

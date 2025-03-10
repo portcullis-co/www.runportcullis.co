@@ -8,6 +8,8 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
   const [rtviClient, setRtviClient] = useState<any>(null);
   const [RTVIClientProvider, setRTVIClientProvider] = useState<any>(null);
   const [RTVIClientAudio, setRTVIClientAudio] = useState<any>(null);
+  const [botSpeaking, setBotSpeaking] = useState(false);
+  const [lastBotMessage, setLastBotMessage] = useState('');
 
   // Only run in the browser
   useEffect(() => {
@@ -16,7 +18,7 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
     async function loadDependencies() {
       try {
         // Dynamically import the modules
-        const { RTVIClient } = await import('@pipecat-ai/client-js');
+        const { RTVIClient, RTVIEvent } = await import('@pipecat-ai/client-js');
         const { DailyTransport } = await import('@pipecat-ai/daily-transport');
         const { RTVIClientProvider, RTVIClientAudio } = await import('@pipecat-ai/client-react');
         
@@ -36,29 +38,55 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
           enableCam: false,
           timeout: 15000,
           params: {
-            // Ensure proper URL formatting
+            // Using standard URL format for Daily Bots
             baseUrl: '/api/assistant',
             endpoints: {
               connect: '/connect',
             },
-            services: {
-              llm: "openai",
-              tts: "elevenlabs",
-              stt: "deepgram"
-            },
-            config: [
-              {
-                service: "llm",
-                options: [
-                  { name: "model", value: "gpt-4o-mini" }
-                ]
-              }
-            ],
-            connectOptions: {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              }
+            // Use the requestData property to explicitly pass services and config
+            // This follows the Daily Bots docs more closely
+            requestData: {
+              services: {
+                llm: "openai",
+                tts: "elevenlabs",
+                stt: "deepgram"
+              },
+              config: [
+                {
+                  service: "stt",
+                  options: [
+                    { name: "language", value: "en-US" }
+                  ]
+                },
+                {
+                  service: "tts",
+                  options: [
+                    { name: "voice", value: "6IlUNt4hAIP1jMBYQncS" },
+                    { name: "model", value: "eleven_turbo_v2" },
+                    { name: "output_format", value: "pcm_24000" },
+                    { name: "stability", value: 0.5 },
+                    { name: "similarity_boost", value: 0.5 },
+                    { name: "latency", value: 1 }
+                  ]
+                },
+                {
+                  service: "llm",
+                  options: [
+                    { name: "model", value: "gpt-4o-mini" },
+                    {
+                      name: "initial_messages",
+                      value: [
+                        {
+                          role: "system",
+                          content: "You are a friendly assistant for Portcullis, helping users understand our data warehouse steering assistance services. Your job is to help the user understand the services we offer and to collect the information we need to provide a quote. Respond concisely. Introduce yourself first."
+                        }
+                      ]
+                    },
+                    { name: "temperature", value: 0.7 },
+                    { name: "run_on_config", value: true }
+                  ]
+                }
+              ]
             }
           },
           callbacks: {
@@ -111,6 +139,28 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
           console.log('[EVENT] Bot has disconnected');
         });
         
+        // Add specific handlers for bot speaking events
+        client.on(RTVIEvent.BotStartedSpeaking, () => {
+          console.log('[EVENT] Bot started speaking');
+          setBotSpeaking(true);
+        });
+        
+        client.on(RTVIEvent.BotStoppedSpeaking, () => {
+          console.log('[EVENT] Bot stopped speaking');
+          setBotSpeaking(false);
+        });
+        
+        // Handle bot transcription to capture what the bot is saying
+        client.on(RTVIEvent.BotTranscript, (data: any) => {
+          console.log('[EVENT] Bot transcript:', data);
+          if (data && data.text) {
+            setLastBotMessage(data.text);
+          }
+        });
+        // Log all messages for debugging
+        client.on('serverMessage', (message: any) => {
+          console.log('[RTVI Full Message]', message);
+        });
         // Store the client and components
         setRtviClient(client);
         setRTVIClientProvider(() => RTVIClientProvider);
@@ -171,8 +221,9 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
         RTVI Audio Status: Active<br />
         TTS: ElevenLabs (PCM)<br />
         Transport: {transportState}<br />
-        Version: {rtviClient?.version || '0.3.3'}<br />
-        URL: {rtviClient?.params?.baseUrl + rtviClient?.params?.endpoints?.connect || 'N/A'}
+        Bot Speaking: {botSpeaking ? 'Yes' : 'No'}<br />
+        Last Message: {lastBotMessage ? lastBotMessage.substring(0, 30) + '...' : 'None yet'}<br />
+        Version: {rtviClient?.version || '0.3.3'}
       </div>
     </RTVIClientProvider>
   );
