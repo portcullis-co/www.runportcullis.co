@@ -47,7 +47,7 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
             // This follows the Daily Bots docs more closely
             requestData: {
               services: {
-                llm: "openai",
+                llm: "anthropic",
                 tts: "elevenlabs",
                 stt: "deepgram"
               },
@@ -72,7 +72,7 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
                 {
                   service: "llm",
                   options: [
-                    { name: "model", value: "gpt-4o-mini" },
+                    { name: "model", value: "claude-3-5-sonnet-latest" },
                     {
                       name: "initial_messages",
                       value: [
