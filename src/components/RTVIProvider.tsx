@@ -36,9 +36,9 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
           enableCam: false,
           timeout: 15000,
           params: {
-            baseUrl: '/api/assistant/',
+            baseUrl: '/api/assistant',
             endpoints: {
-              connect: 'connect',
+              connect: '/connect',
             },
             // Add TTS configuration
             config: [
