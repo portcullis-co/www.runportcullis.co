@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Mic, Loader2, Volume2 } from 'lucide-react';
 import { useRTVIClient, useRTVIClientTransportState, RTVIClientProvider, RTVIClientAudio } from '@pipecat-ai/client-react';
+import { DailyTransport } from '@pipecat-ai/daily-transport';
 
 // Wrapper component to provide the RTVI client context
 function AssistantContent() {
@@ -16,6 +17,8 @@ function AssistantContent() {
 
   const rtviClient = useRTVIClient();
   const transportState = useRTVIClientTransportState();
+
+  const audioElementRef = useRef<HTMLAudioElement | null>(null);
 
   // Get available microphones
   useEffect(() => {
@@ -95,6 +98,51 @@ function AssistantContent() {
     
     return () => {
       rtviClient.off('serverMessage' as any, handleMessage);
+    };
+  }, [rtviClient]);
+
+  useEffect(() => {
+    if (!rtviClient) return;
+    
+    const handleAudioTrack = (track: MediaStreamTrack, participant: any) => {
+      if (participant.local || track.kind !== 'audio') return;
+      
+      console.log('Received remote audio track');
+      
+      if (!audioElementRef.current) {
+        audioElementRef.current = new Audio();
+        audioElementRef.current.autoplay = true;
+        document.body.appendChild(audioElementRef.current);
+      }
+      
+      const stream = new MediaStream([track]);
+      audioElementRef.current.srcObject = stream;
+      
+      // Force play with user interaction handling
+      audioElementRef.current.play().catch(err => {
+        console.warn('Audio play failed:', err);
+        
+        // Create play button if autoplay fails
+        const playButton = document.createElement('button');
+        playButton.textContent = 'Enable Audio';
+        playButton.onclick = () => {
+          audioElementRef.current?.play();
+          playButton.remove();
+        };
+        document.body.appendChild(playButton);
+      });
+    };
+    
+    // Add track start listener
+    rtviClient.on('trackStarted' as any, handleAudioTrack);
+    
+    return () => {
+      rtviClient.off('trackStarted' as any, handleAudioTrack);
+      
+      // Clean up audio element
+      if (audioElementRef.current) {
+        audioElementRef.current.remove();
+      }
     };
   }, [rtviClient]);
 
@@ -246,9 +294,16 @@ export function Assistant() {
         // Create the transport with the correct options
         const transport = new DailyTransport({
           dailyFactoryOptions: {
-            audioSource: true, // Ensure audio source is enabled
-            videoSource: false, // Disable video as we only need audio
+            audioSource: true,
+            videoSource: false,
             subscribeToTracksAutomatically: true,
+            dailyConfig: {
+              userMediaAudioConstraints: {
+                autoGainControl: true,
+                echoCancellation: true,
+                noiseSuppression: true,
+              }
+            }
           }
         });
         
@@ -265,7 +320,29 @@ export function Assistant() {
             endpoints: {
               connect: '/connect',
             },
+            config: [
+              {
+                service: "tts",
+                options: [
+                  { name: "output_format", value: "mp3" },
+                  { name: "optimize_streaming_latency", value: 4 },
+                ],
+              }
+            ],
           },
+          callbacks: {
+            onBotReady: () => console.log('Bot is ready'),
+            onBotTtsStarted: () => console.log('Bot TTS started'),
+            onBotTtsStopped: () => console.log('Bot TTS stopped'),
+            onError: (error) => console.error('RTVI client error:', error),
+            onTrackStarted: (track: MediaStreamTrack) => {
+              console.log('Track started:', track);
+              // Force track to play if it's audio
+              if (track.kind === 'audio') {
+                console.log('Audio track received, attempting to play');
+              }
+            }
+          }
         });
         
         // Log successful client creation
@@ -286,13 +363,20 @@ export function Assistant() {
       try {
         // Create and play a silent audio context to unlock audio
         const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-        console.log('Audio context created:', audioContext.state);
         
+        // Add this line to ensure the context is resumed
+        if (audioContext.state === 'suspended') {
+          audioContext.resume().then(() => console.log('Audio context resumed'));
+        }
+        
+        // Create a longer sound to ensure proper unlocking
         const oscillator = audioContext.createOscillator();
-        oscillator.frequency.value = 1;
-        oscillator.connect(audioContext.destination);
+        const gainNode = audioContext.createGain();
+        gainNode.gain.value = 0.01; // Very low volume
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
         oscillator.start(0);
-        oscillator.stop(0.1);
+        oscillator.stop(audioContext.currentTime + 0.2); // Slightly longer duration
         
         console.log('Audio context unlocked:', audioContext.state);
         
