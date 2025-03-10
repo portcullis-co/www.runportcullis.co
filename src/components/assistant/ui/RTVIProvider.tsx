@@ -75,7 +75,7 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
               setTransportState(state);
               
               // Only try to connect when transport is ready
-              if (state === 'ready') {
+              if (state === 'ready' && !client.connected) {
                 console.log('[RTVI Core] Transport ready, connecting...');
                 try {
                   client.connect().catch(error => {
