@@ -40,21 +40,6 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
             endpoints: {
               connect: '/connect',
             },
-            // Add TTS configuration
-            config: [
-              {
-                service: "tts",
-                options: [
-                  { name: "voice", value: "6IlUNt4hAIP1jMBYQncS" },
-                  { name: "model", value: "eleven_turbo_v2" },
-                  { name: "output_format", value: "pcm_24000" },
-                  { name: "optimize_streaming_latency", value: 4 },
-                  { name: "stability", value: 0.75 },
-                  { name: "similarity_boost", value: 0.75 },
-                  { name: "latency", value: 1 }
-                ],
-              }
-            ],
           },
         });
         
