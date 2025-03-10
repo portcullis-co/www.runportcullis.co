@@ -36,6 +36,7 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
           enableCam: false,
           timeout: 15000,
           params: {
+            // Ensure proper URL formatting
             baseUrl: '/api/assistant/',
             endpoints: {
               connect: 'connect',
@@ -53,7 +54,6 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
                 ]
               }
             ],
-            // Add basic connect options to ensure a request body is sent
             connectOptions: {
               method: 'POST',
               headers: {
@@ -61,21 +61,31 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
               }
             }
           },
+          callbacks: {
+            onBotConnected: () => {
+              console.log('[CALLBACK] Bot connected');
+            },
+            onBotDisconnected: () => {
+              console.log('[CALLBACK] Bot disconnected');
+            },
+            onBotReady: () => {
+              console.log('[CALLBACK] Bot ready to chat!');
+            },
+            onTransportStateChanged: (state: string) => {
+              console.log('[CALLBACK] Transport state changed:', state);
+              setTransportState(state);
+            },
+            onError: (error: any) => {
+              console.error('[CALLBACK] RTVI error:', error);
+            }
+          }
         });
         
         // Set up event listeners with error handling
         client.on('transportStateChanged', (state: string) => {
-          console.log('Transport state changed:', state);
+          console.log('[EVENT] Transport state changed:', state);
           setTransportState(state);
-        });
-        
-        client.on('error', (error: any) => {
-          console.error('RTVI client error:', error);
-        });
-        
-        // Set up connection status monitoring via transport state
-        client.on('transportStateChanged', (state: string) => {
-          console.log('Transport state changed:', state);
+          
           if (state === 'connected') {
             console.log('Successfully connected to Daily.co bot!');
           } else if (state === 'connecting') {
@@ -83,7 +93,22 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
           } else if (state === 'disconnected') {
             console.log('Disconnected from Daily.co bot');
           }
-          setTransportState(state);
+        });
+        
+        client.on('error', (error: any) => {
+          console.error('[EVENT] RTVI client error:', error);
+        });
+        
+        client.on('botReady', () => {
+          console.log('[EVENT] Bot is ready to chat');
+        });
+        
+        client.on('botConnected', () => {
+          console.log('[EVENT] Bot has connected');
+        });
+        
+        client.on('botDisconnected', () => {
+          console.log('[EVENT] Bot has disconnected');
         });
         
         // Store the client and components

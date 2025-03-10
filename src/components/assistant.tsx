@@ -8,7 +8,7 @@ import {
   useRTVIClient, 
   useRTVIClientTransportState
 } from '@pipecat-ai/client-react';
-import { RTVIProvider } from '@/components/RTVIProvider';
+import { RTVIProvider } from '@/components/assistant/ui/RTVIProvider';
 
 // Use type safety for RTVI events
 type RTVIEventType = 
