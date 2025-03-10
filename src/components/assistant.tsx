@@ -3,7 +3,28 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Mic, Loader2, Volume2 } from 'lucide-react';
-import { useRTVIClient, useRTVIClientTransportState, RTVIClientProvider, RTVIClientAudio } from '@pipecat-ai/client-react';
+import { Alert } from '@/components/ui/alert';
+import { 
+  useRTVIClient, 
+  useRTVIClientTransportState
+} from '@pipecat-ai/client-react';
+import { RTVIProvider } from '@/components/RTVIProvider';
+
+// Use type safety for RTVI events
+type RTVIEventType = 
+  | 'user-transcription' 
+  | 'bot-llm-text' 
+  | 'bot-tts-started' 
+  | 'bot-tts-stopped'
+  | 'user-started-speaking'
+  | 'user-stopped-speaking'
+  | 'bot-llm-stopped';
+
+// Define types
+interface ConversationEntry {
+  role: 'user' | 'assistant';
+  content: string;
+}
 
 // Main content component
 function AssistantContent() {
@@ -58,58 +79,73 @@ function AssistantContent() {
     if (!rtviClient) return;
     
     const handleServerMessage = (event: any) => {
+      console.log('Server message received:', event);
+      
       // Reset connecting state when any events are received
       if (isConnecting) {
         setIsConnecting(false);
       }
       
       // User transcription events
-      if (event.type === 'user-transcription' && event.data?.text) {
-        setTranscription(event.data.text);
+      if (event.name === 'transcription') {
+        setTranscription(event.data.text || '');
       }
       
       // Bot text events
-      if (event.type === 'bot-llm-text' && event.data?.text) {
-        setBotResponse(prev => prev + event.data.text);
+      if (event.name === 'llm-response') {
+        if (event.data.index === 0) {
+          setBotResponse(event.data.text || '');
+        } else {
+          setBotResponse(prev => prev + (event.data.text || ''));
+        }
       }
       
       // Bot TTS events
-      if (event.type === 'bot-tts-started') {
+      if (event.name === 'tts-start') {
         setIsTTSPlaying(true);
         console.log('TTS started - audio should be playing');
       }
       
-      if (event.type === 'bot-tts-stopped') {
+      if (event.name === 'tts-end') {
         setIsTTSPlaying(false);
         console.log('TTS stopped');
       }
       
       // User speaking events
-      if (event.type === 'user-started-speaking') {
+      if (event.name === 'user-started-speaking') {
         setIsListening(true);
       }
       
-      if (event.type === 'user-stopped-speaking') {
+      if (event.name === 'user-stopped-speaking') {
         setIsListening(false);
       }
       
       // Bot LLM events
-      if (event.type === 'bot-llm-stopped') {
+      if (event.name === 'bot-llm-stopped') {
         setTimeout(() => setBotResponse(''), 10000);
       }
     };
     
-    // Register event handlers
-    rtviClient.on('serverMessage', handleServerMessage);
-    rtviClient.on('connected', () => {
+    // Listen for connection state changes
+    const handleConnected = () => {
       console.log('RTVI Client connected');
       setIsConnecting(false);
-    });
+    };
+    
+    const handleDisconnected = () => {
+      console.log('RTVI Client disconnected');
+    };
+    
+    // Register event handlers
+    rtviClient.on('serverMessage', handleServerMessage);
+    rtviClient.on('connected', handleConnected);
+    rtviClient.on('disconnected', handleDisconnected);
     
     return () => {
       // Clean up event handlers
       rtviClient.off('serverMessage', handleServerMessage);
-      rtviClient.off('connected', () => {});
+      rtviClient.off('connected', handleConnected);
+      rtviClient.off('disconnected', handleDisconnected);
     };
   }, [rtviClient, isConnecting]);
 
@@ -128,6 +164,7 @@ function AssistantContent() {
         console.log('Attempting to connect to assistant service...');
         await rtviClient.connect();
         console.log('Connection request completed');
+        setIsConnecting(false);
       } else if (transportState === 'connected') {
         console.log('Disconnecting from assistant service...');
         await rtviClient.disconnect();
@@ -139,6 +176,7 @@ function AssistantContent() {
       setError(err instanceof Error ? 
         `Failed to connect: ${err.message}` : 
         'Failed to connect: Unknown error');
+    } finally {
       setIsConnecting(false);
     }
   };
@@ -225,6 +263,13 @@ function AssistantContent() {
               : 'Audio inactive - click Connect to start'}
           </span>
         </div>
+        
+        {/* Audio troubleshooting help */}
+        <div className="space-y-2">          
+          <p className="text-xs text-gray-500 text-center">
+            If you can't hear any audio, check that your volume is turned up.
+          </p>
+        </div>
       </CardContent>
 
       <CardFooter>
@@ -241,82 +286,11 @@ function AssistantContent() {
   );
 }
 
-// Root component that provides the RTVIClientProvider
+// Export the main component that uses the RTVIProvider
 export function Assistant() {
-  const [client, setClient] = useState<any>(null);
-
-  useEffect(() => {
-    async function loadClient() {
-      try {
-        const PIPECAT_API_URL = import.meta.env.PIPECAT_API_URL;
-
-        // Dynamically import the modules
-        const { RTVIClient } = await import('@pipecat-ai/client-js');
-        const { DailyTransport } = await import('@pipecat-ai/daily-transport');
-        
-        // Create transport with default configuration
-        const transport = new DailyTransport();
-        
-        console.log('Using API base URL:', PIPECAT_API_URL || '/api/assistant');
-        console.log('Transport created with default configuration');
-        
-        // Create the client with server-matching configuration
-        const rtviClient = new RTVIClient({
-          transport,
-          enableMic: true,
-          enableCam: false,
-          params: {
-            baseUrl: PIPECAT_API_URL || '/api/assistant',
-            endpoints: {
-              connect: '/connect',
-            },
-            config: [
-              {
-                service: "tts",
-                options: [
-                  { name: "voice", value: "6IlUNt4hAIP1jMBYQncS" },
-                  { name: "model", value: "eleven_turbo_v2" },
-                  { name: "output_format", value: "pcm_24000" },
-                  { name: "optimize_streaming_latency", value: 4 },
-                  { name: "stability", value: 0.75 },
-                  { name: "similarity_boost", value: 0.75 },
-                  { name: "latency", value: 1 }
-                ],
-              }
-            ],
-          }
-        });
-        
-        console.log('RTVI client created with standard configuration');
-        setClient(rtviClient);
-      } catch (error) {
-        console.error('Failed to load Pipecat client:', error);
-      }
-    }
-    
-    loadClient();
-    
-    return () => {
-      if (client) {
-        try {
-          client.disconnect().catch((err: unknown) => {
-            console.warn('Error during disconnect in cleanup:', err);
-          });
-        } catch (err) {
-          console.warn('Error during cleanup:', err);
-        }
-      }
-    };
-  }, []);
-
-  if (!client) {
-    return <div>Loading assistant...</div>;
-  }
-
   return (
-    <RTVIClientProvider client={client}>
+    <RTVIProvider>
       <AssistantContent />
-      <RTVIClientAudio />
-    </RTVIClientProvider>
+    </RTVIProvider>
   );
 }
