@@ -37,9 +37,9 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
           timeout: 15000,
           params: {
             // Ensure proper URL formatting
-            baseUrl: '/api/assistant/',
+            baseUrl: '/api/assistant',
             endpoints: {
-              connect: 'connect',
+              connect: '/connect',
             },
             services: {
               llm: "openai",
