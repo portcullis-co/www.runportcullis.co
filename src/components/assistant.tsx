@@ -443,7 +443,7 @@ export function Assistant() {
           enableMic: true,
           enableCam: false,
           params: {
-            baseUrl: import.meta.env.PIPECAT_API_URL || '/api/assistant',
+            baseUrl: PIPECAT_API_URL || '/api/assistant',
             endpoints: {
               connect: '/connect',
             },
