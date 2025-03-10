@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Mic, Loader2, Volume2 } from 'lucide-react';
 import { useRTVIClient, useRTVIClientTransportState, RTVIClientProvider, RTVIClientAudio } from '@pipecat-ai/client-react';
-import { DailyTransport } from '@pipecat-ai/daily-transport';
 
 // Wrapper component to provide the RTVI client context
 function AssistantContent() {
@@ -14,15 +13,9 @@ function AssistantContent() {
   const [error, setError] = useState<string | null>(null);
   const [transcription, setTranscription] = useState<string>('');
   const [isListening, setIsListening] = useState(false);
-  const [audioReady, setAudioReady] = useState(false);
 
   const rtviClient = useRTVIClient();
   const transportState = useRTVIClientTransportState();
-
-  // Using a ref to keep track of the audio element without triggering rerenders
-  const audioElementRef = useRef<HTMLAudioElement | null>(null);
-  // Using a ref to track if we've already set up audio handling
-  const audioHandlingSetup = useRef(false);
 
   // Get available microphones
   useEffect(() => {
@@ -46,68 +39,9 @@ function AssistantContent() {
     getDevices();
   }, []);
 
-  // Initialize audio context and ensure it's ready
-  useEffect(() => {
-    if (audioReady) return;
-
-    const unlockAudio = () => {
-      try {
-        // Create and play a silent audio context to unlock audio
-        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-        
-        if (audioContext.state === 'suspended') {
-          audioContext.resume()
-            .then(() => {
-              console.log('Audio context resumed successfully:', audioContext.state);
-              setAudioReady(true);
-            })
-            .catch(err => console.error('Failed to resume audio context:', err));
-        } else {
-          console.log('Audio context already active:', audioContext.state);
-          setAudioReady(true);
-        }
-        
-        // Create a short sound to ensure proper unlocking
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        gainNode.gain.value = 0.01; // Very low volume
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        oscillator.start(0);
-        oscillator.stop(audioContext.currentTime + 0.2);
-        
-        // Create a silent audio element and play it to unlock audio on iOS
-        const silentAudio = new Audio("data:audio/mp3;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGFTb25vdGhlcXVlLm9yZwBURU5DAAAAHQAAA1N3aXRjaCBQbHVzIMKpIE5DSCBTb2Z0d2FyZQBUSVQyAAAABgAAAzIyMzUAVFNTRQAAAA8AAANMYXZmNTcuODMuMTAwAAAAAAAAAAAAAAD/80DEAAAAA0gAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsRbAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQMSkAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV");
-        silentAudio.play().catch(e => console.log('Silent audio play failed but this is expected:', e));
-        
-      } catch (err) {
-        console.error('Error unlocking audio context:', err);
-      }
-    };
-
-    unlockAudio();
-
-    // Add event listeners for user interaction to unlock audio
-    const handleUserInteraction = () => {
-      unlockAudio();
-      if (audioElementRef.current) {
-        audioElementRef.current.play().catch(e => console.warn('Audio play from interaction failed:', e));
-      }
-    };
-
-    document.addEventListener('click', handleUserInteraction);
-    document.addEventListener('touchstart', handleUserInteraction);
-    
-    return () => {
-      document.removeEventListener('click', handleUserInteraction);
-      document.removeEventListener('touchstart', handleUserInteraction);
-    };
-  }, [audioReady]);
-
-  // Configure audio when device is selected
+  // Configure audio input when device is selected
   useEffect(() => {
     if (rtviClient && selectedDevice) {
-      // Use type assertion to bypass TypeScript checking
       try {
         (rtviClient as any).setAudioInput?.(selectedDevice);
         console.log('Audio input device set to:', selectedDevice);
@@ -117,7 +51,7 @@ function AssistantContent() {
     }
   }, [rtviClient, selectedDevice]);
 
-  // Handle RTVI client events
+  // Handle RTVI client events for transcription and user state
   useEffect(() => {
     if (!rtviClient) return;
 
@@ -135,128 +69,12 @@ function AssistantContent() {
       } else if (event.type === 'user-stopped-speaking') {
         setIsListening(false);
       }
-      
-      // Add audio debugging
-      if (event.type === 'bot-tts-started') {
-        console.log('TTS audio started - checking audio context');
-        try {
-          // Force resume audio context if it's suspended
-          const audioContext = (rtviClient as any)._transport?.dailyCallObject?._audioContext;
-          if (audioContext && audioContext.state === 'suspended') {
-            audioContext.resume().then(() => console.log('Audio context resumed'));
-          }
-          console.log('Audio context state:', audioContext?.state);
-        } catch (err) {
-          console.error('Error accessing audio context:', err);
-        }
-      }
-      
-      if (event.type === 'bot-tts-stopped') {
-        console.log('TTS audio stopped');
-      }
     };
 
     rtviClient.on('serverMessage' as any, handleMessage);
     
     return () => {
       rtviClient.off('serverMessage' as any, handleMessage);
-    };
-  }, [rtviClient]);
-
-  // Set up audio track handling when rtviClient is available
-  useEffect(() => {
-    if (!rtviClient || audioHandlingSetup.current) return;
-    
-    audioHandlingSetup.current = true;
-    
-    console.log('Setting up audio track handling');
-    
-    // Initialize audio element
-    if (!audioElementRef.current) {
-      audioElementRef.current = new Audio();
-      audioElementRef.current.autoplay = true;
-      audioElementRef.current.controls = false; // Usually hidden controls
-      audioElementRef.current.id = 'rtvi-audio-output';
-      audioElementRef.current.volume = 1.0; // Maximum volume
-      
-      // Append to body to ensure it's part of the DOM
-      document.body.appendChild(audioElementRef.current);
-      
-      console.log('Created audio element for output');
-    }
-    
-    const handleAudioTrack = (track: MediaStreamTrack, participant: any) => {
-      if (participant.local || track.kind !== 'audio') return;
-      
-      console.log('Received remote audio track, setting up playback');
-      
-      // Create a new MediaStream with the track
-      const stream = new MediaStream([track]);
-      
-      // Set the stream as the source for our audio element
-      if (audioElementRef.current) {
-        audioElementRef.current.srcObject = stream;
-        
-        // Try to play the audio
-        audioElementRef.current.play()
-          .then(() => {
-            console.log('Audio playback started successfully');
-          })
-          .catch(err => {
-            console.warn('Audio playback failed:', err);
-            
-            // Create a visible play button to allow user-initiated play
-            if (!document.getElementById('audio-fallback-button')) {
-              const playButton = document.createElement('button');
-              playButton.id = 'audio-fallback-button';
-              playButton.textContent = 'Enable Audio';
-              playButton.style.position = 'fixed';
-              playButton.style.bottom = '20px';
-              playButton.style.right = '20px';
-              playButton.style.zIndex = '9999';
-              playButton.style.padding = '10px 15px';
-              playButton.style.background = '#4f46e5';
-              playButton.style.color = 'white';
-              playButton.style.borderRadius = '5px';
-              playButton.style.border = 'none';
-              playButton.style.cursor = 'pointer';
-              
-              playButton.onclick = () => {
-                if (audioElementRef.current) {
-                  audioElementRef.current.play()
-                    .then(() => {
-                      console.log('Audio playback started via button');
-                      playButton.remove();
-                    })
-                    .catch(e => console.error('Audio play still failed:', e));
-                }
-              };
-              
-              document.body.appendChild(playButton);
-            }
-          });
-      }
-    };
-    
-    // Add track start listener
-    rtviClient.on('trackStarted' as any, handleAudioTrack);
-    
-    return () => {
-      rtviClient.off('trackStarted' as any, handleAudioTrack);
-      
-      // Clean up audio element
-      if (audioElementRef.current) {
-        audioElementRef.current.remove();
-        audioElementRef.current = null;
-      }
-      
-      // Remove fallback button if it exists
-      const fallbackButton = document.getElementById('audio-fallback-button');
-      if (fallbackButton) {
-        fallbackButton.remove();
-      }
-      
-      audioHandlingSetup.current = false;
     };
   }, [rtviClient]);
 
@@ -272,28 +90,7 @@ function AssistantContent() {
     
     try {
       if (transportState === 'disconnected') {
-        console.log('Initializing audio before connecting...');
-        // Force audio initialization before connecting
-        try {
-          // Create a silent audio context and ensure it's running
-          const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-          if (audioContext.state === 'suspended') {
-            await audioContext.resume();
-            console.log('Audio context resumed before connecting:', audioContext.state);
-          }
-          
-          // Play a silent audio element to unblock audio on Safari/iOS
-          const audio = new Audio();
-          audio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
-          await audio.play();
-          console.log('Audio initialized successfully');
-        } catch (audioErr) {
-          console.warn('Audio initialization warning:', audioErr);
-          // Continue despite audio initialization issues
-        }
-        
         console.log('Attempting to connect to assistant service...');
-        // Now connect to the service
         await rtviClient.connect();
         console.log('Connection request completed');
       } else if (transportState === 'connected') {
@@ -306,11 +103,6 @@ function AssistantContent() {
       setError(err instanceof Error ? 
         `Failed to connect: ${err.message}` : 
         'Failed to connect: Unknown error');
-      
-      // Additional debugging info
-      if (err instanceof Error && err.stack) {
-        console.error('Error stack:', err.stack);
-      }
     } finally {
       setIsConnecting(false);
     }
@@ -379,10 +171,10 @@ function AssistantContent() {
           </div>
         )}
 
-        {/* Audio status indicator */}
+        {/* Audio status indicator based on transport state */}
         <div className="flex items-center gap-2 text-sm">
-          <Volume2 className={`h-4 w-4 ${audioReady ? 'text-green-500' : 'text-gray-400'}`} />
-          <span>{audioReady ? 'Audio ready' : 'Audio initializing...'}</span>
+          <Volume2 className={`h-4 w-4 ${transportState === 'connected' ? 'text-green-500' : 'text-gray-400'}`} />
+          <span>{transportState === 'connected' ? 'Audio active' : 'Audio inactive'}</span>
         </div>
       </CardContent>
 
@@ -408,22 +200,21 @@ export function Assistant() {
   useEffect(() => {
     async function loadClient() {
       try {
-
         const PIPECAT_API_URL = import.meta.env.PIPECAT_API_URL;
 
         // Log initialization parameters
-        console.log('Using API base URL:', PIPECAT_API_URL);
+        console.log('Using API base URL:', PIPECAT_API_URL || '/api/assistant');
         
         // Dynamically import the modules
         const { RTVIClient } = await import('@pipecat-ai/client-js');
         const { DailyTransport } = await import('@pipecat-ai/daily-transport');
         
-        // Create the transport with the correct options
+        // Create the transport with the correct options for audio input AND output
         const transport = new DailyTransport({
           dailyFactoryOptions: {
-            audioSource: true,
-            videoSource: false,
-            subscribeToTracksAutomatically: true,
+            audioSource: true,      // Enable microphone input
+            videoSource: false,     // No camera needed
+            subscribeToTracksAutomatically: true, // Auto-subscribe to remote audio tracks
             dailyConfig: {
               userMediaAudioConstraints: {
                 autoGainControl: true,
@@ -434,10 +225,9 @@ export function Assistant() {
           }
         });
         
-        // Log transport creation
-        console.log('Transport created successfully');
+        console.log('Transport created with audio configuration');
         
-        // Create the client instance
+        // Create the client instance with proper audio configuration
         const rtviClient = new RTVIClient({
           transport,
           enableMic: true,
@@ -454,27 +244,46 @@ export function Assistant() {
                   { name: "output_format", value: "mp3" },
                   { name: "optimize_streaming_latency", value: 4 },
                 ],
+              },
+              {
+                service: "audio",
+                options: [
+                  { name: "enable_output", value: true },
+                  { name: "enable_input", value: true },
+                ],
               }
             ],
           },
           callbacks: {
-            onBotReady: () => console.log('Bot is ready'),
-            onBotTtsStarted: () => console.log('Bot TTS started'),
-            onBotTtsStopped: () => console.log('Bot TTS stopped'),
+            onBotReady: () => console.log('Bot is ready for interaction'),
+            onBotTtsStarted: () => console.log('Bot TTS audio stream started'),
+            onBotTtsStopped: () => console.log('Bot TTS audio stream stopped'),
             onError: (error) => console.error('RTVI client error:', error),
-            onTrackStarted: (track: MediaStreamTrack) => {
+            onTrackStarted: (track) => {
               console.log('Track started:', track);
-              // Force track to play if it's audio
               if (track.kind === 'audio') {
-                console.log('Audio track received, attempting to play');
+                console.log('Audio track received - handling should be automatic');
+                // Force play on iOS/Safari which might need user interaction
+                try {
+                  const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+                  if (audioContext.state === 'suspended') {
+                    audioContext.resume().then(() => console.log('Audio context resumed for track'));
+                  }
+                } catch (err) {
+                  console.warn('Failed to resume audio context:', err);
+                }
               }
+            },
+            onTrackStopped: (track) => {
+              console.log('Track stopped:', track);
+            },
+            onConnected: () => {
+              console.log('RTVI client connected and ready');
             }
           }
         });
         
-        // Log successful client creation
-        console.log('RTVI client created successfully');
-        
+        console.log('RTVI client created with proper audio configuration');
         setClient(rtviClient);
       } catch (error) {
         console.error('Failed to load Pipecat client:', error);
@@ -485,60 +294,57 @@ export function Assistant() {
       }
     }
     
-    // Define unlockAudio function outside to have access in cleanup
+    // Simple audio context initialization for browser auto-play policy
     const unlockAudio = () => {
       try {
-        // Create and play a silent audio context to unlock audio
+        // Create audio context
         const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        console.log('Initial audio context state:', audioContext.state);
         
-        // Add this line to ensure the context is resumed
         if (audioContext.state === 'suspended') {
-          audioContext.resume().then(() => console.log('Audio context resumed'));
+          audioContext.resume().then(() => {
+            console.log('Audio context resumed successfully to:', audioContext.state);
+          });
         }
         
-        // Create a longer sound to ensure proper unlocking
+        // Play a short, silent sound to help unlock audio on iOS/Safari
         const oscillator = audioContext.createOscillator();
         const gainNode = audioContext.createGain();
-        gainNode.gain.value = 0.01; // Very low volume
+        gainNode.gain.value = 0.001; // Very low volume, practically silent
         oscillator.connect(gainNode);
         gainNode.connect(audioContext.destination);
         oscillator.start(0);
-        oscillator.stop(audioContext.currentTime + 0.2); // Slightly longer duration
+        oscillator.stop(audioContext.currentTime + 0.01);
         
-        // Also try to play a silent audio file
-        const silentAudio = new Audio("data:audio/mp3;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGFTb25vdGhlcXVlLm9yZwBURU5DAAAAHQAAA1N3aXRjaCBQbHVzIMKpIE5DSCBTb2Z0d2FyZQBUSVQyAAAABgAAAzIyMzUAVFNTRQAAAA8AAANMYXZmNTcuODMuMTAwAAAAAAAAAAAAAAD/80DEAAAAA0gAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsRbAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQMSkAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV");
-        silentAudio.play().catch(err => console.log('Silent audio play failed but this is expected:', err));
-        
-        console.log('Audio context unlocked:', audioContext.state);
-        
-        document.removeEventListener('click', unlockAudio);
-        document.removeEventListener('touchstart', unlockAudio);
-      } catch (err: unknown) {
-        console.error('Error unlocking audio context:', err);
+        console.log('Audio unlock attempt completed');
+      } catch (err) {
+        console.error('Error in audio unlock function:', err);
       }
     };
     
-    // Add event listeners
-    document.addEventListener('click', unlockAudio);
-    document.addEventListener('touchstart', unlockAudio);
-    
-    // Immediately try to unlock audio for browser support
+    // Try to unlock audio on component mount
     unlockAudio();
+    
+    // Add event listeners for user interaction to help unlock audio
+    const handleUserInteraction = () => {
+      unlockAudio();
+    };
+    
+    document.addEventListener('click', handleUserInteraction);
+    document.addEventListener('touchstart', handleUserInteraction);
     
     loadClient();
     
-    // Cleanup function
     return () => {
-      document.removeEventListener('click', unlockAudio);
-      document.removeEventListener('touchstart', unlockAudio);
+      document.removeEventListener('click', handleUserInteraction);
+      document.removeEventListener('touchstart', handleUserInteraction);
       
-      // Properly disconnect client if it exists
       if (client) {
         try {
           client.disconnect().catch((err: unknown) => {
             console.warn('Error during disconnect in cleanup:', err);
           });
-        } catch (err: unknown) {
+        } catch (err) {
           console.warn('Error during cleanup:', err);
         }
       }
@@ -550,11 +356,10 @@ export function Assistant() {
   }
 
   return (
-    <>
-      <RTVIClientProvider client={client}>
-        <AssistantContent />
-        <RTVIClientAudio />
-      </RTVIClientProvider>
-    </>
+    <RTVIClientProvider client={client}>
+      <AssistantContent />
+      {/* RTVIClientAudio is a critical component that handles the audio playback */}
+      <RTVIClientAudio />
+    </RTVIClientProvider>
   );
 } 
