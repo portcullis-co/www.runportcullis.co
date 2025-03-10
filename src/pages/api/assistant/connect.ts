@@ -185,26 +185,3 @@ export const OPTIONS: APIRoute = async () => {
     }
   });
 };
-
-// Assuming you have a function to fetch the audio stream
-async function playAudioStream(url: RequestInfo | URL) {
-  try {
-    const response = await fetch(url, {
-      headers: {
-        'Content-Type': 'audio/mpeg',
-        'Access-Control-Allow-Origin': '*'
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch audio stream');
-    }
-
-    const audioBlob = await response.blob();
-    const audioUrl = URL.createObjectURL(audioBlob);
-    const audio = new Audio(audioUrl);
-    audio.play();
-  } catch (error) {
-    console.error('Error playing audio stream:', error);
-  }
-}
