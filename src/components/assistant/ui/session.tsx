@@ -49,7 +49,7 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
     }
   });
   
-  // Bot speech events
+  // Bot speech events - simplified to match Daily demo
   useRTVIClientEvent(RTVIEvent.BotStartedSpeaking, () => {
     console.log('[SESSION] Bot started speaking');
     setIsSpeaking(true);
@@ -60,146 +60,14 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
     setIsSpeaking(false);
   });
   
-  // Bot transcript events
-  useRTVIClientEvent(RTVIEvent.BotTranscript, (data: any) => {
-    console.log('[SESSION] Bot transcript:', data);
-    if (data && data.text) {
-      // Check if we need to add a new message or update the last one
-      setMessages(prev => {
-        const newMessages = [...prev];
-        const lastMessage = newMessages[newMessages.length - 1];
-        
-        if (!lastMessage || lastMessage.role !== 'assistant') {
-          // Add new assistant message
-          return [...prev, { role: 'assistant', content: data.text }];
-        } else {
-          // Update last message
-          lastMessage.content = data.text;
-          return newMessages;
-        }
-      });
-    }
-  });
-  
-  // Handle BotLlmText events - primary way bot responses come through
+  // Primary bot response handler - simplified to match Daily demo
   useRTVIClientEvent(RTVIEvent.BotLlmText, (data: any) => {
-    console.log('[SESSION] BotLlmText received:', data);
-    
-    if (data && data.text) {
-      setMessages(prev => {
-        const newMessages = [...prev];
-        const lastMessage = newMessages[newMessages.length - 1];
-        
-        if (!lastMessage || lastMessage.role !== 'assistant' || data.index === 0) {
-          // Add new assistant message
-          return [...prev, { role: 'assistant', content: data.text }];
-        } else {
-          // Update last message with concatenated content
-          lastMessage.content = data.text;
-          return newMessages;
-        }
-      });
-    }
-  });
-  
-  // Fallback for legacy message types
-  useRTVIClientEvent(RTVIEvent.ServerMessage, (message: any) => {
-    console.log('[SESSION] Raw RTVI message:', message);
-    
-    // Handle LLM response messages (legacy format)
-    if (message.type === 'llm-response' && message.data && message.data.text) {
-      setMessages(prev => {
-        const newMessages = [...prev];
-        const lastMessage = newMessages[newMessages.length - 1];
-        
-        if (!lastMessage || lastMessage.role !== 'assistant' || message.data.index === 0) {
-          // Add new assistant message
-          return [...prev, { role: 'assistant', content: message.data.text }];
-        } else {
-          // Update last message
-          lastMessage.content += message.data.text;
-          return newMessages;
-        }
-      });
-    }
-    
-    // Handle bot-message format
-    if (message.type === 'bot-message' && message.data && message.data.text) {
-      console.log('[SESSION] Bot message detected:', message.data.text);
-      setMessages(prev => {
-        const newMessages = [...prev];
-        const lastMessage = newMessages[newMessages.length - 1];
-        
-        if (!lastMessage || lastMessage.role !== 'assistant') {
-          // Add new assistant message
-          return [...prev, { role: 'assistant', content: message.data.text }];
-        } else {
-          // Update last message
-          lastMessage.content = message.data.text;
-          return newMessages;
-        }
-      });
-    }
-    
-    // Handle bot-transcript format (sometimes used instead of BotTranscript event)
-    if (message.type === 'bot-transcript' && message.data && message.data.text) {
-      console.log('[SESSION] Bot transcript message detected:', message.data.text);
-      setMessages(prev => {
-        const newMessages = [...prev];
-        const lastMessage = newMessages[newMessages.length - 1];
-        
-        if (!lastMessage || lastMessage.role !== 'assistant') {
-          // Add new assistant message
-          return [...prev, { role: 'assistant', content: message.data.text }];
-        } else {
-          // Update last message
-          lastMessage.content = message.data.text;
-          return newMessages;
-        }
-      });
-    }
-    
-    // Handle bot-llm-chunk format (newer variant)
-    if (message.type === 'bot-llm-chunk' && message.data && message.data.text) {
-      console.log('[SESSION] Bot LLM chunk detected:', message.data.text);
-      setMessages(prev => {
-        const newMessages = [...prev];
-        const lastMessage = newMessages[newMessages.length - 1];
-        
-        if (!lastMessage || lastMessage.role !== 'assistant' || message.data.index === 0) {
-          // Add new assistant message
-          return [...prev, { role: 'assistant', content: message.data.text }];
-        } else {
-          // Update last message
-          lastMessage.content += message.data.text;
-          return newMessages;
-        }
-      });
-    }
-    
-    // Handle bot thinking events
-    if (message.type === 'bot-thinking' && message.data) {
-      console.log('[SESSION] Bot thinking:', message.data);
-      // Optionally add UI indication that bot is thinking
-    }
-    
-    // Log any message that might be a bot response
-    if (message.type && (
-      message.type.includes('bot') || 
-      message.type.includes('llm') || 
-      message.type.includes('ai') ||
-      message.type.includes('response')
-    )) {
-      console.log('[SESSION] Potential bot response message detected:', message);
-    }
-    
-    // Handle TTS events (legacy format)
-    if (message.type === 'tts-start') {
-      setIsSpeaking(true);
-    }
-    
-    if (message.type === 'tts-end') {
-      setIsSpeaking(false);
+    console.log('[SESSION] Bot LLM text:', data);
+    if (data?.text) {
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: data.text 
+      }]);
     }
   });
   
@@ -212,61 +80,37 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
       client.action({
         service: "tts",
         action: "interrupt",
-        arguments: [],
+        arguments: []
       });
     } catch (error) {
       console.error('Failed to interrupt bot:', error);
     }
   };
   
-  // Add an explicit function to trigger bot speaking if needed
-  const triggerBotToSpeak = async (text: string) => {
+  // Simplified bot speak trigger to match Daily demo
+  const triggerBotToSpeak = (text: string) => {
     if (!client) return;
     
-    console.log('[SESSION] Explicitly triggering bot to speak:', text);
+    console.log('[SESSION] Triggering bot to speak:', text);
     
-    try {
-      // Try TTS synthesize first
-      const response = await client.action({
-        service: "tts",
-        action: "synthesize",
-        arguments: [
-          { name: "text", value: text }
-        ]
-      });
-      
-      console.log('[SESSION] TTS response:', response);
-      
-    } catch (error) {
-      console.error('[SESSION] TTS failed:', error);
-      
-      // Fallback to direct message
-      try {
-        client.sendMessage({
-          type: 'bot-message',
-          data: {
-            text,
-            type: 'text'
-          },
-          id: Date.now().toString(),
-          label: 'rtvi-ai'
-        });
-      } catch (msgError) {
-        console.error('[SESSION] Direct message also failed:', msgError);
-      }
-    }
+    client.action({
+      service: "bot",
+      action: "speak",
+      arguments: [
+        { name: "text", value: text }
+      ]
+    }).catch(error => {
+      console.error('[SESSION] Bot speak failed:', error);
+    });
   };
 
-  // Add greeting when session starts
+  // Simplified greeting when session starts
   useEffect(() => {
     if (!client || messages.length > 0) return;
     
     const handleBotReady = () => {
-      console.log('[SESSION] Bot ready event received, sending greeting...');
-      // Wait a bit longer for full initialization
-      setTimeout(() => {
-        triggerBotToSpeak("Hello! I'm your Portcullis assistant. How can I help you today?");
-      }, 2000);
+      console.log('[SESSION] Bot ready, sending greeting...');
+      triggerBotToSpeak("Hello! I'm your Portcullis assistant. How can I help you today?");
     };
 
     client.on(RTVIEvent.BotReady, handleBotReady);

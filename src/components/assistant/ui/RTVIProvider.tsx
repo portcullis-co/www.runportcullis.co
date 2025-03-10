@@ -45,254 +45,38 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
           },
           callbacks: {
             onBotConnected: () => {
-              console.log('[CALLBACK] Bot connected');
+              console.log('[RTVI] Bot connected');
             },
             onBotDisconnected: () => {
-              console.log('[CALLBACK] Bot disconnected');
+              console.log('[RTVI] Bot disconnected');
             },
             onBotReady: (botReadyData: any) => {
-              console.log('[CALLBACK] Bot ready to chat with config:', botReadyData);
-              // Initialize bot with received config
-              if (botReadyData?.config) {
-                try {
-                  client.action({
-                    service: "bot",
-                    action: "initialize",
-                    arguments: botReadyData.config
-                  }).then(() => {
-                    console.log('[RTVI Core] Bot initialized with config');
-                  }).catch(error => {
-                    console.error('[RTVI Core] Failed to initialize bot:', error);
-                  });
-                } catch (error) {
-                  console.error('[RTVI Core] Failed to send initialize action:', error);
-                }
-              }
+              console.log('[RTVI] Bot ready:', botReadyData);
             },
             onTransportStateChanged: (state: string) => {
-              console.log('[CALLBACK] Transport state changed:', state);
+              console.log('[RTVI] Transport state:', state);
               setTransportState(state);
               
               if (state === 'ready' && !client.connected) {
-                console.log('[RTVI Core] Transport ready, attempting connection...');
-                try {
-                  client.connect().then(() => {
-                    console.log('[RTVI Core] Connection successful');
-                  }).catch(error => {
-                    console.error('[RTVI Core] Connection failed:', error);
-                  });
-                } catch (error) {
-                  console.error('[RTVI Core] Failed to initiate connection:', error);
-                }
+                console.log('[RTVI] Transport ready, connecting...');
+                client.connect().catch(error => {
+                  console.error('[RTVI] Connection failed:', error);
+                });
               }
             },
             onError: (error: any) => {
-              console.error('[CALLBACK] RTVI error:', error);
-            },
-            onServerMessage: (message: any) => {
-              console.log('[DEBUG] Raw message received:', message);
-              // Log error responses in detail
-              if (message.type === 'error-response') {
-                console.error('[DEBUG] Error response:', JSON.stringify(message.data, null, 2));
-                // If there's an error code, log it specifically
-                if (message.data?.code) {
-                  console.error('[DEBUG] Error code:', message.data.code);
-                }
-              }
+              console.error('[RTVI] Error:', error);
             }
           }
         });
         
-        // Set up event listeners with error handling
-        client.on(RTVIEvent.TransportStateChanged, (state: string) => {
-          console.log('[EVENT] Transport state changed:', state);
-          setTransportState(state);
-          
-          if (state === 'connected') {
-            console.log('Successfully connected to Daily.co bot!');
-          } else if (state === 'connecting') {
-            console.log('Connecting to Daily.co bot...');
-          } else if (state === 'disconnected') {
-            console.log('Disconnected from Daily.co bot');
-          }
-        });
-        
+        // Core event listeners only
         client.on(RTVIEvent.Error, (error: any) => {
-          console.error('[EVENT] RTVI client error:', error);
+          console.error('[RTVI] Client error:', error);
         });
         
-        // Core bot state events
         client.on(RTVIEvent.BotReady, () => {
-          console.log('[EVENT] Bot is ready to chat');
-          // Send initial message
-          client.sendMessage({
-            type: 'bot-message',
-            data: {
-              text: "Hello! I'm ready to help.",
-              type: 'text'
-            },
-            id: '',
-            label: ''
-          });
-        });
-        
-        client.on(RTVIEvent.BotConnected, () => {
-          console.log('[EVENT] Bot has connected');
-        });
-        
-        client.on(RTVIEvent.BotDisconnected, () => {
-          console.log('[EVENT] Bot has disconnected');
-        });
-        
-        // Standard RTVIEvents for speech
-        client.on(RTVIEvent.BotStartedSpeaking, () => {
-          console.log('[EVENT] Bot started speaking');
-          setBotSpeaking(true);
-        });
-        
-        client.on(RTVIEvent.BotStoppedSpeaking, () => {
-          console.log('[EVENT] Bot stopped speaking');
-          setBotSpeaking(false);
-        });
-        
-        client.on(RTVIEvent.BotTranscript, (data: any) => {
-          console.log('[EVENT] Bot transcript:', data);
-          if (data && data.text) {
-            setLastBotMessage(data.text);
-          }
-        });
-        
-        // Add event listener for bot LLM events with correct casing
-        client.on(RTVIEvent.BotLlmStarted, () => {
-          console.log('[EVENT] Bot LLM started processing');
-        });
-        
-        client.on(RTVIEvent.BotLlmStopped, () => {
-          console.log('[EVENT] Bot LLM stopped processing');
-        });
-        
-        client.on(RTVIEvent.BotLlmText, (data: any) => {
-          console.log('[RTVI Core] BotLlmText event received:', data);
-        });
-        
-        // Enhanced TTS event handling
-        client.on(RTVIEvent.BotTtsStarted, () => {
-          console.log('[EVENT] Bot TTS started - Audio should begin playing');
-          setBotSpeaking(true);
-        });
-        
-        client.on(RTVIEvent.BotTtsStopped, () => {
-          console.log('[EVENT] Bot TTS stopped - Audio should stop playing');
-          setBotSpeaking(false);
-        });
-        
-        // Add TTS text event handler (important for debugging TTS)
-        client.on(RTVIEvent.BotTtsText, (data: any) => {
-          console.log('[EVENT] Bot TTS text received:', data);
-          // This event indicates text is being sent to TTS service
-        });
-        
-        // Also handle raw tts events via ServerMessage for legacy compatibility
-        client.on(RTVIEvent.ServerMessage, (message: any) => {
-          console.log('[RTVI Core] Server message received:', message);
-          
-          // Handle legacy TTS events 
-          if (message.type === 'tts-start' || message.type === 'bot-tts-start') {
-            console.log('[RTVI Core] Legacy TTS start detected');
-            setBotSpeaking(true);
-          }
-          
-          if (message.type === 'tts-end' || message.type === 'bot-tts-end') {
-            console.log('[RTVI Core] Legacy TTS end detected');
-            setBotSpeaking(false);
-          }
-          
-          if (message.type === 'tts-text' || message.type === 'bot-tts-text') {
-            console.log('[RTVI Core] Legacy TTS text detected:', message.data?.text);
-          }
-          
-          // Special handling for bot-ready message to ensure proper state transitions
-          if (message.type === 'bot-ready') {
-            console.log('[IMPORTANT] Bot ready message received!');
-          }
-          
-          // Handle LLM responses - multiple formats
-          if (message.type === 'llm-response' && message.data && message.data.text) {
-            console.log('[RTVIProvider] LLM response received:', message.data.text);
-            setLastBotMessage(prev => prev + message.data.text);
-          }
-          
-          // Handle bot-message format
-          if (message.type === 'bot-message' && message.data && message.data.text) {
-            console.log('[RTVIProvider] Bot message received:', message.data.text);
-            setLastBotMessage(message.data.text);
-          }
-          
-          // Handle bot-transcript format
-          if (message.type === 'bot-transcript' && message.data && message.data.text) {
-            console.log('[RTVIProvider] Bot transcript received:', message.data.text);
-            setLastBotMessage(message.data.text);
-          }
-          
-          // Handle bot-llm-chunk format (newer)
-          if (message.type === 'bot-llm-chunk' && message.data && message.data.text) {
-            console.log('[RTVIProvider] Bot LLM chunk received:', message.data.text);
-            setLastBotMessage(prev => prev + message.data.text);
-          }
-          
-          // Specifically log any message that might contain bot responses
-          if (message.type && (
-            message.type.includes('bot') || 
-            message.type.includes('llm') || 
-            message.type.includes('ai') ||
-            message.type.includes('response') ||
-            message.type.includes('tts')
-          )) {
-            console.log('[RTVI Core] Potential bot-related message detected:', message);
-          }
-        });
-        
-        // Handle user speech events for debugging
-        client.on(RTVIEvent.UserStartedSpeaking, () => {
-          console.log('[EVENT] User started speaking');
-        });
-        
-        client.on(RTVIEvent.UserStoppedSpeaking, () => {
-          console.log('[EVENT] User stopped speaking');
-        });
-        
-        client.on(RTVIEvent.UserTranscript, (data: any) => {
-          console.log('[EVENT] User transcript:', data);
-        });
-        
-        // Enhanced message handling
-        client.on(RTVIEvent.ServerMessage, (message: any) => {
-          console.log('[DEBUG] Raw message received:', message);
-          
-          // Handle different message types
-          if (message.type === 'bot-message' && message.data?.text) {
-            console.log('[DEBUG] Bot message:', message.data.text);
-            setLastBotMessage(message.data.text);
-          }
-          
-          if (message.type === 'bot-thinking') {
-            console.log('[DEBUG] Bot is thinking');
-          }
-          
-          if (message.type === 'bot-error') {
-            console.error('[DEBUG] Bot error:', message);
-          }
-        });
-        
-        // Audio track handling
-        client.on(RTVIEvent.TrackStarted, (track: any) => {
-          console.log('[DEBUG] Audio track started:', track);
-          setBotSpeaking(true);
-        });
-
-        client.on(RTVIEvent.TrackStopped, (track: any) => {
-          console.log('[DEBUG] Audio track stopped:', track);
-          setBotSpeaking(false);
+          console.log('[RTVI] Bot ready event received');
         });
         
         // Store the client and components
@@ -301,7 +85,7 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
         setRTVIClientAudio(() => RTVIClientAudio);
         setIsLoaded(true);
         
-        console.log('RTVI client and components loaded successfully');
+        console.log('[RTVI] Client initialized');
        
         // Log the final URL for debugging
         console.log('Connect URL will be:', client.params.baseUrl ? client.params.baseUrl + (client.params.endpoints?.connect || '') : 'Base URL not defined');
