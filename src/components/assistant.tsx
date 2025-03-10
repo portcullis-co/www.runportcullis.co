@@ -233,15 +233,24 @@ export function Assistant() {
   useEffect(() => {
     async function loadClient() {
       try {
+
+        const DAILY_ROOM_URL = import.meta.env.DAILY_ROOM_URL;
+        const PIPECAT_API_URL = import.meta.env.PIPECAT_API_URL;
+
         // Check required environment variables
-        if (!import.meta.env.DAILY_ROOM_URL) {
+        if (!DAILY_ROOM_URL) {
           console.error('Missing  DAILY_ROOM_URL environment variable');
           return;
         }
 
+        if (!PIPECAT_API_URL) {
+          console.error('Missing PIPECAT_API_URL environment variable');
+          return;
+        }
+
         // Log initialization parameters
-        console.log('Initializing with Daily.co room URL:', import.meta.env.DAILY_ROOM_URL);
-        console.log('Using API base URL:', import.meta.env.PIPECAT_API_URL || '/api/assistant');
+        console.log('Initializing with Daily.co room URL:', DAILY_ROOM_URL);
+        console.log('Using API base URL:', PIPECAT_API_URL);
         
         // Dynamically import the modules
         const { RTVIClient } = await import('@pipecat-ai/client-js');
