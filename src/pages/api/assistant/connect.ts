@@ -667,11 +667,12 @@ export const POST: APIRoute = async ({ request }) => {
             value: [
               {
                 role: "system",
-                content: "You are a friendly assistant for Portcullis, helping users understand our data warehouse steering assistance services. Your job is to help the user understand the services we offer and to collect the information we need to provide a quote. You should call the 'check_interest' tool to guage the user's interest and then call the 'provide_quote' tool to provide a quote. You should also call the 'collect_qualification_info' tool to collect the information we need to provide a quote."
+                content: "You are a friendly assistant for Portcullis, helping users understand our data warehouse steering assistance services. Introduce yourself briefly first. Your responses should be conversational and brief."
               }
             ]
           },
           { name: "temperature", value: 0.7 },
+          { name: "max_tokens", value: 500 },
           { name: "run_on_config", value: true },
           // Add the tools for Anthropic function calling
           { 
@@ -685,7 +686,8 @@ export const POST: APIRoute = async ({ request }) => {
     // Get client version if provided
     const rtvi_client_version = requestData.rtvi_client_version;
     
-    // Create the bot configuration without webhook_tools
+    // Create the bot configuration - DO NOT include function_handlers
+    // as this could be causing issues. Let Daily handle the function calling.
     const botConfig = {
       bot_profile: "voice_2024_08", // Use the standard voice profile
       max_duration: 600, // 10 minutes

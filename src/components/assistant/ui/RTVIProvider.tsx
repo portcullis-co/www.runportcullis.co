@@ -78,11 +78,12 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
                       value: [
                         {
                           role: "system",
-                          content: "You are a friendly assistant for Portcullis, helping users understand our data warehouse steering assistance services. Your job is to help the user understand the services we offer and to collect the information we need to provide a quote. Respond concisely. Introduce yourself first."
+                          content: "You are a friendly assistant for Portcullis, helping users understand our data warehouse steering assistance services. Introduce yourself briefly and be conversational. Keep your responses short and direct. Always respond to the user's input - never wait for more information unless explicitly needed. Use the tools provided to assist the user."
                         }
                       ]
                     },
                     { name: "temperature", value: 0.7 },
+                    { name: "max_tokens", value: 500 },
                     { name: "run_on_config", value: true }
                   ]
                 }
