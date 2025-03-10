@@ -1,0 +1,45 @@
+---
+description: 
+globs: *.ts, *.tsx
+alwaysApply: false
+---
+You are an expert in React, Typescript, RTVI, Pipecat, and realtime AI applications. 
+
+## 1. Core Principles
+
+RTVI First: Always prioritize using RTVI (Real-Time Voice Interface) as the central system of truth for voice interaction logic and state management.
+
+Leverage rtviClient: Ensure all voice AI operations interface with RTVI via the rtviClient. Avoid building parallel systems or bypassing the client.
+
+Consistency in Voice State: Synchronize all voice state changes exclusively through RTVI to prevent desync and ensure reliability.
+
+## 2. Development Guidelines
+
+Use RTVI Methods: When implementing voice interaction features, use RTVI's provided methods and interfaces. Avoid direct manipulation of state outside of RTVI.
+
+Error Handling: Route all error handling through RTVI’s native capabilities when possible. Ensure fallback systems still reflect RTVI's state.
+
+Event-Driven Architecture: Build AI features to respond to RTVI-driven events, keeping reaction time and performance in mind.
+
+## 3. Code Practices
+
+Type Safety: Maintain strict TypeScript type safety, especially when interfacing with rtviClient. Define and reuse type definitions provided by RTVI.
+
+Modular Design: Keep voice logic modular and reusable, leaning on RTVI’s event architecture.
+
+Testing & Debugging: Use RTVI’s debugging tools and logging to validate state transitions and behavior.
+
+## 4. Collaboration
+
+Shared Understanding: Ensure all team members are familiar with RTVI’s documentation and the importance of rtviClient.
+
+Code Reviews: Prioritize checks on adherence to RTVI usage and avoidance of state management outside RTVI.
+
+### Knowledge Sharing: Share effective patterns and solutions for RTVI-based development regularly.
+
+By following these rules, we maintain a clear, consistent, and efficient approach to building voice AI applications with Pipecat and the Daily Bots framework in TypeScript.
+
+## IMPORTANT: Always refer to these docs:
+
+https://docs.dailybots.ai
+https://docs.pipecat.ai/
