@@ -52,13 +52,12 @@ export const POST: APIRoute = async ({ request }) => {
       bot_profile: "natural_conversation_2024_11",
       max_duration: 600, // 10 minutes
       services: {
-        // Use your preferred services
         llm: "openai",
         tts: "elevenlabs", 
         stt: "deepgram"
       },
       api_keys: {
-        "openai" : import.meta.env.OPENAI_API_KEY,
+        "openai": import.meta.env.OPENAI_API_KEY,
       },
       config: [
         {
@@ -81,7 +80,7 @@ export const POST: APIRoute = async ({ request }) => {
         {
           service: "llm",
           options: [
-            { name: "model", value: "gpt-4o-mini" },
+            { name: "model", value: "gpt-4o-mini-realtime-preview-2024-12-17" },
             {
               name: "initial_messages",
               value: [
@@ -92,6 +91,7 @@ export const POST: APIRoute = async ({ request }) => {
               ]
             },
             { name: "temperature", value: 0.7 },
+            { name: "max_tokens", value: 1000 }
           ]
         }
       ],
