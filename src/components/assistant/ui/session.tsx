@@ -219,6 +219,38 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
     }
   };
   
+  // Add an explicit function to trigger bot speaking if needed
+  const triggerBotToSpeak = (text: string) => {
+    if (!client) return;
+    
+    console.log('[SESSION] Explicitly triggering bot to speak:', text);
+    
+    // Use the action method to dispatch a 'say' action to the TTS service
+    client.action({
+      service: "tts",
+      action: "say",
+      arguments: [
+        { name: "text", value: text },
+        { name: "interrupt", value: true }
+      ]
+    });
+  };
+  
+  // Add greeting when session starts
+  useEffect(() => {
+    // Send a greeting when the session starts
+    const timer = setTimeout(() => {
+      if (client && messages.length === 0) {
+        console.log('[SESSION] Auto-triggering bot introduction');
+        
+        // Try to trigger the bot to speak
+        triggerBotToSpeak("Hello! I'm your Portcullis assistant. How can I help you today?");
+      }
+    }, 1000);
+    
+    return () => clearTimeout(timer);
+  }, [client, messages]);
+  
   return (
     <Card className="w-full">
       <CardHeader className="flex flex-row items-center justify-between">
@@ -292,6 +324,17 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
             <p className="mt-1 text-sm">{transcription}</p>
           </div>
         )}
+        
+        {/* Test Speak Button - For debugging */}
+        <div className="flex justify-center mt-4">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => triggerBotToSpeak("Hello, I'm testing the TTS functionality. Can you hear me?")}
+          >
+            Test TTS
+          </Button>
+        </div>
         
         {/* Invisible div for scrolling to bottom */}
         <div ref={messagesEndRef} />

@@ -128,45 +128,45 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
           console.log('[RTVI Core] BotLlmText event received:', data);
         });
         
+        // Enhanced TTS event handling
         client.on(RTVIEvent.BotTtsStarted, () => {
-          console.log('[EVENT] Bot TTS started');
+          console.log('[EVENT] Bot TTS started - Audio should begin playing');
           setBotSpeaking(true);
         });
         
         client.on(RTVIEvent.BotTtsStopped, () => {
-          console.log('[EVENT] Bot TTS stopped');
+          console.log('[EVENT] Bot TTS stopped - Audio should stop playing');
           setBotSpeaking(false);
         });
         
-        // Handle user speech events for debugging
-        client.on(RTVIEvent.UserStartedSpeaking, () => {
-          console.log('[EVENT] User started speaking');
+        // Add TTS text event handler (important for debugging TTS)
+        client.on(RTVIEvent.BotTtsText, (data: any) => {
+          console.log('[EVENT] Bot TTS text received:', data);
+          // This event indicates text is being sent to TTS service
         });
         
-        client.on(RTVIEvent.UserStoppedSpeaking, () => {
-          console.log('[EVENT] User stopped speaking');
-        });
-        
-        client.on(RTVIEvent.UserTranscript, (data: any) => {
-          console.log('[EVENT] User transcript:', data);
-        });
-        
-        // Add complete event logging for debugging
+        // Also handle raw tts events via ServerMessage for legacy compatibility
         client.on(RTVIEvent.ServerMessage, (message: any) => {
           console.log('[RTVI Core] Server message received:', message);
+          
+          // Handle legacy TTS events 
+          if (message.type === 'tts-start' || message.type === 'bot-tts-start') {
+            console.log('[RTVI Core] Legacy TTS start detected');
+            setBotSpeaking(true);
+          }
+          
+          if (message.type === 'tts-end' || message.type === 'bot-tts-end') {
+            console.log('[RTVI Core] Legacy TTS end detected');
+            setBotSpeaking(false);
+          }
+          
+          if (message.type === 'tts-text' || message.type === 'bot-tts-text') {
+            console.log('[RTVI Core] Legacy TTS text detected:', message.data?.text);
+          }
           
           // Special handling for bot-ready message to ensure proper state transitions
           if (message.type === 'bot-ready') {
             console.log('[IMPORTANT] Bot ready message received!');
-          }
-          
-          // Handle raw bot message formats if needed
-          if (message.type === 'tts-start') {
-            setBotSpeaking(true);
-          }
-          
-          if (message.type === 'tts-end') {
-            setBotSpeaking(false);
           }
           
           // Handle LLM responses - multiple formats
@@ -198,10 +198,24 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
             message.type.includes('bot') || 
             message.type.includes('llm') || 
             message.type.includes('ai') ||
-            message.type.includes('response')
+            message.type.includes('response') ||
+            message.type.includes('tts')
           )) {
-            console.log('[RTVI Core] Potential bot response detected:', message);
+            console.log('[RTVI Core] Potential bot-related message detected:', message);
           }
+        });
+        
+        // Handle user speech events for debugging
+        client.on(RTVIEvent.UserStartedSpeaking, () => {
+          console.log('[EVENT] User started speaking');
+        });
+        
+        client.on(RTVIEvent.UserStoppedSpeaking, () => {
+          console.log('[EVENT] User stopped speaking');
+        });
+        
+        client.on(RTVIEvent.UserTranscript, (data: any) => {
+          console.log('[EVENT] User transcript:', data);
         });
         
         // Store the client and components
@@ -244,7 +258,30 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
   return (
     <RTVIClientProvider client={rtviClient}>
       {children}
-      <RTVIClientAudio />
+      {/* Enhanced audio component with explicit options */}
+      <RTVIClientAudio 
+        autoPlay={true}
+        muted={false}
+        volume={1.0}
+        debug={true} // Enable debug logging for audio events
+      />
+      
+      {/* Audio debug log */}
+      <div
+        style={{
+          position: 'fixed',
+          bottom: '10px',
+          right: '10px',
+          padding: '5px',
+          background: 'rgba(0,0,0,0.1)',
+          borderRadius: '5px',
+          zIndex: 100,
+          fontSize: '10px',
+          display: botSpeaking ? 'block' : 'none'
+        }}
+      >
+        🔊 Bot speaking...
+      </div>
       
       {/* Simple debug panel */}
       <div
