@@ -86,7 +86,7 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
         
         // Core bot state events
         client.on(RTVIEvent.BotReady, () => {
-          console.log('[EVENT] Bot is ready to chat');
+          console.log('[EVENT] Bot is ready to chat - IMPORTANT EVENT');
         });
         
         client.on(RTVIEvent.BotConnected, () => {
@@ -126,10 +126,6 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
         
         client.on(RTVIEvent.BotLlmText, (data: any) => {
           console.log('[EVENT] Bot LLM text:', data);
-        });
-        
-        client.on(RTVIEvent.BotReady, () => {
-          console.log('[EVENT] Bot is ready to chat - IMPORTANT EVENT');
         });
         
         client.on(RTVIEvent.BotTtsStarted, () => {
@@ -173,8 +169,27 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
             setBotSpeaking(false);
           }
           
-          // Handle LLM responses
+          // Handle LLM responses - multiple formats
           if (message.type === 'llm-response' && message.data && message.data.text) {
+            console.log('[RTVIProvider] LLM response received:', message.data.text);
+            setLastBotMessage(prev => prev + message.data.text);
+          }
+          
+          // Handle bot-message format
+          if (message.type === 'bot-message' && message.data && message.data.text) {
+            console.log('[RTVIProvider] Bot message received:', message.data.text);
+            setLastBotMessage(message.data.text);
+          }
+          
+          // Handle bot-transcript format
+          if (message.type === 'bot-transcript' && message.data && message.data.text) {
+            console.log('[RTVIProvider] Bot transcript received:', message.data.text);
+            setLastBotMessage(message.data.text);
+          }
+          
+          // Handle bot-llm-chunk format (newer)
+          if (message.type === 'bot-llm-chunk' && message.data && message.data.text) {
+            console.log('[RTVIProvider] Bot LLM chunk received:', message.data.text);
             setLastBotMessage(prev => prev + message.data.text);
           }
         });

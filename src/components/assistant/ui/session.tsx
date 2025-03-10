@@ -87,6 +87,7 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
     
     // Handle LLM response messages (legacy format)
     if (message.type === 'llm-response' && message.data && message.data.text) {
+      console.log('[SESSION] Processing llm-response message:', message.data.text);
       setMessages(prev => {
         const newMessages = [...prev];
         const lastMessage = newMessages[newMessages.length - 1];
@@ -97,6 +98,60 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
         } else {
           // Update last message
           lastMessage.content += message.data.text;
+          return newMessages;
+        }
+      });
+    }
+    
+    // Handle bot-message type
+    if (message.type === 'bot-message' && message.data && message.data.text) {
+      console.log('[SESSION] Processing bot-message:', message.data.text);
+      setMessages(prev => {
+        const newMessages = [...prev];
+        const lastMessage = newMessages[newMessages.length - 1];
+        
+        if (!lastMessage || lastMessage.role !== 'assistant') {
+          // Add new assistant message
+          return [...prev, { role: 'assistant', content: message.data.text }];
+        } else {
+          // Update last message
+          lastMessage.content = message.data.text;
+          return newMessages;
+        }
+      });
+    }
+    
+    // Handle bot-llm-chunk (newer format)
+    if (message.type === 'bot-llm-chunk' && message.data && message.data.text) {
+      console.log('[SESSION] Processing bot-llm-chunk:', message.data.text);
+      setMessages(prev => {
+        const newMessages = [...prev];
+        const lastMessage = newMessages[newMessages.length - 1];
+        
+        if (!lastMessage || lastMessage.role !== 'assistant') {
+          // Add new assistant message
+          return [...prev, { role: 'assistant', content: message.data.text }];
+        } else {
+          // Update last message
+          lastMessage.content += message.data.text;
+          return newMessages;
+        }
+      });
+    }
+    
+    // Handle bot-transcript (another possible format)
+    if (message.type === 'bot-transcript' && message.data && message.data.text) {
+      console.log('[SESSION] Processing bot-transcript:', message.data.text);
+      setMessages(prev => {
+        const newMessages = [...prev];
+        const lastMessage = newMessages[newMessages.length - 1];
+        
+        if (!lastMessage || lastMessage.role !== 'assistant') {
+          // Add new assistant message
+          return [...prev, { role: 'assistant', content: message.data.text }];
+        } else {
+          // Update last message
+          lastMessage.content = message.data.text;
           return newMessages;
         }
       });
