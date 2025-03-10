@@ -17,43 +17,14 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
     
-    // Enhanced error handling for request parsing
+    // Parse request body with error handling
     let data;
     try {
-      if (!request.body) {
-        console.error('Request body is empty');
-        return new Response(JSON.stringify({ 
-          error: 'Empty request body' 
-        }), {
-          status: 400,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
-          }
-        });
-      }
-      
       data = await request.json();
-      
-      if (!data) {
-        console.error('No data in request body');
-        return new Response(JSON.stringify({ 
-          error: 'Empty JSON in request body' 
-        }), {
-          status: 400,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
-          }
-        });
-      }
-      
-      console.log('Request data received:', JSON.stringify(data));
     } catch (parseError) {
       console.error('Failed to parse request JSON:', parseError);
       return new Response(JSON.stringify({ 
-        error: 'Invalid JSON in request body',
-        details: parseError instanceof Error ? parseError.message : 'Unknown parsing error'
+        error: 'Invalid JSON in request body'
       }), {
         status: 400,
         headers: {
@@ -130,14 +101,11 @@ export const POST: APIRoute = async ({ request }) => {
       }
     };
 
-    console.log('Starting Daily.co bot with configuration:', JSON.stringify(botConfig, null, 2));
-
     // Start the bot with improved error handling and timeout
     let response;
     try {
       const controller = new AbortController();
-      // Reduce timeout to avoid Netlify function timeouts (from 10s to 8s)
-      const timeoutId = setTimeout(() => controller.abort(), 8000); 
+      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout for Netlify
       
       response = await fetch("https://api.daily.co/v1/bots/start", {
         method: "POST",
@@ -153,8 +121,7 @@ export const POST: APIRoute = async ({ request }) => {
     } catch (error) {
       console.error('Error making request to Daily.co API:', error);
       return new Response(JSON.stringify({
-        error: error instanceof Error ? error.message : 'Error connecting to Daily.co API',
-        details: 'Check server logs for more information'
+        error: error instanceof Error ? error.message : 'Error connecting to Daily.co API'
       }), {
         status: 500,
         headers: {
@@ -165,32 +132,14 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     // Handle non-JSON responses
-    const responseText = await response.text();
     let responseData;
-    
     try {
-      // Check if the response text is empty
-      if (!responseText || responseText.trim() === '') {
-        console.error('Empty response from Daily API');
-        return new Response(JSON.stringify({
-          error: 'Empty response from Daily.co API',
-          status: response.status
-        }), {
-          status: 500,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
-          }
-        });
-      }
-      
+      const responseText = await response.text();
       responseData = JSON.parse(responseText);
     } catch (error) {
-      console.error('Non-JSON response from Daily API:', responseText);
+      console.error('Non-JSON response from Daily API:', error);
       return new Response(JSON.stringify({
-        error: 'Invalid response from Daily.co API',
-        status: response.status,
-        responseText
+        error: 'Invalid response from Daily.co API'
       }), {
         status: 500,
         headers: {
@@ -202,12 +151,9 @@ export const POST: APIRoute = async ({ request }) => {
 
     if (!response.ok) {
       console.error("Error starting bot:", responseData);
-      
-      // Return a more detailed error response
       return new Response(JSON.stringify({
         error: 'Failed to start Daily.co bot',
-        details: responseData,
-        status: response.status
+        details: responseData
       }), {
         status: response.status,
         headers: {
@@ -217,16 +163,11 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    console.log('Bot started successfully, room URL:', responseData.room_url);
-
-    // Add additional metadata to the response
-    const enhancedResponse = {
+    // Success response
+    return new Response(JSON.stringify({
       ...responseData,
-      success: true,
-      timestamp: new Date().toISOString()
-    };
-
-    return new Response(JSON.stringify(enhancedResponse), {
+      success: true
+    }), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
@@ -237,24 +178,16 @@ export const POST: APIRoute = async ({ request }) => {
 
   } catch (error: unknown) {
     console.error("Connect API error:", error);
-    
-    // Provide detailed error information
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    const errorStack = error instanceof Error ? error.stack : undefined;
-    
     return new Response(
       JSON.stringify({ 
-        error: 'Internal Server Error', 
-        message: errorMessage,
-        stack: process.env.NODE_ENV === 'development' ? errorStack : undefined,
-        timestamp: new Date().toISOString()
+        error: 'Internal Server Error',
+        message: error instanceof Error ? error.message : 'Unknown error'
       }), 
       {
         status: 500,
         headers: {
           'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Cache-Control': 'no-cache, no-store, must-revalidate'
+          'Access-Control-Allow-Origin': '*'
         }
       }
     );

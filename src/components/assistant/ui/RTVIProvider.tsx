@@ -29,6 +29,18 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
           }
         });
         
+        // Create metadata that will be sent with connect request
+        const metadata = {
+          rtvi_client_version: '0.3.3', // Match the version used in your app
+          client_info: {
+            browser: navigator?.userAgent || 'unknown',
+            platform: navigator?.platform || 'unknown',
+            timestamp: new Date().toISOString()
+          }
+        };
+        
+        console.log('Initializing RTVI client with metadata:', metadata);
+        
         // Create RTVI client with proper configuration
         const client = new RTVIClient({
           transport: transport as any,
@@ -40,19 +52,20 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
             endpoints: {
               connect: '/connect',
             },
-            // Add client metadata that will be sent with connect request
-            body: {
-              rtvi_client_version: '0.3.3', // Match the version used in your app
-              client_info: {
-                browser: navigator.userAgent,
-                platform: navigator.platform,
-                timestamp: new Date().toISOString()
-              }
+            // Use fetch options to set headers and body
+            connectOptions: {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              // This function will be called when connect is executed
+              // It must return a stringified JSON object
+              getBody: () => JSON.stringify(metadata)
             }
           },
         });
         
-        // Set up enhanced event listeners with error handling
+        // Set up event listeners with error handling
         client.on('transportStateChanged', (state: string) => {
           console.log('Transport state changed:', state);
           setTransportState(state);
