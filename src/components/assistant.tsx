@@ -123,6 +123,31 @@ function AssistantContent() {
     return isConnecting || !selectedDevice || !rtviClient;
   };
 
+  const handleManualAudioUnlock = () => {
+    // Create and play an audio context to help with browser audio policies
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      console.log('Manual audio unlock - context state:', audioContext.state);
+      
+      if (audioContext.state === 'suspended') {
+        audioContext.resume().then(() => console.log('Audio context resumed manually'));
+      }
+      
+      // Create a short sound
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      gainNode.gain.value = 0.01; // Very low volume, nearly silent
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      oscillator.start(0);
+      oscillator.stop(audioContext.currentTime + 0.1);
+      
+      console.log('Manual audio unlock attempted');
+    } catch (err) {
+      console.error('Error in manual audio unlock:', err);
+    }
+  };
+
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
@@ -171,11 +196,26 @@ function AssistantContent() {
           </div>
         )}
 
-        {/* Audio status indicator based on transport state */}
+        {/* Audio status indicator */}
         <div className="flex items-center gap-2 text-sm">
           <Volume2 className={`h-4 w-4 ${transportState === 'connected' ? 'text-green-500' : 'text-gray-400'}`} />
-          <span>{transportState === 'connected' ? 'Audio active' : 'Audio inactive'}</span>
+          <span>
+            {transportState === 'connected' 
+              ? 'Connected - try speaking or click Connect again if no response' 
+              : 'Audio inactive - click Connect to start'}
+          </span>
         </div>
+        
+        {/* Audio troubleshooting button */}
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="w-full mt-2" 
+          onClick={handleManualAudioUnlock}
+        >
+          <Volume2 className="mr-2 h-4 w-4" />
+          Enable Audio (Safari/iOS)
+        </Button>
       </CardContent>
 
       <CardFooter>
@@ -214,14 +254,7 @@ export function Assistant() {
           dailyFactoryOptions: {
             audioSource: true,      // Enable microphone input
             videoSource: false,     // No camera needed
-            subscribeToTracksAutomatically: true, // Auto-subscribe to remote audio tracks
-            dailyConfig: {
-              userMediaAudioConstraints: {
-                autoGainControl: true,
-                echoCancellation: true,
-                noiseSuppression: true,
-              }
-            }
+            subscribeToTracksAutomatically: true // Auto-subscribe to remote audio tracks
           }
         });
         
@@ -243,6 +276,7 @@ export function Assistant() {
                 options: [
                   { name: "output_format", value: "mp3" },
                   { name: "optimize_streaming_latency", value: 4 },
+                  { name: "voice_settings", value: { stability: 0.5, similarity_boost: 0.8 } },
                 ],
               },
               {
@@ -250,6 +284,7 @@ export function Assistant() {
                 options: [
                   { name: "enable_output", value: true },
                   { name: "enable_input", value: true },
+                  { name: "output_volume", value: 1.0 },
                 ],
               }
             ],
