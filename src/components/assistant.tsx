@@ -297,24 +297,6 @@ export function Assistant() {
             endpoints: {
               connect: '/connect',
             },
-            config: [
-              {
-                service: "tts",
-                options: [
-                  { name: "output_format", value: "mp3" },
-                  { name: "optimize_streaming_latency", value: 4 },
-                  { name: "voice_settings", value: { stability: 0.5, similarity_boost: 0.8 } },
-                ],
-              },
-              {
-                service: "audio",
-                options: [
-                  { name: "enable_output", value: true },
-                  { name: "enable_input", value: true },
-                  { name: "output_volume", value: 1.0 },
-                ],
-              }
-            ],
           },
           callbacks: {
             onBotReady: () => console.log('Bot is ready for interaction'),
@@ -347,6 +329,8 @@ export function Assistant() {
                       audioElement.play()
                         .then(() => console.log('Fallback audio playback started'))
                         .catch(err => console.error('Fallback audio playback failed:', err));
+                    } else {
+                      console.warn('Fallback audio element not found');
                     }
                   }
                 } catch (err) {
