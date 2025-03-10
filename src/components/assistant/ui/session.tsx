@@ -93,11 +93,19 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
     
     console.log('[SESSION] Triggering bot to speak:', text);
     
-    // Send message to bot first
+    // Send message to LLM with proper format
     client.action({
       service: 'llm',
       action: 'generate',
-      arguments: [{ name: 'text', value: text }]
+      arguments: [{
+        name: 'messages',
+        value: [
+          {
+            role: 'user',
+            content: text
+          }
+        ]
+      }]
     }).catch(error => {
       console.error('[SESSION] LLM generation failed:', error);
       // Fall back to direct TTS if LLM fails
@@ -187,7 +195,26 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
       }]);
     }
   });
-  
+
+  // Add effect to handle user messages
+  useEffect(() => {
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage?.role === 'user') {
+      // Send to LLM with conversation context
+      client?.action({
+        service: 'llm',
+        action: 'generate',
+        arguments: [{
+          name: 'messages',
+          value: messages.map(msg => ({
+            role: msg.role,
+            content: msg.content
+          }))
+        }]
+      }).catch(err => console.error('[SESSION] LLM generation failed:', err));
+    }
+  }, [messages, client]);
+
   return (
     <Card className="w-full">
       <CardHeader className="flex flex-row items-center justify-between">

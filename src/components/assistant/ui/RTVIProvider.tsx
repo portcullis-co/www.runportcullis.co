@@ -42,6 +42,32 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
             endpoints: {
               connect: '/connect',
             },
+            // Add service configuration
+            services: {
+              llm: 'openai',  // or whichever LLM service you're using
+              tts: 'elevenlabs'
+            },
+            // Add initial configuration
+            config: [
+              {
+                service: 'llm',
+                options: [
+                  {
+                    name: 'messages',
+                    value: [{
+                      role: 'system',
+                      content: "You are a friendly assistant for Portcullis, helping users understand our data warehouse steering assistance services. Your job is to help the user understand the services we offer and to collect the information we need to provide a quote. You should call the 'check_interest' tool to guage the user's interest and then call the 'provide_quote' tool to provide a quote. You should also call the 'collect_qualification_info' tool to collect the information we need to provide a quote."
+                    }]
+                  }
+                ]
+              },
+              {
+                service: 'tts',
+                options: [
+                  { name: 'voice', value: 'default' }
+                ]
+              }
+            ]
           },
           callbacks: {
             onBotConnected: () => {
