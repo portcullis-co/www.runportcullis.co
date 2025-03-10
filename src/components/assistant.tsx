@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -75,6 +75,11 @@ function AssistantContent() {
     const handleServerMessage = (event: any) => {
       console.log('RTVI Message received:', event);
       
+      // Force update connecting state if we get messages
+      if (isConnecting) {
+        setIsConnecting(false);
+      }
+      
       // User transcription events
       if (event.type === 'user-transcription' && event.data?.text) {
         setTranscription(event.data.text);
@@ -111,14 +116,28 @@ function AssistantContent() {
       }
     };
     
+    // Listen for connection state changes
+    const handleConnected = () => {
+      console.log('RTVI Client connected');
+      setIsConnecting(false);
+    };
+    
+    const handleDisconnected = () => {
+      console.log('RTVI Client disconnected');
+    };
+    
     // Register event handlers
     rtviClient.on('serverMessage', handleServerMessage);
+    rtviClient.on('connected', handleConnected);
+    rtviClient.on('disconnected', handleDisconnected);
     
     return () => {
       // Clean up event handlers
       rtviClient.off('serverMessage', handleServerMessage);
+      rtviClient.off('connected', handleConnected);
+      rtviClient.off('disconnected', handleDisconnected);
     };
-  }, [rtviClient]);
+  }, [rtviClient, isConnecting]);
 
   const handleConnect = async () => {
     if (!rtviClient) {
@@ -260,6 +279,8 @@ function AssistantContent() {
 // Main component that wraps the content with the RTVI client provider
 export function Assistant() {
   const [client, setClient] = useState<any>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [showDebugAudio, setShowDebugAudio] = useState(false); // For debugging
 
   useEffect(() => {
     async function loadClient() {
@@ -273,18 +294,26 @@ export function Assistant() {
         const { RTVIClient } = await import('@pipecat-ai/client-js');
         const { DailyTransport } = await import('@pipecat-ai/daily-transport');
         
-        // Create transport with minimal config
+        // Create transport with audio output explicitly enabled
         const transport = new DailyTransport({
           dailyFactoryOptions: {
             audioSource: true,
             videoSource: false,
             subscribeToTracksAutomatically: true,
+            dailyConfig: {
+              // Enable audio output processing
+              userMediaAudioConstraints: {
+                autoGainControl: true,
+                echoCancellation: true,
+                noiseSuppression: true,
+              }
+            }
           }
         });
         
-        console.log('Transport created with standard configuration');
+        console.log('Transport created with explicit audio configuration');
         
-        // Create the client with minimal configuration
+        // Create the client with explicit audio configuration
         const rtviClient = new RTVIClient({
           transport,
           enableMic: true,
@@ -312,7 +341,53 @@ export function Assistant() {
           }
         });
         
-        console.log('RTVI client created with standard configuration');
+        // Handle tracks directly
+        rtviClient.on('trackStarted', (track: any) => {
+          console.log('Track started:', track);
+          
+          if (track.kind === 'audio' && track.readyState === 'live') {
+            console.log('Live audio track received, attaching manually');
+            
+            if (audioRef.current) {
+              try {
+                // Create a new MediaStream with the track
+                const stream = new MediaStream([track]);
+                audioRef.current.srcObject = stream;
+                
+                // Try to play
+                audioRef.current.play()
+                  .then(() => console.log('Direct audio playback started'))
+                  .catch(err => {
+                    console.error('Direct audio playback failed:', err);
+                    // Try again with user interaction
+                    const playButton = document.createElement('button');
+                    playButton.textContent = 'Enable Audio';
+                    playButton.style.position = 'fixed';
+                    playButton.style.top = '10px';
+                    playButton.style.left = '10px';
+                    playButton.style.zIndex = '9999';
+                    playButton.onclick = () => {
+                      if (audioRef.current) {
+                        audioRef.current.play()
+                          .then(() => {
+                            console.log('Audio started via button');
+                            playButton.remove();
+                          })
+                          .catch(e => console.error('Still could not play audio:', e));
+                      }
+                    };
+                    document.body.appendChild(playButton);
+                  });
+              } catch (err) {
+                console.error('Error setting up audio:', err);
+              }
+            } else {
+              console.warn('No audio element ref available');
+            }
+          }
+        });
+        
+        console.log('RTVI client created with explicit audio configuration');
         setClient(rtviClient);
       } catch (error) {
         console.error('Failed to load Pipecat client:', error);
@@ -343,6 +418,23 @@ export function Assistant() {
       <AssistantContent />
       <RTVIClientAudio />
       
+      {/* Direct audio element for manual audio handling */}
+      <audio 
+        ref={audioRef}
+        id="direct-audio-output"
+        autoPlay
+        playsInline
+        controls={showDebugAudio} 
+        style={{ 
+          display: showDebugAudio ? 'block' : 'none',
+          position: showDebugAudio ? 'fixed' : 'absolute',
+          bottom: showDebugAudio ? '70px' : '0',
+          right: showDebugAudio ? '10px' : '0',
+          zIndex: 1000,
+          width: '300px'
+        }}
+      />
+      
       {/* Simple debug panel */}
       <div
         style={{
@@ -358,7 +450,9 @@ export function Assistant() {
           zIndex: 1000,
         }}
       >
-        RTVI Audio Status: Active<br />
+        <div onClick={() => setShowDebugAudio(!showDebugAudio)} style={{ cursor: 'pointer' }}>
+          RTVI Audio Status: Active [Click to {showDebugAudio ? 'Hide' : 'Show'} Debug]<br />
+        </div>
         TTS: ElevenLabs (PCM)<br />
         Format: PCM 24000<br />
         Voice: 6IlUNt4hAIP1jMBYQncS
