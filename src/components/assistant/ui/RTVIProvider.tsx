@@ -46,33 +46,27 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
           callbacks: {
             onBotConnected: () => {
               console.log('[CALLBACK] Bot connected');
-              // Don't send message here - wait for ready state
+              // Don't initialize here - wait for ready state
             },
             onBotDisconnected: () => {
               console.log('[CALLBACK] Bot disconnected');
             },
-            onBotReady: () => {
-              console.log('[CALLBACK] Bot ready to chat!');
-              // Only send messages when bot is ready
+            onBotReady: (botReadyData: any) => {
+              console.log('[CALLBACK] Bot ready to chat!', botReadyData);
+              // Bot is now ready to receive actions
               setTimeout(() => {
                 try {
-                  client.action({
-                    service: "bot",
-                    action: "initialize",
-                    arguments: []
-                  }).then(() => {
-                    console.log('[RTVI Core] Bot initialized successfully');
-                    // Now try to speak
-                    client.action({
-                      service: "tts",
-                      action: "synthesize",
-                      arguments: [
-                        { name: "text", value: "Hello! I'm ready to help." }
-                      ]
-                    });
-                  }).catch(console.error);
+                  client.sendMessage({
+                    type: 'bot-message',
+                    data: {
+                      text: "Hello! I'm ready to help.",
+                      type: 'text'
+                    },
+                    id: Date.now().toString(),
+                    label: 'rtvi-ai'
+                  });
                 } catch (error) {
-                  console.error('[RTVI Core] Failed to initialize bot:', error);
+                  console.error('[RTVI Core] Failed to send initial message:', error);
                 }
               }, 1000);
             },
@@ -80,17 +74,15 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
               console.log('[CALLBACK] Transport state changed:', state);
               setTransportState(state);
               
-              // If we reach ready state, try to initialize
+              // Only try to connect when transport is ready
               if (state === 'ready') {
-                console.log('[RTVI Core] Transport ready, initializing...');
+                console.log('[RTVI Core] Transport ready, connecting...');
                 try {
-                  client.action({
-                    service: "bot",
-                    action: "initialize",
-                    arguments: []
-                  }).catch(console.error);
+                  client.connect().catch(error => {
+                    console.error('[RTVI Core] Failed to connect:', error);
+                  });
                 } catch (error) {
-                  console.error('[RTVI Core] Failed to initialize on ready:', error);
+                  console.error('[RTVI Core] Failed to initiate connection:', error);
                 }
               }
             },

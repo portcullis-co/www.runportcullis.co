@@ -226,84 +226,48 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
     console.log('[SESSION] Explicitly triggering bot to speak:', text);
     
     try {
-      // First try the TTS synthesize action
+      // First try sending a direct message
+      client.sendMessage({
+        type: 'bot-message',
+        data: {
+          text,
+          type: 'text'
+        },
+        id: Date.now().toString(),
+        label: 'rtvi-ai'
+      });
+    } catch (error) {
+      console.error('[SESSION] Direct message failed:', error);
+      
+      // Then try TTS synthesize
       client.action({
         service: "tts",
         action: "synthesize",
         arguments: [
           { name: "text", value: text }
         ]
-      }).then((response) => {
-        console.log('[SESSION] TTS synthesize response:', response);
-      }).catch((error) => {
-        console.error('[SESSION] TTS synthesize error:', error);
-        
-        // If that fails, try the bot speak action
-        client.action({
-          service: "bot",
-          action: "speak",
-          arguments: [
-            { name: "text", value: text }
-          ]
-        }).then((response) => {
-          console.log('[SESSION] Bot speak response:', response);
-        }).catch((error) => {
-          console.error('[SESSION] Bot speak error:', error);
-          console.log('[SESSION] Falling back to direct message...');
-          
-          // Last resort: try direct message
-          client.sendMessage({
-            type: 'bot-message',
-            data: {
-              text,
-              type: 'text'
-            },
-            id: '',
-            label: ''
-          });
-        });
+      }).catch(error => {
+        console.error('[SESSION] TTS synthesize failed:', error);
       });
-    } catch (error) {
-      console.error('[SESSION] Failed to trigger bot speech:', error);
     }
   };
 
-  // Add greeting when session starts with retry logic
+  // Add greeting when session starts
   useEffect(() => {
-    let attempts = 0;
-    const maxAttempts = 3;
-    const attemptInterval = 2000; // 2 seconds between attempts
-
-    const tryGreeting = () => {
-      if (!client || messages.length > 0 || attempts >= maxAttempts) return;
-      
-      console.log(`[SESSION] Attempting bot introduction (attempt ${attempts + 1}/${maxAttempts})`);
-      
-      // First try to initialize the bot
-      client.action({
-        service: "bot",
-        action: "initialize",
-        arguments: []
-      }).then(() => {
-        console.log('[SESSION] Bot initialized, attempting to speak...');
-        // Then try to speak
-        return triggerBotToSpeak("Hello! I'm your Portcullis assistant. How can I help you today?");
-      }).catch((error) => {
-        console.error('[SESSION] Bot initialization error:', error);
-      });
-      
-      attempts++;
-      
-      // Schedule next attempt if needed
-      if (attempts < maxAttempts) {
-        setTimeout(tryGreeting, attemptInterval);
-      }
+    if (!client || messages.length > 0) return;
+    
+    // Wait for bot ready event instead of trying immediately
+    const handleBotReady = () => {
+      console.log('[SESSION] Bot ready event received, sending greeting...');
+      setTimeout(() => {
+        triggerBotToSpeak("Hello! I'm your Portcullis assistant. How can I help you today?");
+      }, 1000);
     };
 
-    // Start the first attempt after a delay
-    const timer = setTimeout(tryGreeting, 2000); // Increased initial delay
-    
-    return () => clearTimeout(timer);
+    client.on('configUpdated', handleBotReady);
+    return () => {
+      client.off('configUpdated', handleBotReady);
+    };
   }, [client, messages]);
   
   return (
