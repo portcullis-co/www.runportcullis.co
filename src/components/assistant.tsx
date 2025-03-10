@@ -106,17 +106,29 @@ function AssistantContent() {
     
     try {
       if (transportState === 'disconnected') {
+        console.log('Initializing audio before connecting...');
         // Force audio initialization before connecting
-        await new Audio().play().catch(() => console.log('Audio initialized'));
+        try {
+          await new Audio().play().catch(() => console.log('Audio initialized'));
+        } catch (audioErr) {
+          console.warn('Audio initialization warning:', audioErr);
+          // Continue despite audio initialization issues
+        }
         
+        console.log('Attempting to connect to assistant service...');
         // Now connect to the service
         await rtviClient.connect();
+        console.log('Connection request completed');
       } else if (transportState === 'connected') {
+        console.log('Disconnecting from assistant service...');
         await rtviClient.disconnect();
+        console.log('Successfully disconnected');
       }
     } catch (err) {
-      setError('Failed to connect to assistant');
-      console.error(err);
+      console.error('Connection error details:', err);
+      setError(err instanceof Error ? 
+        `Failed to connect: ${err.message}` : 
+        'Failed to connect to assistant');
     } finally {
       setIsConnecting(false);
     }
