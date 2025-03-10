@@ -40,7 +40,6 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
             endpoints: {
               connect: '/connect',
             },
-            // Following the Daily Bots demo pattern, explicitly set services and config
             services: {
               llm: "openai",
               tts: "elevenlabs",
