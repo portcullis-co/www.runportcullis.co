@@ -40,10 +40,9 @@ function AssistantContent() {
   // Configure audio when device is selected
   useEffect(() => {
     if (rtviClient && selectedDevice) {
-      // Use type assertion to bypass TypeScript checking
-      // The actual implementation may have this method even if types don't reflect it
       try {
         (rtviClient as any).setAudioInput?.(selectedDevice);
+        console.log('Audio input device set:', selectedDevice);
       } catch (err) {
         console.warn('Failed to set audio input device:', err);
       }
@@ -59,12 +58,14 @@ function AssistantContent() {
     try {
       if (transportState === 'disconnected') {
         await rtviClient.connect();
+        console.log('Connected to assistant');
       } else if (transportState === 'connected') {
         await rtviClient.disconnect();
+        console.log('Disconnected from assistant');
       }
     } catch (err) {
       setError('Failed to connect to assistant');
-      console.error(err);
+      console.error('Connection error:', err);
     } finally {
       setIsConnecting(false);
     }
