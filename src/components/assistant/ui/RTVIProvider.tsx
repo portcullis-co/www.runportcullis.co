@@ -49,7 +49,11 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
               },
               // This function will be called when connect is executed
               // It must return a stringified JSON object
-              getBody: () => JSON.stringify(client)
+              getBody: () => JSON.stringify({
+                client: {
+                  rtvi_client_version: (client as any).rtvi_client_version || "1.0.0"
+                }
+              })
             }
           },
         });

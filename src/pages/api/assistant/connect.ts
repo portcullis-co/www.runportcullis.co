@@ -34,7 +34,9 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
     
-    const { client } = data;
+    // Extract client data with validation
+    const client = data?.client || {};
+    console.log('Received client data:', JSON.stringify(client));
 
     // Simplified configuration to reduce potential errors
     const botConfig = {
@@ -81,7 +83,7 @@ export const POST: APIRoute = async ({ request }) => {
           ]
         }
       ],
-      rtvi_client_version: client.rtvi_client_version,
+      rtvi_client_version: client.rtvi_client_version || "1.0.0",
       webhook_tools: {
         provide_quote: {
           url: `${import.meta.env.PUBLIC_SITE_URL || 'https://www.runportcullis.co'}/api/assistant/webhooks`,
