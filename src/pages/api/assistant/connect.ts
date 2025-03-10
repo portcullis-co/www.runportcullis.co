@@ -1,5 +1,12 @@
 // src/pages/api/assistant/connect.ts
 import type { APIRoute } from 'astro';
+import { 
+  defaultBotProfile, 
+  defaultMaxDuration, 
+  defaultServices, 
+  defaultConfig, 
+  defaultWebhookTools 
+} from '../../../rtvi.config';
 
 export const POST: APIRoute = async ({ request }) => {
   try {
@@ -18,9 +25,10 @@ export const POST: APIRoute = async ({ request }) => {
     }
     
     // Parse request body with error handling
-    let data;
+    let requestData;
     try {
-      data = await request.json();
+      requestData = await request.json();
+      console.log('Request data:', JSON.stringify(requestData));
     } catch (parseError) {
       console.error('Failed to parse request JSON:', parseError);
       return new Response(JSON.stringify({ 
@@ -34,73 +42,26 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
     
-    // Extract client data with validation
-    const client = data?.client || {};
-    console.log('Received client data:', JSON.stringify(client));
-
-    // Simplified configuration to reduce potential errors
+    // Get the base URL for webhooks
+    const baseUrl = import.meta.env.PUBLIC_SITE_URL || 'https://www.runportcullis.co';
+    
+    // Configure webhook tools with the base URL
+    const webhookTools: { [key: string]: { url: string } } = {};
+    Object.entries(defaultWebhookTools).forEach(([key, tool]) => {
+      webhookTools[key] = {
+        ...tool,
+        url: `${baseUrl}${tool.url}`
+      };
+    });
+    
+    // Create the bot configuration
     const botConfig = {
-      bot_profile: "natural_conversation_2024_11",
-      max_duration: 600, // 10 minutes
-      services: {
-        // Use your preferred services
-        llm: "openai",
-        tts: "elevenlabs", 
-        stt: "deepgram"
-      },
-      config: [
-        {
-          service: "stt",
-          options: [
-            { name: "language", value: "en-US" }
-          ]
-        },
-        {
-          service: "tts",
-          options: [
-            { name: "voice", value: "6IlUNt4hAIP1jMBYQncS" },
-            { name: "model", value: "eleven_turbo_v2" },
-            { name: "output_format", value: "pcm_24000" },
-            { name: "stability", value: 0.5 },
-            { name: "similarity_boost", value: 0.5 },
-            { name: "latency", value: 1 }
-          ]
-        },
-        {
-          service: "llm",
-          options: [
-            { name: "model", value: "gpt-4o-mini" },
-            {
-              name: "initial_messages",
-              value: [
-                {
-                  role: "system",
-                  content: "You are a friendly assistant for Portcullis, helping users understand our data warehouse steering assistance services. Your job is to help the user understand the services we offer and to collect the information we need to provide a quote. You should call the 'check_interest' tool to guage the user's interest and then call the 'provide_quote' tool to provide a quote. You should also call the 'collect_qualification_info' tool to collect the information we need to provide a quote."
-                }
-              ]
-            },
-            { name: "temperature", value: 0.7 },
-          ]
-        }
-      ],
-      rtvi_client_version: client.rtvi_client_version || "1.0.0",
-      webhook_tools: {
-        provide_quote: {
-          url: `${import.meta.env.PUBLIC_SITE_URL || 'https://www.runportcullis.co'}/api/assistant/webhooks`,
-          method: "POST",
-          streaming: false
-        },
-        collect_qualification_info: {
-          url: `${import.meta.env.PUBLIC_SITE_URL || 'https://www.runportcullis.co'}/api/assistant/webhooks`,
-          method: "POST",
-          streaming: false
-        },
-        check_interest: {
-          url: `${import.meta.env.PUBLIC_SITE_URL || 'https://www.runportcullis.co'}/api/assistant/webhooks`,
-          method: "POST",
-          streaming: false
-        }
-      }
+      bot_profile: defaultBotProfile,
+      max_duration: defaultMaxDuration,
+      services: defaultServices,
+      config: defaultConfig,
+      rtvi_client_version: requestData.rtvi_client_version,
+      webhook_tools: webhookTools
     };
 
     // Start the bot with improved error handling and timeout

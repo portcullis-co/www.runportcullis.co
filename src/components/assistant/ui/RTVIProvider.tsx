@@ -29,7 +29,6 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
           }
         });
 
-        
         // Create RTVI client with proper configuration
         const client = new RTVIClient({
           transport: transport as any,
@@ -48,11 +47,9 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
                 'Content-Type': 'application/json',
               },
               // This function will be called when connect is executed
-              // It must return a stringified JSON object
+              // It must return a stringified JSON object with the client version
               getBody: () => JSON.stringify({
-                client: {
-                  rtvi_client_version: (client as any).rtvi_client_version || "1.0.0"
-                }
+                rtvi_client_version: client.version
               })
             }
           },
