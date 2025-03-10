@@ -93,31 +93,73 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
     
     console.log('[SESSION] Triggering bot to speak:', text);
     
+    // First try to initialize the bot if needed
     client.action({
-      service: "bot",
-      action: "speak",
+      service: 'bot',
+      action: 'initialize',
+      arguments: []
+    }).catch(err => console.log('[SESSION] Bot already initialized:', err));
+
+    // Then send the speak action
+    client.action({
+      service: 'bot',
+      action: 'speak',
       arguments: [
-        { name: "text", value: text }
+        { name: 'text', value: text }
       ]
     }).catch(error => {
       console.error('[SESSION] Bot speak failed:', error);
+      // Try legacy format as fallback
+      client.action({
+        service: 'tts',
+        action: 'say',
+        arguments: [{ name: 'text', value: text }]
+      }).catch(err => console.error('[SESSION] Legacy speak failed:', err));
     });
   };
 
-  // Simplified greeting when session starts
+  // Enhanced bot ready handling
   useEffect(() => {
     if (!client || messages.length > 0) return;
     
+    console.log('[SESSION] Setting up bot ready handler...');
+    
     const handleBotReady = () => {
-      console.log('[SESSION] Bot ready, sending greeting...');
-      triggerBotToSpeak("Hello! I'm your Portcullis assistant. How can I help you today?");
+      console.log('[SESSION] Bot ready event received, sending greeting...');
+      // Add a small delay to ensure bot is fully ready
+      setTimeout(() => {
+        triggerBotToSpeak("Hello! I'm your Portcullis assistant. How can I help you today?");
+      }, 1000);
     };
 
+    // Listen for both event types
     client.on(RTVIEvent.BotReady, handleBotReady);
+    
+    // Force initialization after a delay
+    setTimeout(() => {
+      console.log('[SESSION] Forcing bot initialization...');
+      client.action({
+        service: 'bot',
+        action: 'initialize',
+        arguments: []
+      }).catch(err => console.log('[SESSION] Bot initialization result:', err));
+    }, 2000);
+
     return () => {
       client.off(RTVIEvent.BotReady, handleBotReady);
     };
   }, [client, messages]);
+
+  // Add bot message handler
+  useRTVIClientEvent(RTVIEvent.ServerMessage, (message: any) => {
+    console.log('[SESSION] Bot message received:', message);
+    if (message?.text) {
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: message.text 
+      }]);
+    }
+  });
   
   return (
     <Card className="w-full">
