@@ -225,15 +225,38 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
     
     console.log('[SESSION] Explicitly triggering bot to speak:', text);
     
-    // Use the action method to dispatch a 'say' action to the TTS service
-    client.action({
-      service: "tts",
-      action: "say",
-      arguments: [
-        { name: "text", value: text },
-        { name: "interrupt", value: true }
-      ]
-    });
+    try {
+      // Use the action method to dispatch a 'say' action to the TTS service
+      client.action({
+        service: "tts",
+        action: "say",
+        arguments: [
+          { name: "text", value: text },
+          { name: "interrupt", value: true },
+          { name: "voice", value: "default" }  // Explicitly set voice
+        ]
+      }).then((response) => {
+        console.log('[SESSION] TTS action response:', response);
+      }).catch((error) => {
+        console.error('[SESSION] TTS action error:', error);
+      });
+      
+      // Also try legacy format as fallback
+      client.action({
+        service: "bot",
+        action: "speak",
+        arguments: [
+          { name: "text", value: text }
+        ]
+      }).then((response) => {
+        console.log('[SESSION] Legacy speak action response:', response);
+      }).catch((error) => {
+        console.error('[SESSION] Legacy speak action error:', error);
+      });
+      
+    } catch (error) {
+      console.error('[SESSION] Failed to trigger bot speech:', error);
+    }
   };
   
   // Add greeting when session starts
@@ -246,7 +269,7 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
         // Try to trigger the bot to speak
         triggerBotToSpeak("Hello! I'm your Portcullis assistant. How can I help you today?");
       }
-    }, 1000);
+    }, 2000); // Increased delay to ensure connection is fully ready
     
     return () => clearTimeout(timer);
   }, [client, messages]);
