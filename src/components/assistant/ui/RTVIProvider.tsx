@@ -47,10 +47,22 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
                 'Content-Type': 'application/json',
               },
               // This function will be called when connect is executed
-              // It must return a stringified JSON object with the client version
-              getBody: () => JSON.stringify({
-                rtvi_client_version: client.version
-              })
+              // It must return a properly formatted JSON string
+              getBody: () => {
+                // Get the client version
+                const version = client.version || '0.3.3';
+                
+                // Create a simple object with just the version
+                const payload = {
+                  rtvi_client_version: version
+                };
+                
+                // Log what we're sending for debugging
+                console.log('Sending to connect API:', JSON.stringify(payload));
+                
+                // Return the stringified payload
+                return JSON.stringify(payload);
+              }
             }
           },
         });
@@ -134,7 +146,8 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
       >
         RTVI Audio Status: Active<br />
         TTS: ElevenLabs (PCM)<br />
-        Transport: {transportState}
+        Transport: {transportState}<br />
+        Version: {rtviClient?.version || '0.3.3'}
       </div>
     </RTVIClientProvider>
   );

@@ -27,12 +27,32 @@ export const POST: APIRoute = async ({ request }) => {
     // Parse request body with error handling
     let requestData;
     try {
-      requestData = await request.json();
-      console.log('Request data:', JSON.stringify(requestData));
+      // Get the raw request body as text first for debugging
+      const rawBody = await request.text();
+      console.log('Raw request body:', rawBody);
+      
+      // Try to parse the JSON
+      try {
+        requestData = JSON.parse(rawBody);
+        console.log('Parsed request data:', JSON.stringify(requestData));
+      } catch (jsonError) {
+        console.error('JSON parse error:', jsonError);
+        return new Response(JSON.stringify({ 
+          error: 'Invalid JSON in request body',
+          details: String(jsonError)
+        }), {
+          status: 400,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          }
+        });
+      }
     } catch (parseError) {
-      console.error('Failed to parse request JSON:', parseError);
+      console.error('Failed to read request body:', parseError);
       return new Response(JSON.stringify({ 
-        error: 'Invalid JSON in request body'
+        error: 'Failed to read request body',
+        details: String(parseError)
       }), {
         status: 400,
         headers: {
@@ -60,9 +80,15 @@ export const POST: APIRoute = async ({ request }) => {
       max_duration: defaultMaxDuration,
       services: defaultServices,
       config: defaultConfig,
-      rtvi_client_version: requestData.rtvi_client_version,
-      webhook_tools: webhookTools
+      rtvi_client_version: requestData?.rtvi_client_version || "0.3.3", // Provide a fallback version
+      webhook_tools: webhookTools,
+      api_keys: {
+        openai: import.meta.env.OPENAI_API_KEY,
+        elevenlabs: import.meta.env.ELEVENLABS_API_KEY,
+      }
     };
+
+    console.log('Sending bot config to Daily API:', JSON.stringify(botConfig, null, 2));
 
     // Start the bot with improved error handling and timeout
     let response;
@@ -98,6 +124,7 @@ export const POST: APIRoute = async ({ request }) => {
     let responseData;
     try {
       const responseText = await response.text();
+      console.log('Daily API response text:', responseText);
       responseData = JSON.parse(responseText);
     } catch (error) {
       console.error('Non-JSON response from Daily API:', error);

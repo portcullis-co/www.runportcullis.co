@@ -1,5 +1,5 @@
 // src/rtvi.config.ts
-export const defaultBotProfile = "natural_conversation_2024_11";
+export const defaultBotProfile = "voice_2024_08"; // Using the standard voice bot profile
 export const defaultMaxDuration = 600; // 10 minutes
 
 // Default services configuration
@@ -42,6 +42,7 @@ export const defaultConfig = [
         ]
       },
       { name: "temperature", value: 0.7 },
+      { name: "run_on_config", value: true } // Important for Daily Bots
     ]
   }
 ];
