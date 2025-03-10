@@ -234,11 +234,9 @@ export function Assistant() {
     async function loadClient() {
       try {
 
-        const DAILY_ROOM_URL = import.meta.env.DAILY_ROOM_URL;
         const PIPECAT_API_URL = import.meta.env.PIPECAT_API_URL;
 
         // Log initialization parameters
-        console.log('Initializing with Daily.co room URL:', DAILY_ROOM_URL);
         console.log('Using API base URL:', PIPECAT_API_URL);
         
         // Dynamically import the modules
@@ -248,11 +246,9 @@ export function Assistant() {
         // Create the transport with the correct options
         const transport = new DailyTransport({
           dailyFactoryOptions: {
-            // Daily.co specific configuration
-            // The roomUrl property is used to specify the Daily room URL
-            url: import.meta.env.DAILY_ROOM_URL || '',
             audioSource: true, // Ensure audio source is enabled
             videoSource: false, // Disable video as we only need audio
+            subscribeToTracksAutomatically: true,
           }
         });
         
