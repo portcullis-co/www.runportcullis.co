@@ -237,17 +237,6 @@ export function Assistant() {
         const DAILY_ROOM_URL = import.meta.env.DAILY_ROOM_URL;
         const PIPECAT_API_URL = import.meta.env.PIPECAT_API_URL;
 
-        // Check required environment variables
-        if (!DAILY_ROOM_URL) {
-          console.error('Missing  DAILY_ROOM_URL environment variable');
-          return;
-        }
-
-        if (!PIPECAT_API_URL) {
-          console.error('Missing PIPECAT_API_URL environment variable');
-          return;
-        }
-
         // Log initialization parameters
         console.log('Initializing with Daily.co room URL:', DAILY_ROOM_URL);
         console.log('Using API base URL:', PIPECAT_API_URL);
