@@ -226,22 +226,7 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
     console.log('[SESSION] Explicitly triggering bot to speak:', text);
     
     try {
-      // Use the action method to dispatch a 'say' action to the TTS service
-      client.action({
-        service: "tts",
-        action: "say",
-        arguments: [
-          { name: "text", value: text },
-          { name: "interrupt", value: true },
-          { name: "voice", value: "default" }  // Explicitly set voice
-        ]
-      }).then((response) => {
-        console.log('[SESSION] TTS action response:', response);
-      }).catch((error) => {
-        console.error('[SESSION] TTS action error:', error);
-      });
-      
-      // Also try legacy format as fallback
+      // Use the standard RTVI action format
       client.action({
         service: "bot",
         action: "speak",
@@ -249,27 +234,83 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
           { name: "text", value: text }
         ]
       }).then((response) => {
-        console.log('[SESSION] Legacy speak action response:', response);
+        console.log('[SESSION] Bot speak action response:', response);
       }).catch((error) => {
-        console.error('[SESSION] Legacy speak action error:', error);
+        console.error('[SESSION] Bot speak action error:', error);
+        
+        // Fallback to sending a direct message
+        client.sendMessage({
+          type: 'bot-message',
+          data: {
+            text,
+            type: 'text'
+          },
+          id: '',
+          label: ''
+        });
       });
       
     } catch (error) {
       console.error('[SESSION] Failed to trigger bot speech:', error);
     }
   };
+  // Add more comprehensive event handlers
+  useRTVIClientEvent(RTVIEvent.ServerMessage, (message: any) => {
+    console.log('[SESSION] Bot message event:', message);
+    if (message.type === 'bot-message' && message.data?.text) {
+      setMessages(prev => [...prev, { role: 'assistant', content: message.data.text }]);
+    }
+  });
+
+  useRTVIClientEvent(RTVIEvent.BotReady, () => {
+    console.log('[SESSION] Bot ready event received');
+    // Send initial message when bot is ready
+    client?.sendMessage({
+      type: 'bot-message',
+      data: {
+        text: "Hello! I'm ready to help.",
+        type: 'text'
+      },
+      id: '',
+      label: ''
+    });
+  });
   
-  // Add greeting when session starts
+  // Add greeting when session starts with retry logic
   useEffect(() => {
-    // Send a greeting when the session starts
-    const timer = setTimeout(() => {
-      if (client && messages.length === 0) {
-        console.log('[SESSION] Auto-triggering bot introduction');
-        
-        // Try to trigger the bot to speak
-        triggerBotToSpeak("Hello! I'm your Portcullis assistant. How can I help you today?");
+    let attempts = 0;
+    const maxAttempts = 3;
+    const attemptInterval = 2000; // 2 seconds between attempts
+
+    const tryGreeting = () => {
+      if (!client || messages.length > 0 || attempts >= maxAttempts) return;
+      
+      console.log(`[SESSION] Attempting bot introduction (attempt ${attempts + 1}/${maxAttempts})`);
+      
+      // First try sending a direct message
+      client.sendMessage({
+        type: 'bot-message',
+        data: {
+          text: "Hello! I'm your Portcullis assistant. How can I help you today?",
+          type: 'text'
+        },
+        id: '',
+        label: ''
+      });
+      
+      // Then try the action
+      triggerBotToSpeak("Hello! I'm your Portcullis assistant. How can I help you today?");
+      
+      attempts++;
+      
+      // Schedule next attempt if needed
+      if (attempts < maxAttempts) {
+        setTimeout(tryGreeting, attemptInterval);
       }
-    }, 2000); // Increased delay to ensure connection is fully ready
+    };
+
+    // Start the first attempt after a delay
+    const timer = setTimeout(tryGreeting, 1000);
     
     return () => clearTimeout(timer);
   }, [client, messages]);

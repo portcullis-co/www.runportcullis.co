@@ -43,18 +43,36 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
             endpoints: {
               connect: '/connect',
             },
-            // Don't send any configuration data from client
-            // Let the server handle everything
           },
           callbacks: {
             onBotConnected: () => {
               console.log('[CALLBACK] Bot connected');
+              // Initialize the bot when connected
+              client.sendMessage({
+                type: 'bot-message',
+                data: {
+                  text: "Hello! I'm initializing...",
+                  type: 'text'
+                },
+                id: '',
+                label: ''
+              });
             },
             onBotDisconnected: () => {
               console.log('[CALLBACK] Bot disconnected');
             },
             onBotReady: () => {
               console.log('[CALLBACK] Bot ready to chat!');
+              // Send a test message when ready
+              client.sendMessage({
+                type: 'bot-message',
+                data: {
+                  text: "I'm ready to help!",
+                  type: 'text'
+                },
+                id: '',
+                label: ''
+              });
             },
             onTransportStateChanged: (state: string) => {
               console.log('[CALLBACK] Transport state changed:', state);
@@ -86,7 +104,17 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
         
         // Core bot state events
         client.on(RTVIEvent.BotReady, () => {
-          console.log('[EVENT] Bot is ready to chat - IMPORTANT EVENT');
+          console.log('[EVENT] Bot is ready to chat');
+          // Send initial message
+          client.sendMessage({
+            type: 'bot-message',
+            data: {
+              text: "Hello! I'm ready to help.",
+              type: 'text'
+            },
+            id: '',
+            label: ''
+          });
         });
         
         client.on(RTVIEvent.BotConnected, () => {
@@ -216,6 +244,36 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
         
         client.on(RTVIEvent.UserTranscript, (data: any) => {
           console.log('[EVENT] User transcript:', data);
+        });
+        
+        // Enhanced message handling
+        client.on(RTVIEvent.ServerMessage, (message: any) => {
+          console.log('[DEBUG] Raw message received:', message);
+          
+          // Handle different message types
+          if (message.type === 'bot-message' && message.data?.text) {
+            console.log('[DEBUG] Bot message:', message.data.text);
+            setLastBotMessage(message.data.text);
+          }
+          
+          if (message.type === 'bot-thinking') {
+            console.log('[DEBUG] Bot is thinking');
+          }
+          
+          if (message.type === 'bot-error') {
+            console.error('[DEBUG] Bot error:', message);
+          }
+        });
+        
+        // Audio track handling
+        client.on(RTVIEvent.TrackStarted, (track: any) => {
+          console.log('[DEBUG] Audio track started:', track);
+          setBotSpeaking(true);
+        });
+
+        client.on(RTVIEvent.TrackStopped, (track: any) => {
+          console.log('[DEBUG] Audio track stopped:', track);
+          setBotSpeaking(false);
         });
         
         // Store the client and components
