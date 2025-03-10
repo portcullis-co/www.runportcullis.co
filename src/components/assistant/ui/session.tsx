@@ -93,23 +93,15 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
     
     console.log('[SESSION] Triggering bot to speak:', text);
     
-    // First try to initialize the bot if needed
-    client.action({
-      service: 'bot',
-      action: 'initialize',
-      arguments: []
-    }).catch(err => console.log('[SESSION] Bot already initialized:', err));
-
-    // Then send the speak action
+    // Use action with bot service
     client.action({
       service: 'bot',
       action: 'speak',
-      arguments: [
-        { name: 'text', value: text }
-      ]
+      arguments: [{ name: 'text', value: text }]
     }).catch(error => {
       console.error('[SESSION] Bot speak failed:', error);
-      // Try legacy format as fallback
+      
+      // Try legacy TTS as fallback
       client.action({
         service: 'tts',
         action: 'say',
@@ -118,45 +110,50 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
     });
   };
 
-  // Enhanced bot ready handling
+  // Enhanced bot ready handling with transport state check
   useEffect(() => {
-    if (!client || messages.length > 0) return;
+    if (!client) return;
     
-    console.log('[SESSION] Setting up bot ready handler...');
+    console.log('[SESSION] Setting up message handlers...');
     
     const handleBotReady = () => {
-      console.log('[SESSION] Bot ready event received, sending greeting...');
-      // Add a small delay to ensure bot is fully ready
-      setTimeout(() => {
-        triggerBotToSpeak("Hello! I'm your Portcullis assistant. How can I help you today?");
-      }, 1000);
+      console.log('[SESSION] Bot ready event received');
+      if (messages.length === 0) {
+        // Wait a bit longer before greeting
+        setTimeout(() => {
+          triggerBotToSpeak("Hello! I'm your Portcullis assistant. How can I help you today?");
+        }, 2000);
+      }
     };
 
-    // Listen for both event types
+    const handleTransportStateChange = (state: string) => {
+      console.log('[SESSION] Transport state changed:', state);
+      if (state === 'ready' && messages.length === 0) {
+        // When transport is ready, try to initialize the bot
+        setTimeout(() => {
+          console.log('[SESSION] Transport ready, sending greeting...');
+          triggerBotToSpeak("Hello! I'm your Portcullis assistant. How can I help you today?");
+        }, 1000);
+      }
+    };
+
+    // Listen for both events
     client.on(RTVIEvent.BotReady, handleBotReady);
-    
-    // Force initialization after a delay
-    setTimeout(() => {
-      console.log('[SESSION] Forcing bot initialization...');
-      client.action({
-        service: 'bot',
-        action: 'initialize',
-        arguments: []
-      }).catch(err => console.log('[SESSION] Bot initialization result:', err));
-    }, 2000);
+    client.on(RTVIEvent.TransportStateChanged, handleTransportStateChange);
 
     return () => {
       client.off(RTVIEvent.BotReady, handleBotReady);
+      client.off(RTVIEvent.TransportStateChanged, handleTransportStateChange);
     };
   }, [client, messages]);
 
-  // Add bot message handler
+  // Add message handlers for both modern and legacy formats
   useRTVIClientEvent(RTVIEvent.ServerMessage, (message: any) => {
-    console.log('[SESSION] Bot message received:', message);
-    if (message?.text) {
+    console.log('[SESSION] Server message received:', message);
+    if (message?.type === 'bot-message' && message?.data?.text) {
       setMessages(prev => [...prev, { 
         role: 'assistant', 
-        content: message.text 
+        content: message.data.text 
       }]);
     }
   });

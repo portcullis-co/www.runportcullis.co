@@ -45,13 +45,8 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
           },
           callbacks: {
             onBotConnected: () => {
-              console.log('[RTVI] Bot connected, initializing...');
-              // Force bot to initialize when connected
-              client.action({
-                service: 'bot',
-                action: 'initialize',
-                arguments: []
-              }).catch(err => console.error('[RTVI] Failed to initialize bot:', err));
+              console.log('[RTVI] Bot connected');
+              // Don't initialize here - wait for transport ready
             },
             onBotDisconnected: () => {
               console.log('[RTVI] Bot disconnected');
@@ -59,25 +54,15 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
             },
             onBotReady: (botReadyData: any) => {
               console.log('[RTVI] Bot ready with config:', botReadyData);
-              // Send test message when bot is ready
-              client.action({
-                service: 'bot',
-                action: 'speak',
-                arguments: [{ name: 'text', value: 'Hello! I am ready to help.' }]
-              }).catch(err => console.error('[RTVI] Failed to send test message:', err));
+              // Don't send test message here - let the session handle it
             },
             onTransportStateChanged: (state: string) => {
               console.log('[RTVI] Transport state:', state);
               setTransportState(state);
               
               if (state === 'ready') {
-                console.log('[RTVI] Transport ready, checking bot state...');
-                // Force bot to initialize if not already
-                client.action({
-                  service: 'bot',
-                  action: 'initialize',
-                  arguments: []
-                }).catch(err => console.error('[RTVI] Failed to initialize bot:', err));
+                console.log('[RTVI] Transport ready');
+                // Let the session component handle initialization
               }
             },
             onError: (error: any) => {
@@ -93,7 +78,7 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
           }
         });
         
-        // Core event listeners only
+        // Core event listeners
         client.on(RTVIEvent.Error, (error: any) => {
           console.error('[RTVI] Client error:', error);
         });
@@ -113,17 +98,17 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
           setBotSpeaking(false);
         });
 
-        // Add specific handlers for each message type
+        // Debug all raw messages
         client.on(RTVIEvent.ServerMessage, (message: any) => {
-          console.log('[RTVI] Bot message:', message);
+          console.log('[RTVI] Raw message:', message);
         });
 
-        client.on(RTVIEvent.BotTranscript, (transcript: any) => {
-          console.log('[RTVI] Bot transcript:', transcript);
-        });
-
-        client.on(RTVIEvent.BotLlmText, (text: any) => {
-          console.log('[RTVI] Bot LLM text:', text);
+        client.on(RTVIEvent.ServerMessage, (message: any) => {
+          console.log('[RTVI] Server message:', message);
+          // Handle legacy format messages
+          if (message.type === 'bot-message') {
+            console.log('[RTVI] Bot message received:', message);
+          }
         });
 
         // Store the client and components
