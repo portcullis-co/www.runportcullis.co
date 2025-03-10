@@ -14,11 +14,15 @@ function AssistantContent() {
   const [error, setError] = useState<string | null>(null);
   const [transcription, setTranscription] = useState<string>('');
   const [isListening, setIsListening] = useState(false);
+  const [audioReady, setAudioReady] = useState(false);
 
   const rtviClient = useRTVIClient();
   const transportState = useRTVIClientTransportState();
 
+  // Using a ref to keep track of the audio element without triggering rerenders
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
+  // Using a ref to track if we've already set up audio handling
+  const audioHandlingSetup = useRef(false);
 
   // Get available microphones
   useEffect(() => {
@@ -42,13 +46,71 @@ function AssistantContent() {
     getDevices();
   }, []);
 
+  // Initialize audio context and ensure it's ready
+  useEffect(() => {
+    if (audioReady) return;
+
+    const unlockAudio = () => {
+      try {
+        // Create and play a silent audio context to unlock audio
+        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        
+        if (audioContext.state === 'suspended') {
+          audioContext.resume()
+            .then(() => {
+              console.log('Audio context resumed successfully:', audioContext.state);
+              setAudioReady(true);
+            })
+            .catch(err => console.error('Failed to resume audio context:', err));
+        } else {
+          console.log('Audio context already active:', audioContext.state);
+          setAudioReady(true);
+        }
+        
+        // Create a short sound to ensure proper unlocking
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        gainNode.gain.value = 0.01; // Very low volume
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        oscillator.start(0);
+        oscillator.stop(audioContext.currentTime + 0.2);
+        
+        // Create a silent audio element and play it to unlock audio on iOS
+        const silentAudio = new Audio("data:audio/mp3;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGFTb25vdGhlcXVlLm9yZwBURU5DAAAAHQAAA1N3aXRjaCBQbHVzIMKpIE5DSCBTb2Z0d2FyZQBUSVQyAAAABgAAAzIyMzUAVFNTRQAAAA8AAANMYXZmNTcuODMuMTAwAAAAAAAAAAAAAAD/80DEAAAAA0gAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsRbAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQMSkAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV");
+        silentAudio.play().catch(e => console.log('Silent audio play failed but this is expected:', e));
+        
+      } catch (err) {
+        console.error('Error unlocking audio context:', err);
+      }
+    };
+
+    unlockAudio();
+
+    // Add event listeners for user interaction to unlock audio
+    const handleUserInteraction = () => {
+      unlockAudio();
+      if (audioElementRef.current) {
+        audioElementRef.current.play().catch(e => console.warn('Audio play from interaction failed:', e));
+      }
+    };
+
+    document.addEventListener('click', handleUserInteraction);
+    document.addEventListener('touchstart', handleUserInteraction);
+    
+    return () => {
+      document.removeEventListener('click', handleUserInteraction);
+      document.removeEventListener('touchstart', handleUserInteraction);
+    };
+  }, [audioReady]);
+
   // Configure audio when device is selected
   useEffect(() => {
     if (rtviClient && selectedDevice) {
       // Use type assertion to bypass TypeScript checking
-      // The actual implementation may have this method even if types don't reflect it
       try {
         (rtviClient as any).setAudioInput?.(selectedDevice);
+        console.log('Audio input device set to:', selectedDevice);
       } catch (err) {
         console.warn('Failed to set audio input device:', err);
       }
@@ -101,36 +163,79 @@ function AssistantContent() {
     };
   }, [rtviClient]);
 
+  // Set up audio track handling when rtviClient is available
   useEffect(() => {
-    if (!rtviClient) return;
+    if (!rtviClient || audioHandlingSetup.current) return;
+    
+    audioHandlingSetup.current = true;
+    
+    console.log('Setting up audio track handling');
+    
+    // Initialize audio element
+    if (!audioElementRef.current) {
+      audioElementRef.current = new Audio();
+      audioElementRef.current.autoplay = true;
+      audioElementRef.current.controls = false; // Usually hidden controls
+      audioElementRef.current.id = 'rtvi-audio-output';
+      audioElementRef.current.volume = 1.0; // Maximum volume
+      
+      // Append to body to ensure it's part of the DOM
+      document.body.appendChild(audioElementRef.current);
+      
+      console.log('Created audio element for output');
+    }
     
     const handleAudioTrack = (track: MediaStreamTrack, participant: any) => {
       if (participant.local || track.kind !== 'audio') return;
       
-      console.log('Received remote audio track');
+      console.log('Received remote audio track, setting up playback');
       
-      if (!audioElementRef.current) {
-        audioElementRef.current = new Audio();
-        audioElementRef.current.autoplay = true;
-        document.body.appendChild(audioElementRef.current);
-      }
-      
+      // Create a new MediaStream with the track
       const stream = new MediaStream([track]);
-      audioElementRef.current.srcObject = stream;
       
-      // Force play with user interaction handling
-      audioElementRef.current.play().catch(err => {
-        console.warn('Audio play failed:', err);
+      // Set the stream as the source for our audio element
+      if (audioElementRef.current) {
+        audioElementRef.current.srcObject = stream;
         
-        // Create play button if autoplay fails
-        const playButton = document.createElement('button');
-        playButton.textContent = 'Enable Audio';
-        playButton.onclick = () => {
-          audioElementRef.current?.play();
-          playButton.remove();
-        };
-        document.body.appendChild(playButton);
-      });
+        // Try to play the audio
+        audioElementRef.current.play()
+          .then(() => {
+            console.log('Audio playback started successfully');
+          })
+          .catch(err => {
+            console.warn('Audio playback failed:', err);
+            
+            // Create a visible play button to allow user-initiated play
+            if (!document.getElementById('audio-fallback-button')) {
+              const playButton = document.createElement('button');
+              playButton.id = 'audio-fallback-button';
+              playButton.textContent = 'Enable Audio';
+              playButton.style.position = 'fixed';
+              playButton.style.bottom = '20px';
+              playButton.style.right = '20px';
+              playButton.style.zIndex = '9999';
+              playButton.style.padding = '10px 15px';
+              playButton.style.background = '#4f46e5';
+              playButton.style.color = 'white';
+              playButton.style.borderRadius = '5px';
+              playButton.style.border = 'none';
+              playButton.style.cursor = 'pointer';
+              
+              playButton.onclick = () => {
+                if (audioElementRef.current) {
+                  audioElementRef.current.play()
+                    .then(() => {
+                      console.log('Audio playback started via button');
+                      playButton.remove();
+                    })
+                    .catch(e => console.error('Audio play still failed:', e));
+                }
+              };
+              
+              document.body.appendChild(playButton);
+            }
+          });
+      }
     };
     
     // Add track start listener
@@ -142,7 +247,16 @@ function AssistantContent() {
       // Clean up audio element
       if (audioElementRef.current) {
         audioElementRef.current.remove();
+        audioElementRef.current = null;
       }
+      
+      // Remove fallback button if it exists
+      const fallbackButton = document.getElementById('audio-fallback-button');
+      if (fallbackButton) {
+        fallbackButton.remove();
+      }
+      
+      audioHandlingSetup.current = false;
     };
   }, [rtviClient]);
 
@@ -161,7 +275,14 @@ function AssistantContent() {
         console.log('Initializing audio before connecting...');
         // Force audio initialization before connecting
         try {
-          // Create a silent audio element and try to play it
+          // Create a silent audio context and ensure it's running
+          const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+          if (audioContext.state === 'suspended') {
+            await audioContext.resume();
+            console.log('Audio context resumed before connecting:', audioContext.state);
+          }
+          
+          // Play a silent audio element to unblock audio on Safari/iOS
           const audio = new Audio();
           audio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
           await audio.play();
@@ -257,6 +378,12 @@ function AssistantContent() {
             )}
           </div>
         )}
+
+        {/* Audio status indicator */}
+        <div className="flex items-center gap-2 text-sm">
+          <Volume2 className={`h-4 w-4 ${audioReady ? 'text-green-500' : 'text-gray-400'}`} />
+          <span>{audioReady ? 'Audio ready' : 'Audio initializing...'}</span>
+        </div>
       </CardContent>
 
       <CardFooter>
@@ -377,6 +504,10 @@ export function Assistant() {
         gainNode.connect(audioContext.destination);
         oscillator.start(0);
         oscillator.stop(audioContext.currentTime + 0.2); // Slightly longer duration
+        
+        // Also try to play a silent audio file
+        const silentAudio = new Audio("data:audio/mp3;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGFTb25vdGhlcXVlLm9yZwBURU5DAAAAHQAAA1N3aXRjaCBQbHVzIMKpIE5DSCBTb2Z0d2FyZQBUSVQyAAAABgAAAzIyMzUAVFNTRQAAAA8AAANMYXZmNTcuODMuMTAwAAAAAAAAAAAAAAD/80DEAAAAA0gAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsRbAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQMSkAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV");
+        silentAudio.play().catch(err => console.log('Silent audio play failed but this is expected:', err));
         
         console.log('Audio context unlocked:', audioContext.state);
         
