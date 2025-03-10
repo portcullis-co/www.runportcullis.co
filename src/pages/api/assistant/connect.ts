@@ -20,11 +20,6 @@ export const POST: APIRoute = async ({ request }) => {
     const data = await request.json();
     const { rtvi_client_version, client_info } = data;
 
-    console.log('Connect request received:', { 
-      rtvi_client_version, 
-      client_info: client_info || 'Not provided'
-    });
-
     // Simplified configuration to reduce potential errors
     const botConfig = {
       bot_profile: "natural_conversation_2024_11",
