@@ -116,6 +116,60 @@ function AssistantContent() {
     };
   }, [rtviClient]);
 
+  // Add a special listener for bot responses
+  useEffect(() => {
+    if (!rtviClient) return;
+    
+    // Function to directly play PCM audio data
+    const playPCMAudio = (audioData: ArrayBuffer) => {
+      try {
+        console.log('Attempting to play PCM audio directly');
+        
+        // Create a new audio context
+        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        
+        // Make sure it's running
+        if (audioContext.state === 'suspended') {
+          audioContext.resume();
+        }
+        
+        // Create a buffer source
+        const source = audioContext.createBufferSource();
+        
+        // Process PCM data at 24kHz
+        audioContext.decodeAudioData(
+          audioData, 
+          (decodedData) => {
+            source.buffer = decodedData;
+            source.connect(audioContext.destination);
+            source.start(0);
+            console.log('PCM audio playback started');
+          },
+          (err) => {
+            console.error('Error decoding PCM data:', err);
+          }
+        );
+      } catch (err) {
+        console.error('Error in PCM playback:', err);
+      }
+    };
+
+    // Listen for bot-tts-audio events
+    const handleRawAudio = (message: any) => {
+      if (message.type === 'bot-tts-audio' && message.data?.buffer) {
+        console.log('Received bot-tts-audio event with buffer');
+        playPCMAudio(message.data.buffer);
+      }
+    };
+    
+    // Register the handler
+    rtviClient.on('serverMessage' as any, handleRawAudio);
+    
+    return () => {
+      rtviClient.off('serverMessage' as any, handleRawAudio);
+    };
+  }, [rtviClient]);
+
   const handleConnect = async () => {
     if (!rtviClient) {
       console.error('RTVI client is not initialized');
@@ -343,8 +397,10 @@ export function Assistant() {
                 options: [
                   { name: "voice", value: "6IlUNt4hAIP1jMBYQncS" },
                   { name: "model", value: "eleven_turbo_v2" },
-                  { name: "output_format", value: "mp3" },
+                  { name: "output_format", value: "pcm_24000" },
                   { name: "optimize_streaming_latency", value: 4 },
+                  { name: "stability", value: 0.75 },
+                  { name: "similarity_boost", value: 0.75 },
                   { name: "latency", value: 1 }
                 ],
               },
@@ -533,7 +589,17 @@ export function Assistant() {
         RTVI Audio Debug: {client ? 'Client Ready' : 'No Client'} <br />
         TTS Voice: 6IlUNt4hAIP1jMBYQncS <br />
         TTS Model: eleven_turbo_v2 <br />
-        Format: MP3
+        Format: PCM 24000
+        
+        {/* Add test audio for browser audio capability testing */}
+        <div style={{ marginTop: '10px' }}>
+          <p>Test your browser audio:</p>
+          <audio 
+            src="https://audio-samples.github.io/samples/mp3/blizzard_biased/sample-1.mp3"
+            controls
+            style={{ width: '100%', height: '30px' }}
+          />
+        </div>
       </div>
     </RTVIClientProvider>
   );
