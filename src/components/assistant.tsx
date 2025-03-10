@@ -14,6 +14,8 @@ function AssistantContent() {
   const [transcription, setTranscription] = useState<string>('');
   const [isListening, setIsListening] = useState(false);
   const [hasReceivedAudioTrack, setHasReceivedAudioTrack] = useState(false);
+  const [isTTSPlaying, setIsTTSPlaying] = useState(false);
+  const [lastTTSResponse, setLastTTSResponse] = useState<string>('');
 
   const rtviClient = useRTVIClient();
   const transportState = useRTVIClientTransportState();
@@ -73,7 +75,20 @@ function AssistantContent() {
       
       // Track audio events from the bot
       if (event.type === 'bot-tts-started') {
+        setIsTTSPlaying(true);
         setHasReceivedAudioTrack(true);
+        console.log('TTS STARTED - AUDIO SHOULD BE PLAYING NOW');
+      } else if (event.type === 'bot-tts-stopped') {
+        setIsTTSPlaying(false);
+        console.log('TTS STOPPED');
+      }
+      
+      // Track LLM responses
+      if (event.type === 'bot-llm-text' && event.data?.text) {
+        setLastTTSResponse(prev => prev + event.data.text);
+      } else if (event.type === 'bot-llm-stopped') {
+        // Keep last response but prepare for next one
+        setTimeout(() => setLastTTSResponse(''), 5000);
       }
     };
 
@@ -217,6 +232,16 @@ function AssistantContent() {
                 <p><strong>You:</strong> {transcription}</p>
               </div>
             )}
+            
+            {lastTTSResponse && (
+              <div className="p-3 bg-blue-50 rounded-md text-sm">
+                <div className="flex items-center gap-2">
+                  <Volume2 className={`h-4 w-4 ${isTTSPlaying ? 'text-blue-500 animate-pulse' : 'text-gray-500'}`} />
+                  <span className="text-xs">{isTTSPlaying ? 'Bot speaking...' : 'Last response:'}</span>
+                </div>
+                <p><strong>Bot:</strong> {lastTTSResponse}</p>
+              </div>
+            )}
           </div>
         )}
 
@@ -312,11 +337,13 @@ export function Assistant() {
               connect: '/connect',
             },
             config: [
-              // Match the server-side TTS configuration for ElevenLabs
+              // Match the server-side TTS configuration for ElevenLabs EXACTLY
               {
                 service: "tts",
                 options: [
-                  { name: "output_format", value: "mp3" }, 
+                  { name: "voice", value: "6IlUNt4hAIP1jMBYQncS" },
+                  { name: "model", value: "eleven_turbo_v2" },
+                  { name: "output_format", value: "mp3" },
                   { name: "optimize_streaming_latency", value: 4 },
                   { name: "latency", value: 1 }
                 ],
@@ -475,7 +502,7 @@ export function Assistant() {
     <RTVIClientProvider client={client}>
       <AssistantContent />
       {/* RTVIClientAudio is a critical component that handles the audio playback */}
-      <RTVIClientAudio key={`audio-component-${Date.now()}`} />
+      <RTVIClientAudio key={`rtvi-audio-${Date.now()}`} />
       {/* Add a hidden audio element as a fallback */}
       <audio 
         id="fallback-audio"
@@ -488,6 +515,26 @@ export function Assistant() {
           }
         }}
       />
+      {/* Add TTS debugging info */}
+      <div
+        style={{
+          position: 'fixed',
+          bottom: '10px',
+          right: '10px',
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          color: 'white',
+          padding: '8px',
+          borderRadius: '4px',
+          fontSize: '10px',
+          maxWidth: '300px',
+          zIndex: 1000,
+        }}
+      >
+        RTVI Audio Debug: {client ? 'Client Ready' : 'No Client'} <br />
+        TTS Voice: 6IlUNt4hAIP1jMBYQncS <br />
+        TTS Model: eleven_turbo_v2 <br />
+        Format: MP3
+      </div>
     </RTVIClientProvider>
   );
 }
