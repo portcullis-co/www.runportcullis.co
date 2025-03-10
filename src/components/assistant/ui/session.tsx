@@ -93,21 +93,12 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
     
     console.log('[SESSION] Triggering bot to speak:', text);
     
-    // Use action with bot service
+    // Use TTS service directly since it's working
     client.action({
-      service: 'bot',
-      action: 'speak',
+      service: 'tts',
+      action: 'say',
       arguments: [{ name: 'text', value: text }]
-    }).catch(error => {
-      console.error('[SESSION] Bot speak failed:', error);
-      
-      // Try legacy TTS as fallback
-      client.action({
-        service: 'tts',
-        action: 'say',
-        arguments: [{ name: 'text', value: text }]
-      }).catch(err => console.error('[SESSION] Legacy speak failed:', err));
-    });
+    }).catch(err => console.error('[SESSION] TTS speak failed:', err));
   };
 
   // Enhanced bot ready handling with transport state check
