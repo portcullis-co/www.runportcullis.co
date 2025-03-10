@@ -40,8 +40,27 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
             endpoints: {
               connect: '/connect',
             },
-            // Let the RTVIClient handle the connection details
-            // No custom connectOptions needed - this follows the Daily Bots demo pattern
+            // Following the Daily Bots demo pattern, explicitly set services and config
+            services: {
+              llm: "openai",
+              tts: "elevenlabs",
+              stt: "deepgram"
+            },
+            config: [
+              {
+                service: "llm",
+                options: [
+                  { name: "model", value: "gpt-4o-mini" }
+                ]
+              }
+            ],
+            // Add basic connect options to ensure a request body is sent
+            connectOptions: {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              }
+            }
           },
         });
         

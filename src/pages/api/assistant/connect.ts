@@ -17,122 +17,112 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
     
+    // Define defaults to use if request is empty
+    const defaultServices = {
+      llm: "openai",
+      tts: "elevenlabs", 
+      stt: "deepgram"
+    };
+    
+    const defaultConfig = [
+      {
+        service: "stt",
+        options: [
+          { name: "language", value: "en-US" }
+        ]
+      },
+      {
+        service: "tts",
+        options: [
+          { name: "voice", value: "6IlUNt4hAIP1jMBYQncS" },
+          { name: "model", value: "eleven_turbo_v2" },
+          { name: "output_format", value: "pcm_24000" },
+          { name: "stability", value: 0.5 },
+          { name: "similarity_boost", value: 0.5 },
+          { name: "latency", value: 1 }
+        ]
+      },
+      {
+        service: "llm",
+        options: [
+          { name: "model", value: "gpt-4o-mini" },
+          {
+            name: "initial_messages",
+            value: [
+              {
+                role: "system",
+                content: "You are a friendly assistant for Portcullis, helping users understand our data warehouse steering assistance services. Your job is to help the user understand the services we offer and to collect the information we need to provide a quote."
+              }
+            ]
+          },
+          { name: "temperature", value: 0.7 },
+          { name: "run_on_config", value: true }
+        ]
+      }
+    ];
+    
     // Enhanced error handling for request parsing
     let data;
     try {
-      if (!request.body) {
-        console.error('Request body is empty');
-        return new Response(JSON.stringify({ 
-          error: 'Empty request body' 
-        }), {
-          status: 400,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
-          }
-        });
+      // Try to parse the request, but don't fail if it's empty
+      try {
+        data = await request.json();
+        console.log('Request data received:', JSON.stringify(data));
+      } catch (parseError) {
+        console.log('Using defaults due to parsing error:', parseError);
+        // Continue with empty data if parsing fails
+        data = {};
       }
-      
-      data = await request.json();
-      
-      if (!data) {
-        console.error('No data in request body');
-        return new Response(JSON.stringify({ 
-          error: 'Empty JSON in request body' 
-        }), {
-          status: 400,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
-          }
-        });
-      }
-      
-      console.log('Request data received:', JSON.stringify(data));
-    } catch (parseError) {
-      console.error('Failed to parse request JSON:', parseError);
-      return new Response(JSON.stringify({ 
-        error: 'Invalid JSON in request body',
-        details: parseError instanceof Error ? parseError.message : 'Unknown parsing error'
-      }), {
-        status: 400,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        }
-      });
+    } catch (error) {
+      console.error('Error reading request:', error);
+      // Continue with empty data if reading fails
+      data = {};
     }
     
-    const { client } = data;
-
-    // Simplified configuration to reduce potential errors
-    const botConfig = {
-      bot_profile: "natural_conversation_2024_11",
-      max_duration: 600, // 10 minutes
-      services: {
-        // Use your preferred services
-        llm: "openai",
-        tts: "elevenlabs", 
-        stt: "deepgram"
+    // Extract data from request, falling back to defaults
+    const services = data?.services || defaultServices;
+    const config = data?.config || defaultConfig;
+    const rtvi_client_version = data?.rtvi_client_version || "0.3.3";
+    
+    // Get the base URL for webhooks
+    const baseUrl = import.meta.env.PUBLIC_SITE_URL || 'https://www.runportcullis.co';
+    
+    // Define webhook tools
+    const webhookTools = {
+      provide_quote: {
+        url: `${baseUrl}/api/assistant/webhooks`,
+        method: "POST",
+        streaming: false
       },
-      config: [
-        {
-          service: "stt",
-          options: [
-            { name: "language", value: "en-US" }
-          ]
-        },
-        {
-          service: "tts",
-          options: [
-            { name: "voice", value: "6IlUNt4hAIP1jMBYQncS" },
-            { name: "model", value: "eleven_turbo_v2" },
-            { name: "output_format", value: "pcm_24000" },
-            { name: "stability", value: 0.5 },
-            { name: "similarity_boost", value: 0.5 },
-            { name: "latency", value: 1 }
-          ]
-        },
-        {
-          service: "llm",
-          options: [
-            { name: "model", value: "gpt-4o-mini" },
-            {
-              name: "initial_messages",
-              value: [
-                {
-                  role: "system",
-                  content: "You are a friendly assistant for Portcullis, helping users understand our data warehouse steering assistance services. Your job is to help the user understand the services we offer and to collect the information we need to provide a quote. You should call the 'check_interest' tool to guage the user's interest and then call the 'provide_quote' tool to provide a quote. You should also call the 'collect_qualification_info' tool to collect the information we need to provide a quote."
-                }
-              ]
-            },
-            { name: "temperature", value: 0.7 },
-          ]
-        }
-      ],
-      rtvi_client_version: client?.version || '0.3.3',
-      webhook_tools: {
-        provide_quote: {
-          url: `${import.meta.env.PUBLIC_SITE_URL || 'https://www.runportcullis.co'}/api/assistant/webhooks`,
-          method: "POST",
-          streaming: false
-        },
-        collect_qualification_info: {
-          url: `${import.meta.env.PUBLIC_SITE_URL || 'https://www.runportcullis.co'}/api/assistant/webhooks`,
-          method: "POST",
-          streaming: false
-        },
-        check_interest: {
-          url: `${import.meta.env.PUBLIC_SITE_URL || 'https://www.runportcullis.co'}/api/assistant/webhooks`,
-          method: "POST",
-          streaming: false
-        }
+      collect_qualification_info: {
+        url: `${baseUrl}/api/assistant/webhooks`,
+        method: "POST",
+        streaming: false
+      },
+      check_interest: {
+        url: `${baseUrl}/api/assistant/webhooks`,
+        method: "POST",
+        streaming: false
       }
     };
 
-    console.log('Starting Daily.co bot with configuration:', JSON.stringify(botConfig, null, 2));
+    // Simplified configuration
+    const botConfig = {
+      bot_profile: "voice_2024_08",
+      max_duration: 600, // 10 minutes
+      services,
+      config,
+      rtvi_client_version,
+      webhook_tools: webhookTools,
+      api_keys: {
+        openai: import.meta.env.OPENAI_API_KEY,
+        elevenlabs: import.meta.env.ELEVENLABS_API_KEY,
+      }
+    };
+    
+    console.log('Sending bot config to Daily API:', JSON.stringify(botConfig, null, 2));
 
-    // Start the bot with improved error handling and timeout
+    // Start the bot with improved error handling
     let response;
     try {
       const controller = new AbortController();
