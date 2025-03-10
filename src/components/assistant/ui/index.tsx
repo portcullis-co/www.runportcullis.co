@@ -1,16 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardContent, CardFooter, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Mic, Loader2, Volume2 } from 'lucide-react';
 import { 
   useRTVIClientTransportState,
-  useRTVIClient
+  useRTVIClient,
+  useRTVIClientEvent
 } from '@pipecat-ai/client-react';
 
 // Import the Daily demo components we want to reuse
 import { DeviceSelect } from './device-select';
 import { PortcullisSessionView } from './session';
 import { RTVIProvider } from './RTVIProvider';
+import { RTVIEvent } from '@pipecat-ai/client-js';
 
 // Main component that provides the RTVI client context
 export function PortcullisBot() {
@@ -28,6 +30,24 @@ function BotController() {
   const client = useRTVIClient();
   const [isConnecting, setIsConnecting] = useState(false);
   
+  // Use RTVI event hooks to track bot ready state
+  useRTVIClientEvent(RTVIEvent.BotReady, () => {
+    console.log('Bot ready event received in BotController, switching to session view');
+    setIsSetup(false);
+  });
+  
+  // Also watch for transport state changes
+  useEffect(() => {
+    if (transportState === 'ready') {
+      console.log('Transport ready state detected, switching to session view');
+      // Give a small delay to ensure everything is loaded
+      setTimeout(() => {
+        setIsConnecting(false);
+        setIsSetup(false);
+      }, 1000);
+    }
+  }, [transportState]);
+  
   const handleStartSession = async () => {
     if (!client) return;
     
@@ -39,11 +59,10 @@ function BotController() {
       await client.connect();
       console.log('Connected successfully');
       
-      // Move to session view after successful connection
-      setIsSetup(false);
+      // Don't automatically transition here - we'll wait for the bot-ready event
+      // or the transport-ready state (handled in the useEffect above)
     } catch (error) {
       console.error('Failed to start session:', error);
-    } finally {
       setIsConnecting(false);
     }
   };

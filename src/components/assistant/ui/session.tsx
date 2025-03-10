@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardHeader, CardContent, CardFooter, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Mic, Loader2, Volume2, LogOut, StopCircle } from 'lucide-react';
 import { useRTVIClient, useRTVIClientEvent } from '@pipecat-ai/client-react';
+import { RTVIEvent } from '@pipecat-ai/client-js';
 
 // Simple session view with chat interface
 export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
@@ -11,79 +12,120 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [transcription, setTranscription] = useState('');
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   
-  // Set up event listeners
+  // Scroll to bottom when messages change
   useEffect(() => {
-    if (!client) return;
-    
-    const handleServerMessage = (event: any) => {
-      console.log('Server message received:', event);
-      
-      // User transcription events
-      if (event.name === 'transcription') {
-        const text = event.data.text || '';
-        setTranscription(text);
-        
-        // Add user message when transcription is complete
-        if (event.data.is_final) {
-          setMessages(prev => [...prev, { role: 'user', content: text }]);
-        }
-      }
-      
-      // Bot text events
-      if (event.name === 'llm-response') {
-        const data = event.data;
-        
-        // If first chunk for this response, add a new entry
-        if (data.index === 0) {
-          setMessages(prev => [...prev, { role: 'assistant', content: data.text }]);
-        } else {
-          // Otherwise, append to the last message
-          setMessages(prev => {
-            const newMessages = [...prev];
-            const lastMessage = newMessages[newMessages.length - 1];
-            if (lastMessage && lastMessage.role === 'assistant') {
-              lastMessage.content += data.text;
-            }
-            return newMessages;
-          });
-        }
-      }
-      
-      // Bot TTS events
-      if (event.name === 'tts-start') {
-        setIsSpeaking(true);
-      }
-      
-      if (event.name === 'tts-end') {
-        setIsSpeaking(false);
-      }
-      
-      // User speaking events
-      if (event.name === 'user-started-speaking') {
-        setIsListening(true);
-      }
-      
-      if (event.name === 'user-stopped-speaking') {
-        setIsListening(false);
-      }
-    };
-    
-    client.on('serverMessage', handleServerMessage);
-    
-    return () => {
-      client.off('serverMessage', handleServerMessage);
-    };
-  }, [client]);
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
   
+  // User speech events
+  useRTVIClientEvent(RTVIEvent.UserStartedSpeaking, () => {
+    console.log('[SESSION] User started speaking');
+    setIsListening(true);
+  });
+  
+  useRTVIClientEvent(RTVIEvent.UserStoppedSpeaking, () => {
+    console.log('[SESSION] User stopped speaking');
+    setIsListening(false);
+  });
+  
+  // User transcription events
+  useRTVIClientEvent(RTVIEvent.UserTranscript, (data: any) => {
+    console.log('[SESSION] User transcription:', data);
+    if (data) {
+      setTranscription(data.text || '');
+      
+      // When transcription is final, add to messages
+      if (data.final) {
+        setMessages(prev => [...prev, { 
+          role: 'user', 
+          content: data.text 
+        }]);
+        setTranscription('');
+      }
+    }
+  });
+  
+  // Bot speech events
+  useRTVIClientEvent(RTVIEvent.BotStartedSpeaking, () => {
+    console.log('[SESSION] Bot started speaking');
+    setIsSpeaking(true);
+  });
+  
+  useRTVIClientEvent(RTVIEvent.BotStoppedSpeaking, () => {
+    console.log('[SESSION] Bot stopped speaking');
+    setIsSpeaking(false);
+  });
+  
+  // Bot transcript events
+  useRTVIClientEvent(RTVIEvent.BotTranscript, (data: any) => {
+    console.log('[SESSION] Bot transcript:', data);
+    if (data && data.text) {
+      // Check if we need to add a new message or update the last one
+      setMessages(prev => {
+        const newMessages = [...prev];
+        const lastMessage = newMessages[newMessages.length - 1];
+        
+        if (!lastMessage || lastMessage.role !== 'assistant') {
+          // Add new assistant message
+          return [...prev, { role: 'assistant', content: data.text }];
+        } else {
+          // Update last message
+          lastMessage.content = data.text;
+          return newMessages;
+        }
+      });
+    }
+  });
+  
+  // Fallback for legacy message types
+  useRTVIClientEvent(RTVIEvent.ServerMessage, (message: any) => {
+    console.log('[SESSION] Raw RTVI message:', message);
+    
+    // Handle LLM response messages (legacy format)
+    if (message.type === 'llm-response' && message.data && message.data.text) {
+      setMessages(prev => {
+        const newMessages = [...prev];
+        const lastMessage = newMessages[newMessages.length - 1];
+        
+        if (!lastMessage || lastMessage.role !== 'assistant' || message.data.index === 0) {
+          // Add new assistant message
+          return [...prev, { role: 'assistant', content: message.data.text }];
+        } else {
+          // Update last message
+          lastMessage.content += message.data.text;
+          return newMessages;
+        }
+      });
+    }
+    
+    // Handle TTS events (legacy format)
+    if (message.type === 'tts-start') {
+      setIsSpeaking(true);
+    }
+    
+    if (message.type === 'tts-end') {
+      setIsSpeaking(false);
+    }
+  });
+  
+  // Handle interrupting the bot
   const handleInterrupt = () => {
     if (!client) return;
     
-    client.action({
-      service: "tts",
-      action: "interrupt",
-      arguments: [],
-    });
+    try {
+      console.log('Interrupting bot...');
+      client.action({
+        service: "tts",
+        action: "interrupt",
+        arguments: [],
+      });
+    } catch (error) {
+      console.error('Failed to interrupt bot:', error);
+    }
   };
   
   return (
@@ -96,6 +138,7 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
             size="icon" 
             onClick={handleInterrupt}
             title="Interrupt bot"
+            disabled={!isSpeaking}
           >
             <StopCircle className="h-4 w-4" />
           </Button>
@@ -110,7 +153,7 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
         </div>
       </CardHeader>
       
-      <CardContent className="max-h-96 overflow-y-auto space-y-4">
+      <CardContent className="max-h-96 overflow-y-auto space-y-4 relative">
         {messages.length === 0 && (
           <div className="text-center text-muted-foreground py-8">
             <p>Start speaking to interact with the assistant.</p>
@@ -144,7 +187,7 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
                   : 'You'}
               </span>
             </div>
-            <p className="mt-1 text-sm">{message.content}</p>
+            <p className="mt-1 text-sm whitespace-pre-wrap">{message.content}</p>
           </div>
         ))}
         
@@ -158,6 +201,9 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
             <p className="mt-1 text-sm">{transcription}</p>
           </div>
         )}
+        
+        {/* Invisible div for scrolling to bottom */}
+        <div ref={messagesEndRef} />
       </CardContent>
       
       <CardFooter className="flex items-center justify-between">
@@ -168,6 +214,10 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
           <span className="text-sm">
             {isListening ? 'Listening...' : 'Waiting for speech...'}
           </span>
+        </div>
+        
+        <div className="text-xs text-gray-500">
+          {isSpeaking ? 'Bot is speaking...' : 'Bot is ready'}
         </div>
       </CardFooter>
     </Card>
