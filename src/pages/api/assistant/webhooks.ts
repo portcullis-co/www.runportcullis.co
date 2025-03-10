@@ -195,8 +195,7 @@ async function handleQuoteRequest(params: any) {
 // Function to get products from Hyperline
 async function getHyperlineProducts(): Promise<HyperlineProduct[]> {
   try {
-    // In production, this would make a real API call to Hyperline
-    // For now, we'll return mock data to simulate the API response
+    // Make a real API call to Hyperline
     const response = await fetch(`${HYPERLINE_API_BASE}/products`, {
       headers: {
         'Authorization': `Bearer ${HYPERLINE_API_KEY}`,
@@ -209,30 +208,71 @@ async function getHyperlineProducts(): Promise<HyperlineProduct[]> {
     }
 
     const data = await response.json();
-    return data.data || [];
+    
+    // Add pricing information to each product since it's not in the API response
+    const productsWithPricing = (data.data || []).map((product: { id: any; }) => {
+      let pricing = {};
+      
+      switch (product.id) {
+        case 'itm_Lwdf42vy6z1voE': // Content Writing
+          pricing = { flat_fee: 5200 };
+          break;
+        case 'itm_DGblPGNRYp9Fu7': // Dashboard Creation
+          pricing = { flat_fee: 13000 };
+          break;
+        case 'itm_7YYk9dyW1dcWGg': // Insights
+          pricing = { monthly: 97.5, annual: 1170 };
+          break;
+        case 'itm_rjHTRIERIpOUnQ': // Realtime Voice AI Build
+          pricing = { flat_fee: 23000 };
+          break;
+        case 'itm__kaVtWZoXa0olZ': // Steering Report
+          pricing = { flat_fee: 1200 };
+          break;
+      }
+      
+      return {
+        ...product,
+        price_configuration: pricing
+      };
+    });
+    
+    return productsWithPricing;
 
   } catch (error) {
     console.error('Error fetching Hyperline products:', error);
     
-    // Fallback to mock products if the API call fails
+    // If API fails, return hardcoded data with correct structure
     return [
       {
-        id: 'prod_insights',
-        name: 'Portcullis Insights',
-        description: 'Basic data warehouse monitoring and weekly reports',
-        price_configuration: { monthly: 150, annual: 1146 }
+        id: 'itm_Lwdf42vy6z1voE',
+        name: 'Content Writing',
+        description: 'Package of 10 blog posts about your choice of data engineering topic',
+        price_configuration: { flat_fee: 5200 }
       },
       {
-        id: 'prod_insights_plus',
-        name: 'Portcullis Insights Plus',
-        description: 'Advanced monitoring with custom dashboards and priority support',
-        price_configuration: { monthly: 510, annual: 5196 }
+        id: 'itm_DGblPGNRYp9Fu7',
+        name: 'Dashboard Creation',
+        description: 'Shadcn and Streamlit dashboard creation for your data warehouse',
+        price_configuration: { flat_fee: 13000 }
       },
       {
-        id: 'prod_gold',
-        name: 'Portcullis Gold',
-        description: 'Full-service management with dedicated data engineer and 24/7 support',
-        price_configuration: { monthly: 4300, annual: 33540 }
+        id: 'itm_7YYk9dyW1dcWGg',
+        name: 'Insights',
+        description: 'Advisory steering support for realtime data engineering projects',
+        price_configuration: { monthly: 97.5, annual: 1170 }
+      },
+      {
+        id: 'itm_rjHTRIERIpOUnQ',
+        name: 'Realtime Voice AI Build',
+        description: 'A custom realtime voice AI build for your company',
+        price_configuration: { flat_fee: 23000 }
+      },
+      {
+        id: 'itm__kaVtWZoXa0olZ',
+        name: 'Steering Report',
+        description: 'We will help you plan your POC and things such as build/buy reports',
+        price_configuration: { flat_fee: 1200 }
       }
     ];
   }
@@ -240,56 +280,129 @@ async function getHyperlineProducts(): Promise<HyperlineProduct[]> {
 
 // Function to select the appropriate product based on customer needs
 function selectProductForCustomer(customerNeeds: CustomerNeeds, products: HyperlineProduct[]): HyperlineProduct | null {
-  // Simple scoring system for product selection
+  if (!products || products.length === 0) {
+    return null;
+  }
+  
+  // Product selection scoring system specific to Portcullis products
   const scores = products.map(product => {
     let score = 0;
     
-    // Score based on team size
-    if (customerNeeds.teamSize) {
-      if (customerNeeds.teamSize <= 5 && product.name.includes('Insights')) score += 3;
-      else if (customerNeeds.teamSize <= 20 && product.name.includes('Plus')) score += 3;
-      else if (customerNeeds.teamSize > 20 && product.name.includes('Gold')) score += 3;
+    // Keywords to identify customer needs
+    const needsDashboard = customerNeeds.requirements?.some(req => 
+      req.toLowerCase().includes('dashboard') || 
+      req.toLowerCase().includes('visualization') ||
+      req.toLowerCase().includes('streamlit') ||
+      req.toLowerCase().includes('shadcn'));
+    
+    const needsContent = customerNeeds.requirements?.some(req => 
+      req.toLowerCase().includes('blog') || 
+      req.toLowerCase().includes('content') ||
+      req.toLowerCase().includes('writing') ||
+      req.toLowerCase().includes('post'));
+    
+    const needsVoiceAI = customerNeeds.requirements?.some(req => 
+      req.toLowerCase().includes('voice') || 
+      req.toLowerCase().includes('ai') ||
+      req.toLowerCase().includes('chat') ||
+      req.toLowerCase().includes('assistant'));
+    
+    const needsPlanning = customerNeeds.requirements?.some(req => 
+      req.toLowerCase().includes('poc') || 
+      req.toLowerCase().includes('plan') ||
+      req.toLowerCase().includes('report') ||
+      req.toLowerCase().includes('build/buy'));
+    
+    const needsAdvisory = customerNeeds.requirements?.some(req => 
+      req.toLowerCase().includes('advisory') || 
+      req.toLowerCase().includes('steering') ||
+      req.toLowerCase().includes('support') ||
+      req.toLowerCase().includes('ongoing'));
+    
+    // Match specific products to needs
+    switch (product.id) {
+      case 'itm_Lwdf42vy6z1voE': // Content Writing
+        if (needsContent) score += 10;
+        break;
+      
+      case 'itm_DGblPGNRYp9Fu7': // Dashboard Creation
+        if (needsDashboard) score += 10;
+        // Extra points if they mention data warehouse and dashboards
+        if (needsDashboard && customerNeeds.dataWarehouse) score += 5;
+        break;
+      
+      case 'itm_7YYk9dyW1dcWGg': // Insights
+        if (needsAdvisory) score += 10;
+        // This is the subscription product, so it makes sense for ongoing relationships
+        if (customerNeeds.projectStatus?.toLowerCase().includes('ongoing')) score += 5;
+        break;
+      
+      case 'itm_rjHTRIERIpOUnQ': // Realtime Voice AI Build
+        if (needsVoiceAI) score += 10;
+        break;
+      
+      case 'itm__kaVtWZoXa0olZ': // Steering Report
+        if (needsPlanning) score += 10;
+        // Extra points for early-stage projects
+        if (customerNeeds.projectStatus?.toLowerCase().includes('planning') || 
+            customerNeeds.projectStatus?.toLowerCase().includes('early')) score += 5;
+        break;
     }
     
-    // Score based on budget (assuming monthly)
+    // Budget considerations
     if (customerNeeds.budget) {
       const budgetNum = typeof customerNeeds.budget === 'string' 
         ? parseInt(customerNeeds.budget.replace(/[^0-9]/g, '')) 
         : customerNeeds.budget;
-        
-      if (budgetNum <= 200 && product.name.includes('Insights') && !product.name.includes('Plus')) score += 3;
-      else if (budgetNum <= 1000 && product.name.includes('Plus')) score += 3;
-      else if (budgetNum > 1000 && product.name.includes('Gold')) score += 3;
+      
+      // Check if product is within budget
+      const productPrice = product.price_configuration?.flat_fee || 
+                          product.price_configuration?.monthly * 12 || 
+                          product.price_configuration?.annual;
+      
+      if (productPrice <= budgetNum) {
+        score += 5;
+      } else if (productPrice > budgetNum) {
+        // Penalize products significantly above budget
+        score -= 5;
+      }
     }
     
-    // Score based on requirements
+    // General matching based on description keywords
     if (customerNeeds.requirements) {
-      if (customerNeeds.requirements.some(req => req.toLowerCase().includes('basic') || req.toLowerCase().includes('monitor'))) {
-        if (product.name.includes('Insights')) score += 2;
+      for (const req of customerNeeds.requirements) {
+        if (product.description.toLowerCase().includes(req.toLowerCase())) {
+          score += 2;
+        }
       }
-      
-      if (customerNeeds.requirements.some(req => 
-        req.toLowerCase().includes('custom') || 
-        req.toLowerCase().includes('dashboard') || 
-        req.toLowerCase().includes('priority'))) {
-        if (product.name.includes('Plus')) score += 2;
-      }
-      
-      if (customerNeeds.requirements.some(req => 
-        req.toLowerCase().includes('dedicated') || 
-        req.toLowerCase().includes('24/7') || 
-        req.toLowerCase().includes('full') || 
-        req.toLowerCase().includes('managed'))) {
-        if (product.name.includes('Gold')) score += 2;
-      }
+    }
+    
+    // Data warehouse specific matching
+    if (customerNeeds.dataWarehouse && 
+        product.description.toLowerCase().includes('data warehouse')) {
+      score += 3;
     }
     
     return { product, score };
   });
   
-  // Sort by score (highest first) and return the top product
+  // Sort by score (highest first)
   scores.sort((a, b) => b.score - a.score);
-  return scores.length > 0 && scores[0].score > 0 ? scores[0].product : products[0];
+  console.log('Product scores:', scores.map(s => `${s.product.name}: ${s.score}`));
+  
+  // Return the highest scoring product, or the Insights product as fallback
+  if (scores.length > 0 && scores[0].score > 0) {
+    return scores[0].product;
+  }
+  
+  // If no clear match, return Insights as it's the most general service
+  const insightsProduct = products.find(p => p.id === 'itm_7YYk9dyW1dcWGg');
+  if (insightsProduct) {
+    return insightsProduct;
+  }
+  
+  // Last resort: return the first product
+  return products[0];
 }
 
 // Function to create a customer in Hyperline
@@ -340,58 +453,84 @@ async function createAndSendQuote(customer: any, product: HyperlineProduct, cust
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 30);
     
-    // Determine subscription interval and amount
-    const billingPreference = customerNeeds.requirements?.some(req => req.toLowerCase().includes('annual')) 
+    // Determine if this is a subscription or one-time product
+    const isSubscription = product.id === 'itm_7YYk9dyW1dcWGg'; // Only Insights is subscription
+    
+    // Determine billing preference for subscription products
+    const billingPreference = customerNeeds.requirements?.some(req => 
+      req.toLowerCase().includes('annual') || req.toLowerCase().includes('yearly')) 
       ? 'annual' : 'monthly';
     
-    const amount = product.price_configuration?.[billingPreference] || 
-      (billingPreference === 'annual' ? 1146 : 150);
+    // Get the appropriate amount based on product type
+    const amount = isSubscription
+      ? product.price_configuration?.[billingPreference] || 97.5
+      : product.price_configuration?.flat_fee || 1200;
     
-    // In production, this would create a quote via Hyperline API
+    // Create quote request body - handle subscription vs. one-time differently
+    const quoteBody: any = {
+      status: 'draft',
+      owner_email: 'sales@runportcullis.co',
+      customer_id: customer.id,
+      invoicing_entity_id: INVOICING_ENTITY_ID,
+      comments: `Thank you for your interest in Portcullis! Based on your needs, we recommend our ${product.name} service. You can also schedule a meeting with us here: ${MEETING_LINK}`,
+      terms: "By signing this quote, you accept our terms of service.",
+      amount: amount * 100, // Convert to cents
+      collect_payment_details: true,
+      automatically_start_subscription: isSubscription,
+      expires_at: expiresAt.toISOString(),
+    };
+    
+    // Add subscription configuration only for subscription products
+    if (isSubscription) {
+      quoteBody.type = 'subscription';
+      quoteBody.subscription = {
+        commitment_interval: {
+          period: billingPreference === 'annual' ? 'years' : 'months',
+          count: 1
+        },
+        renew_automatically: true,
+        phases: [
+          {
+            products: [
+              {
+                id: product.id,
+                name: product.name,
+                description: product.description,
+                payment_interval: {
+                  period: billingPreference === 'annual' ? 'years' : 'months',
+                  count: 1
+                },
+                price: {
+                  type: 'fee',
+                  amount: amount * 100 // Convert to cents
+                }
+              }
+            ]
+          }
+        ]
+      };
+    } else {
+      // For one-time products, use the one_off type
+      quoteBody.type = 'one_off';
+      quoteBody.products = [
+        {
+          id: product.id,
+          name: product.name,
+          description: product.description,
+          price: amount * 100, // Convert to cents
+          quantity: 1
+        }
+      ];
+    }
+    
+    // Create the quote via Hyperline API
     const quoteResponse = await fetch(`${HYPERLINE_API_BASE}/quotes`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${HYPERLINE_API_KEY}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        status: 'draft',
-        owner_email: 'sales@runportcullis.co',
-        customer_id: customer.id,
-        invoicing_entity_id: INVOICING_ENTITY_ID,
-        comments: `Thank you for your interest in Portcullis! Based on your needs, we recommend our ${product.name} plan. You can also schedule a meeting with us here: ${MEETING_LINK}`,
-        terms: "By signing this quote, you accept our terms of service.",
-        amount: amount * 100, // Convert to cents
-        collect_payment_details: true,
-        automatically_start_subscription: true,
-        expires_at: expiresAt.toISOString(),
-        subscription: {
-          commitment_interval: {
-            period: billingPreference === 'annual' ? 'years' : 'months',
-            count: 1
-          },
-          renew_automatically: true,
-          phases: [
-            {
-              products: [
-                {
-                  id: product.id,
-                  name: product.name,
-                  description: product.description,
-                  payment_interval: {
-                    period: billingPreference === 'annual' ? 'years' : 'months',
-                    count: 1
-                  },
-                  price: {
-                    type: 'fee',
-                    amount: amount * 100 // Convert to cents
-                  }
-                }
-              ]
-            }
-          ]
-        }
-      })
+      body: JSON.stringify(quoteBody)
     });
 
     if (!quoteResponse.ok) {
@@ -410,7 +549,7 @@ async function createAndSendQuote(customer: any, product: HyperlineProduct, cust
       body: JSON.stringify({
         email: customer.email,
         subject: `Your Portcullis ${product.name} Quote`,
-        message: `Hello ${customer.name},\n\nThank you for your interest in Portcullis! We've prepared a quote for our ${product.name} plan based on your needs.\n\nYou can also schedule a meeting with us here: ${MEETING_LINK}\n\nLooking forward to working with you,\nThe Portcullis Team`
+        message: `Hello ${customer.name},\n\nThank you for your interest in Portcullis! We've prepared a quote for our ${product.name} service based on your needs.\n\nYou can also schedule a meeting with us here: ${MEETING_LINK}\n\nLooking forward to working with you,\nThe Portcullis Team`
       })
     });
 
@@ -427,7 +566,9 @@ async function createAndSendQuote(customer: any, product: HyperlineProduct, cust
       id: `quo_${Date.now().toString(36)}`,
       url: `https://billing.hyperline.co/quote/quo_${Date.now().toString(36)}`,
       expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-      amount: product.price_configuration?.monthly || 150 * 100
+      amount: product.price_configuration?.flat_fee || 
+              product.price_configuration?.monthly || 
+              1200 * 100
     };
   }
 }
