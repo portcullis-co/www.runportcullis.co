@@ -13,6 +13,7 @@ function AssistantContent() {
   const [error, setError] = useState<string | null>(null);
   const [transcription, setTranscription] = useState<string>('');
   const [isListening, setIsListening] = useState(false);
+  const [hasReceivedAudioTrack, setHasReceivedAudioTrack] = useState(false);
 
   const rtviClient = useRTVIClient();
   const transportState = useRTVIClientTransportState();
@@ -69,12 +70,34 @@ function AssistantContent() {
       } else if (event.type === 'user-stopped-speaking') {
         setIsListening(false);
       }
+      
+      // Track audio events from the bot
+      if (event.type === 'bot-tts-started') {
+        setHasReceivedAudioTrack(true);
+      }
     };
 
     rtviClient.on('serverMessage' as any, handleMessage);
     
     return () => {
       rtviClient.off('serverMessage' as any, handleMessage);
+    };
+  }, [rtviClient]);
+
+  // Track when an audio track is received
+  useEffect(() => {
+    if (!rtviClient) return;
+    
+    const handleTrackStarted = (track: any) => {
+      if (track.kind === 'audio' && track.label?.includes('remote')) {
+        setHasReceivedAudioTrack(true);
+      }
+    };
+    
+    rtviClient.on('trackStarted' as any, handleTrackStarted);
+    
+    return () => {
+      rtviClient.off('trackStarted' as any, handleTrackStarted);
     };
   }, [rtviClient]);
 
@@ -93,6 +116,7 @@ function AssistantContent() {
         console.log('Attempting to connect to assistant service...');
         await rtviClient.connect();
         console.log('Connection request completed');
+        setIsConnecting(false);
       } else if (transportState === 'connected') {
         console.log('Disconnecting from assistant service...');
         await rtviClient.disconnect();
@@ -198,11 +222,14 @@ function AssistantContent() {
 
         {/* Audio status indicator */}
         <div className="flex items-center gap-2 text-sm">
-          <Volume2 className={`h-4 w-4 ${transportState === 'connected' ? 'text-green-500' : 'text-gray-400'}`} />
+          <Volume2 className={`h-4 w-4 ${hasReceivedAudioTrack ? 'text-green-500' : 
+            (transportState === 'connected' ? 'text-yellow-500' : 'text-gray-400')}`} />
           <span>
-            {transportState === 'connected' 
-              ? 'Connected - try speaking or click Connect again if no response' 
-              : 'Audio inactive - click Connect to start'}
+            {hasReceivedAudioTrack 
+              ? 'Audio connected and active' 
+              : (transportState === 'connected' 
+                ? 'Connected - try speaking to activate audio' 
+                : 'Audio inactive - click Connect to start')}
           </span>
         </div>
         
@@ -304,6 +331,24 @@ export function Assistant() {
                   if (audioContext.state === 'suspended') {
                     audioContext.resume().then(() => console.log('Audio context resumed for track'));
                   }
+                  
+                  // Manual fallback for audio playback - connect remote tracks to the fallback audio element
+                  if (track.label?.includes('remote')) {
+                    console.log('Attempting manual connection of remote audio track');
+                    const audioElement = document.getElementById('fallback-audio') as HTMLAudioElement;
+                    if (audioElement) {
+                      // Create a new MediaStream with the track
+                      const stream = new MediaStream([track]);
+                      
+                      // Connect the stream to the audio element
+                      audioElement.srcObject = stream;
+                      
+                      // Try to play
+                      audioElement.play()
+                        .then(() => console.log('Fallback audio playback started'))
+                        .catch(err => console.error('Fallback audio playback failed:', err));
+                    }
+                  }
                 } catch (err) {
                   console.warn('Failed to resume audio context:', err);
                 }
@@ -394,7 +439,19 @@ export function Assistant() {
     <RTVIClientProvider client={client}>
       <AssistantContent />
       {/* RTVIClientAudio is a critical component that handles the audio playback */}
-      <RTVIClientAudio />
+      <RTVIClientAudio key={`audio-component-${Date.now()}`} />
+      {/* Add a hidden audio element as a fallback */}
+      <audio 
+        id="fallback-audio"
+        autoPlay 
+        style={{ display: 'none' }}
+        ref={(el) => {
+          if (el) {
+            console.log('Fallback audio element added to DOM');
+            el.volume = 1.0;
+          }
+        }}
+      />
     </RTVIClientProvider>
   );
-} 
+}
