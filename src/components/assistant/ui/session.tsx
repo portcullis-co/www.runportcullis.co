@@ -220,35 +220,40 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
   };
   
   // Add an explicit function to trigger bot speaking if needed
-  const triggerBotToSpeak = (text: string) => {
+  const triggerBotToSpeak = async (text: string) => {
     if (!client) return;
     
     console.log('[SESSION] Explicitly triggering bot to speak:', text);
     
     try {
-      // First try sending a direct message
-      client.sendMessage({
-        type: 'bot-message',
-        data: {
-          text,
-          type: 'text'
-        },
-        id: Date.now().toString(),
-        label: 'rtvi-ai'
-      });
-    } catch (error) {
-      console.error('[SESSION] Direct message failed:', error);
-      
-      // Then try TTS synthesize
-      client.action({
+      // Try TTS synthesize first
+      const response = await client.action({
         service: "tts",
         action: "synthesize",
         arguments: [
           { name: "text", value: text }
         ]
-      }).catch(error => {
-        console.error('[SESSION] TTS synthesize failed:', error);
       });
+      
+      console.log('[SESSION] TTS response:', response);
+      
+    } catch (error) {
+      console.error('[SESSION] TTS failed:', error);
+      
+      // Fallback to direct message
+      try {
+        client.sendMessage({
+          type: 'bot-message',
+          data: {
+            text,
+            type: 'text'
+          },
+          id: Date.now().toString(),
+          label: 'rtvi-ai'
+        });
+      } catch (msgError) {
+        console.error('[SESSION] Direct message also failed:', msgError);
+      }
     }
   };
 
@@ -256,17 +261,17 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
   useEffect(() => {
     if (!client || messages.length > 0) return;
     
-    // Wait for bot ready event instead of trying immediately
     const handleBotReady = () => {
       console.log('[SESSION] Bot ready event received, sending greeting...');
+      // Wait a bit longer for full initialization
       setTimeout(() => {
         triggerBotToSpeak("Hello! I'm your Portcullis assistant. How can I help you today?");
-      }, 1000);
+      }, 2000);
     };
 
-    client.on('configUpdated', handleBotReady);
+    client.on(RTVIEvent.BotReady, handleBotReady);
     return () => {
-      client.off('configUpdated', handleBotReady);
+      client.off(RTVIEvent.BotReady, handleBotReady);
     };
   }, [client, messages]);
   
