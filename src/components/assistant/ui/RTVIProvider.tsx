@@ -36,9 +36,9 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
           enableCam: false,
           timeout: 15000,
           params: {
-            baseUrl: '/api/assistant',
+            baseUrl: '/api/assistant/',
             endpoints: {
-              connect: '/connect',
+              connect: 'connect',
             },
             services: {
               llm: "openai",
@@ -93,6 +93,9 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
         setIsLoaded(true);
         
         console.log('RTVI client and components loaded successfully');
+       
+        // Log the final URL for debugging
+        console.log('Connect URL will be:', client.params.baseUrl ? client.params.baseUrl + (client.params.endpoints?.connect || '') : 'Base URL not defined');
       } catch (error) {
         console.error('Failed to load RTVI dependencies:', error);
       }
@@ -143,7 +146,8 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
         RTVI Audio Status: Active<br />
         TTS: ElevenLabs (PCM)<br />
         Transport: {transportState}<br />
-        Version: {rtviClient?.version || '0.3.3'}
+        Version: {rtviClient?.version || '0.3.3'}<br />
+        URL: {rtviClient?.params?.baseUrl + rtviClient?.params?.endpoints?.connect || 'N/A'}
       </div>
     </RTVIClientProvider>
   );
