@@ -99,7 +99,11 @@ function AssistantContent() {
   }, [rtviClient]);
 
   const handleConnect = async () => {
-    if (!rtviClient) return;
+    if (!rtviClient) {
+      console.error('RTVI client is not initialized');
+      setError('RTVI client not initialized');
+      return;
+    }
     
     setIsConnecting(true);
     setError(null);
@@ -109,7 +113,11 @@ function AssistantContent() {
         console.log('Initializing audio before connecting...');
         // Force audio initialization before connecting
         try {
-          await new Audio().play().catch(() => console.log('Audio initialized'));
+          // Create a silent audio element and try to play it
+          const audio = new Audio();
+          audio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+          await audio.play();
+          console.log('Audio initialized successfully');
         } catch (audioErr) {
           console.warn('Audio initialization warning:', audioErr);
           // Continue despite audio initialization issues
@@ -128,7 +136,12 @@ function AssistantContent() {
       console.error('Connection error details:', err);
       setError(err instanceof Error ? 
         `Failed to connect: ${err.message}` : 
-        'Failed to connect to assistant');
+        'Failed to connect: Unknown error');
+      
+      // Additional debugging info
+      if (err instanceof Error && err.stack) {
+        console.error('Error stack:', err.stack);
+      }
     } finally {
       setIsConnecting(false);
     }
@@ -220,6 +233,16 @@ export function Assistant() {
   useEffect(() => {
     async function loadClient() {
       try {
+        // Check required environment variables
+        if (!import.meta.env.DAILY_ROOM_URL) {
+          console.error('Missing  DAILY_ROOM_URL environment variable');
+          return;
+        }
+
+        // Log initialization parameters
+        console.log('Initializing with Daily.co room URL:', import.meta.env.DAILY_ROOM_URL);
+        console.log('Using API base URL:', import.meta.env.PIPECAT_API_URL || '/api/assistant');
+        
         // Dynamically import the modules
         const { RTVIClient } = await import('@pipecat-ai/client-js');
         const { DailyTransport } = await import('@pipecat-ai/daily-transport');
@@ -229,11 +252,14 @@ export function Assistant() {
           dailyFactoryOptions: {
             // Daily.co specific configuration
             // The roomUrl property is used to specify the Daily room URL
-            url: import.meta.env.PUBLIC_DAILY_ROOM_URL || '',
+            url: import.meta.env.DAILY_ROOM_URL || '',
             audioSource: true, // Ensure audio source is enabled
             videoSource: false, // Disable video as we only need audio
           }
         });
+        
+        // Log transport creation
+        console.log('Transport created successfully');
         
         // Create the client instance
         const rtviClient = new RTVIClient({
@@ -248,36 +274,65 @@ export function Assistant() {
           },
         });
         
+        // Log successful client creation
+        console.log('RTVI client created successfully');
+        
         setClient(rtviClient);
-        
-        // Setup audio context unlock for iOS/Safari
-        const unlockAudio = () => {
-          // Create and play a silent audio context to unlock audio
-          const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-          const oscillator = audioContext.createOscillator();
-          oscillator.frequency.value = 1;
-          oscillator.connect(audioContext.destination);
-          oscillator.start(0);
-          oscillator.stop(0.1);
-          
-          document.removeEventListener('click', unlockAudio);
-          document.removeEventListener('touchstart', unlockAudio);
-        };
-        
-        document.addEventListener('click', unlockAudio);
-        document.addEventListener('touchstart', unlockAudio);
-        
       } catch (error) {
         console.error('Failed to load Pipecat client:', error);
+        if (error instanceof Error) {
+          console.error('Error details:', error.message);
+          console.error('Error stack:', error.stack);
+        }
       }
     }
+    
+    // Define unlockAudio function outside to have access in cleanup
+    const unlockAudio = () => {
+      try {
+        // Create and play a silent audio context to unlock audio
+        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        console.log('Audio context created:', audioContext.state);
+        
+        const oscillator = audioContext.createOscillator();
+        oscillator.frequency.value = 1;
+        oscillator.connect(audioContext.destination);
+        oscillator.start(0);
+        oscillator.stop(0.1);
+        
+        console.log('Audio context unlocked:', audioContext.state);
+        
+        document.removeEventListener('click', unlockAudio);
+        document.removeEventListener('touchstart', unlockAudio);
+      } catch (err: unknown) {
+        console.error('Error unlocking audio context:', err);
+      }
+    };
+    
+    // Add event listeners
+    document.addEventListener('click', unlockAudio);
+    document.addEventListener('touchstart', unlockAudio);
+    
+    // Immediately try to unlock audio for browser support
+    unlockAudio();
     
     loadClient();
     
     // Cleanup function
     return () => {
-      document.removeEventListener('click', function() {});
-      document.removeEventListener('touchstart', function() {});
+      document.removeEventListener('click', unlockAudio);
+      document.removeEventListener('touchstart', unlockAudio);
+      
+      // Properly disconnect client if it exists
+      if (client) {
+        try {
+          client.disconnect().catch((err: unknown) => {
+            console.warn('Error during disconnect in cleanup:', err);
+          });
+        } catch (err: unknown) {
+          console.warn('Error during cleanup:', err);
+        }
+      }
     };
   }, []);
 

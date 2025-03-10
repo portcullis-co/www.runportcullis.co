@@ -3,6 +3,39 @@ import type { APIRoute } from 'astro';
 
 export const POST: APIRoute = async ({ request }) => {
   try {
+    // Validate environment variables first
+    if (!import.meta.env.DAILY_API_KEY) {
+      console.error('Missing DAILY_API_KEY environment variable');
+      return new Response(JSON.stringify({ 
+        error: 'Server configuration error: Missing Daily API key' 
+      }), {
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
+      });
+    }
+
+    // Check other required API keys
+    const missingKeys = [];
+    if (!import.meta.env.OPENAI_API_KEY) missingKeys.push('OPENAI_API_KEY');
+    if (!import.meta.env.ELEVENLABS_API_KEY) missingKeys.push('ELEVENLABS_API_KEY');
+    if (!import.meta.env.DEEPGRAM_API_KEY) missingKeys.push('DEEPGRAM_API_KEY');
+    
+    if (missingKeys.length > 0) {
+      console.error(`Missing environment variables: ${missingKeys.join(', ')}`);
+      return new Response(JSON.stringify({ 
+        error: `Server configuration error: Missing ${missingKeys.join(', ')}` 
+      }), {
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
+      });
+    }
+    
     const data = await request.json();
     const { rtvi_client_version, client_info } = data;
 
@@ -82,15 +115,36 @@ export const POST: APIRoute = async ({ request }) => {
 
     console.log('Starting Daily.co bot with configuration:', JSON.stringify(botConfig, null, 2));
 
-    // Start the bot with improved error handling
-    const response = await fetch("https://api.daily.co/v1/bots/start", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${import.meta.env.DAILY_API_KEY}`,
-      },
-      body: JSON.stringify(botConfig),
-    });
+    // Start the bot with improved error handling and timeout
+    let response;
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
+      response = await fetch("https://api.daily.co/v1/bots/start", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.DAILY_API_KEY}`,
+        },
+        body: JSON.stringify(botConfig),
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+    } catch (error) {
+      console.error('Error making request to Daily.co API:', error);
+      return new Response(JSON.stringify({
+        error: error instanceof Error ? error.message : 'Error connecting to Daily.co API',
+        details: 'Check server logs for more information'
+      }), {
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
+      });
+    }
 
     // Handle non-JSON responses
     const responseText = await response.text();
