@@ -40,12 +40,38 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
             endpoints: {
               connect: '/connect',
             },
+            // Add client metadata that will be sent with connect request
+            body: {
+              rtvi_client_version: '0.3.3', // Match the version used in your app
+              client_info: {
+                browser: navigator.userAgent,
+                platform: navigator.platform,
+                timestamp: new Date().toISOString()
+              }
+            }
           },
         });
         
-        // Set up event listeners
+        // Set up enhanced event listeners with error handling
         client.on('transportStateChanged', (state: string) => {
           console.log('Transport state changed:', state);
+          setTransportState(state);
+        });
+        
+        client.on('error', (error: any) => {
+          console.error('RTVI client error:', error);
+        });
+        
+        // Set up connection status monitoring via transport state
+        client.on('transportStateChanged', (state: string) => {
+          console.log('Transport state changed:', state);
+          if (state === 'connected') {
+            console.log('Successfully connected to Daily.co bot!');
+          } else if (state === 'connecting') {
+            console.log('Connecting to Daily.co bot...');
+          } else if (state === 'disconnected') {
+            console.log('Disconnected from Daily.co bot');
+          }
           setTransportState(state);
         });
         

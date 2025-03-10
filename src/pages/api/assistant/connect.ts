@@ -17,7 +17,52 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
     
-    const data = await request.json();
+    // Enhanced error handling for request parsing
+    let data;
+    try {
+      if (!request.body) {
+        console.error('Request body is empty');
+        return new Response(JSON.stringify({ 
+          error: 'Empty request body' 
+        }), {
+          status: 400,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          }
+        });
+      }
+      
+      data = await request.json();
+      
+      if (!data) {
+        console.error('No data in request body');
+        return new Response(JSON.stringify({ 
+          error: 'Empty JSON in request body' 
+        }), {
+          status: 400,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          }
+        });
+      }
+      
+      console.log('Request data received:', JSON.stringify(data));
+    } catch (parseError) {
+      console.error('Failed to parse request JSON:', parseError);
+      return new Response(JSON.stringify({ 
+        error: 'Invalid JSON in request body',
+        details: parseError instanceof Error ? parseError.message : 'Unknown parsing error'
+      }), {
+        status: 400,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
+      });
+    }
+    
     const { rtvi_client_version, client_info } = data;
 
     // Simplified configuration to reduce potential errors
@@ -91,7 +136,8 @@ export const POST: APIRoute = async ({ request }) => {
     let response;
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      // Reduce timeout to avoid Netlify function timeouts (from 10s to 8s)
+      const timeoutId = setTimeout(() => controller.abort(), 8000); 
       
       response = await fetch("https://api.daily.co/v1/bots/start", {
         method: "POST",
@@ -123,6 +169,21 @@ export const POST: APIRoute = async ({ request }) => {
     let responseData;
     
     try {
+      // Check if the response text is empty
+      if (!responseText || responseText.trim() === '') {
+        console.error('Empty response from Daily API');
+        return new Response(JSON.stringify({
+          error: 'Empty response from Daily.co API',
+          status: response.status
+        }), {
+          status: 500,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          }
+        });
+      }
+      
       responseData = JSON.parse(responseText);
     } catch (error) {
       console.error('Non-JSON response from Daily API:', responseText);
