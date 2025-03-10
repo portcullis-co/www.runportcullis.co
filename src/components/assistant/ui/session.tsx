@@ -93,15 +93,23 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
     
     console.log('[SESSION] Triggering bot to speak:', text);
     
-    // Use TTS service directly since it's working
+    // Send message to bot first
     client.action({
-      service: 'tts',
-      action: 'say',
+      service: 'llm',
+      action: 'generate',
       arguments: [{ name: 'text', value: text }]
-    }).catch(err => console.error('[SESSION] TTS speak failed:', err));
+    }).catch(error => {
+      console.error('[SESSION] LLM generation failed:', error);
+      // Fall back to direct TTS if LLM fails
+      client.action({
+        service: 'tts',
+        action: 'say',
+        arguments: [{ name: 'text', value: text }]
+      }).catch(err => console.error('[SESSION] TTS failed:', err));
+    });
   };
 
-  // Enhanced bot ready handling with transport state check
+  // Enhanced bot ready handling
   useEffect(() => {
     if (!client) return;
     
@@ -110,17 +118,15 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
     const handleBotReady = () => {
       console.log('[SESSION] Bot ready event received');
       if (messages.length === 0) {
-        // Wait a bit longer before greeting
         setTimeout(() => {
           triggerBotToSpeak("Hello! I'm your Portcullis assistant. How can I help you today?");
-        }, 2000);
+        }, 1000);
       }
     };
 
     const handleTransportStateChange = (state: string) => {
       console.log('[SESSION] Transport state changed:', state);
       if (state === 'ready' && messages.length === 0) {
-        // When transport is ready, try to initialize the bot
         setTimeout(() => {
           console.log('[SESSION] Transport ready, sending greeting...');
           triggerBotToSpeak("Hello! I'm your Portcullis assistant. How can I help you today?");
@@ -137,6 +143,39 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
       client.off(RTVIEvent.TransportStateChanged, handleTransportStateChange);
     };
   }, [client, messages]);
+
+  // Bot event handlers
+  useRTVIClientEvent(RTVIEvent.BotLlmStarted, () => {
+    console.log('[SESSION] Bot started thinking...');
+  });
+
+  useRTVIClientEvent(RTVIEvent.BotLlmStopped, () => {
+    console.log('[SESSION] Bot finished thinking');
+  });
+
+  useRTVIClientEvent(RTVIEvent.BotLlmText, (data: any) => {
+    console.log('[SESSION] Bot LLM text:', data);
+    if (data?.text) {
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: data.text 
+      }]);
+    }
+  });
+
+  useRTVIClientEvent(RTVIEvent.BotTtsStarted, () => {
+    console.log('[SESSION] Bot started speaking');
+    setIsSpeaking(true);
+  });
+
+  useRTVIClientEvent(RTVIEvent.BotTtsStopped, () => {
+    console.log('[SESSION] Bot stopped speaking');
+    setIsSpeaking(false);
+  });
+
+  useRTVIClientEvent(RTVIEvent.BotTtsText, (data: any) => {
+    console.log('[SESSION] Bot TTS text:', data);
+  });
 
   // Add message handlers for both modern and legacy formats
   useRTVIClientEvent(RTVIEvent.ServerMessage, (message: any) => {

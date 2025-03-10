@@ -46,7 +46,6 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
           callbacks: {
             onBotConnected: () => {
               console.log('[RTVI] Bot connected');
-              // Don't initialize here - wait for transport ready
             },
             onBotDisconnected: () => {
               console.log('[RTVI] Bot disconnected');
@@ -54,26 +53,62 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
             },
             onBotReady: (botReadyData: any) => {
               console.log('[RTVI] Bot ready with config:', botReadyData);
-              // Don't send test message here - let the session handle it
             },
             onTransportStateChanged: (state: string) => {
               console.log('[RTVI] Transport state:', state);
               setTransportState(state);
-              
-              if (state === 'ready') {
-                console.log('[RTVI] Transport ready');
-                // Let the session component handle initialization
-              }
             },
             onError: (error: any) => {
               console.error('[RTVI] Error:', error);
             },
-            onBotTranscript: (text: any) => {
-              console.log('[RTVI] Bot transcript:', text);
-              setLastBotMessage(text.text || '');
+            // Add LLM callbacks
+            onBotLlmStarted: () => {
+              console.log('[RTVI] LLM started generating');
+            },
+            onBotLlmStopped: () => {
+              console.log('[RTVI] LLM finished generating');
             },
             onBotLlmText: (text: any) => {
-              console.log('[RTVI] Bot LLM text:', text);
+              console.log('[RTVI] LLM text:', text);
+              if (text?.text) {
+                setLastBotMessage(text.text);
+                // Try to speak the response
+                client.action({
+                  service: 'tts',
+                  action: 'say',
+                  arguments: [{ name: 'text', value: text.text }]
+                }).catch(err => console.error('[RTVI] TTS failed:', err));
+              }
+            },
+            // Add TTS callbacks
+            onBotTtsStarted: () => {
+              console.log('[RTVI] TTS started');
+              setBotSpeaking(true);
+            },
+            onBotTtsStopped: () => {
+              console.log('[RTVI] TTS stopped');
+              setBotSpeaking(false);
+            },
+            onBotTtsText: (text: any) => {
+              console.log('[RTVI] TTS text:', text);
+            },
+            // Add transcript callbacks
+            onBotTranscript: (text: any) => {
+              console.log('[RTVI] Bot transcript:', text);
+              if (text?.text) {
+                setLastBotMessage(text.text);
+              }
+            },
+            onUserTranscript: (transcript: any) => {
+              console.log('[RTVI] User transcript:', transcript);
+              if (transcript?.final) {
+                // When user finishes speaking, trigger LLM
+                client.action({
+                  service: 'llm',
+                  action: 'generate',
+                  arguments: [{ name: 'text', value: transcript.text }]
+                }).catch(err => console.error('[RTVI] LLM generation failed:', err));
+              }
             }
           }
         });
@@ -88,26 +123,31 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
         });
 
         // Add audio track handling
-        client.on(RTVIEvent.TrackStarted, () => {
-          console.log('[RTVI] Audio track started');
+        client.on(RTVIEvent.BotStartedSpeaking, () => {
+          console.log('[RTVI] Bot started speaking');
           setBotSpeaking(true);
         });
 
-        client.on(RTVIEvent.TrackStopped, () => {
-          console.log('[RTVI] Audio track stopped');
+        client.on(RTVIEvent.BotStoppedSpeaking, () => {
+          console.log('[RTVI] Bot stopped speaking');
           setBotSpeaking(false);
         });
 
-        // Debug all raw messages
+        // Add message handlers
         client.on(RTVIEvent.ServerMessage, (message: any) => {
           console.log('[RTVI] Raw message:', message);
         });
 
         client.on(RTVIEvent.ServerMessage, (message: any) => {
           console.log('[RTVI] Server message:', message);
-          // Handle legacy format messages
-          if (message.type === 'bot-message') {
-            console.log('[RTVI] Bot message received:', message);
+          if (message?.type === 'bot-message' && message?.data?.text) {
+            setLastBotMessage(message.data.text);
+            // Try to speak the response
+            client.action({
+              service: 'tts',
+              action: 'say',
+              arguments: [{ name: 'text', value: message.data.text }]
+            }).catch(err => console.error('[RTVI] TTS failed:', err));
           }
         });
 
