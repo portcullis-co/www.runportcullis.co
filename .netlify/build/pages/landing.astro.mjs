@@ -1,7 +1,7 @@
 import { a as createComponent, r as renderComponent, b as renderTemplate } from "../chunks/astro/server_aMtVhhw-.mjs";
 import { $ as $$Bentogrid } from "../chunks/bentogrid_CyHOjrBJ.mjs";
-import { $ as $$HeroLanding, a as $$InfoLanding, i as infos, b as $$Features } from "../chunks/info-landing_ELGfr43s.mjs";
-import { $ as $$MainLayout } from "../chunks/main-layout_C4s2EEtb.mjs";
+import { $ as $$HeroLanding, a as $$InfoLanding, i as infos, b as $$Features } from "../chunks/info-landing_k-frhPA0.mjs";
+import { $ as $$MainLayout } from "../chunks/main-layout_Dz18vA4v.mjs";
 import { renderers } from "../renderers.mjs";
 const $$Landing = createComponent(($$result, $$props, $$slots) => {
   return renderTemplate`${renderComponent($$result, "MainLayout", $$MainLayout, { "title": "Landing" }, { "default": ($$result2) => renderTemplate` ${renderComponent($$result2, "HeroLanding", $$HeroLanding, {})} ${renderComponent($$result2, "BentoGrid", $$Bentogrid, {})} ${renderComponent($$result2, "InfoLanding", $$InfoLanding, { "data": infos[1] })} ${renderComponent($$result2, "Features", $$Features, {})}  ${renderComponent($$result2, "InfoLanding", $$InfoLanding, { "data": infos[0], "reverse": true })} ` })}`;

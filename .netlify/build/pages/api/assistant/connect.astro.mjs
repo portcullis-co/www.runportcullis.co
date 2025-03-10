@@ -1,216 +1,207 @@
 import { renderers } from "../../../renderers.mjs";
-const defaultBotProfile = "voice_2024_10";
-const defaultMaxDuration = 600;
-const LANGUAGES = [
-  {
-    label: "English",
-    value: "en",
-    tts_model: "sonic-english",
-    stt_model: "nova-2-general",
-    default_voice: "79a125e8-cd45-4c13-8a67-188112f4dd22"
-  },
-  {
-    label: "French",
-    value: "fr",
-    tts_model: "sonic-multilingual",
-    stt_model: "nova-2-general",
-    default_voice: "a8a1eb38-5f15-4c1d-8722-7ac0f329727d"
-  },
-  {
-    label: "Spanish",
-    value: "es",
-    tts_model: "sonic-multilingual",
-    stt_model: "nova-2-general",
-    default_voice: "846d6cb0-2301-48b6-9683-48f5618ea2f6"
-  },
-  {
-    label: "German",
-    value: "de",
-    tts_model: "sonic-multilingual",
-    stt_model: "nova-2-general",
-    default_voice: "b9de4a89-2257-424b-94c2-db18ba68c81a"
-  }
-  /* Not yet supported by Cartesia {
-    label: "Portuguese",
-    value: "pt",
-    tts_model: "sonic-multilingual",
-    stt_model: "nova-2-general",
-    default_voice: "700d1ee3-a641-4018-ba6e-899dcadc9e2b",
-  },
-  {
-    label: "Chinese",
-    value: "zh",
-    tts_model: "sonic-multilingual",
-    stt_model: "nova-2-general",
-    default_voice: "e90c6678-f0d3-4767-9883-5d0ecf5894a8",
-  },
-  {
-    label: "Japanese",
-    value: "ja",
-    tts_model: "sonic-multilingual",
-    stt_model: "nova-2-general",
-    default_voice: "2b568345-1d48-4047-b25f-7baccf842eb0",
-  },*/
-];
-const defaultServices = {
-  llm: "openai",
-  tts: "elevenlabs",
-  stt: "deepgram"
-};
-const defaultLLMPrompt = `You are a friendly onboarding assistant for Portcullis, the navigational advisory consultancy for realtime data engineering helping customers understand our data warehouse steering assistance services and pricing options. Keep your responses concise and natural. Always respond in a conversational tone. Start by greeting the caller and introducing yourself.`;
-const defaultConfig = [
-  { service: "vad", options: [{ name: "params", value: { stop_secs: 0.5 } }] },
-  {
-    service: "tts",
-    options: [
-      { name: "voice", value: "79a125e8-cd45-4c13-8a67-188112f4dd22" },
-      { name: "model", value: LANGUAGES[0].tts_model },
-      { name: "language", value: LANGUAGES[0].value },
-      {
-        name: "text_filter",
-        value: {
-          filter_code: false,
-          filter_tables: false
-        }
-      }
-    ]
-  },
-  {
-    service: "llm",
-    options: [
-      { name: "model", value: "gpt-4o-mini" },
-      {
-        name: "initial_messages",
-        value: [
-          {
-            role: "system",
-            content: defaultLLMPrompt
-          }
-        ]
-      },
-      { name: "run_on_config", value: true }
-    ]
-  },
-  {
-    service: "stt",
-    options: [
-      { name: "model", value: LANGUAGES[0].stt_model },
-      { name: "language", value: LANGUAGES[0].value }
-    ]
-  }
-];
-const webhookTools = {
-  get_pricing_info: {
-    url: `${"https://www.runportcullis.co"}/api/bots/webhooks`,
-    method: "POST",
-    streaming: true
-  },
-  collect_qualification_info: {
-    url: `${"https://www.runportcullis.co"}/api/bots/webhooks`,
-    method: "POST",
-    streaming: true
-  },
-  send_meeting_link: {
-    url: `${"https://www.runportcullis.co"}/api/bots/webhooks`,
-    method: "POST",
-    streaming: true
-  },
-  check_interest: {
-    url: `${"https://www.runportcullis.co"}/api/bots/webhooks`,
-    method: "POST",
-    streaming: true
-  }
-};
 const POST = async ({ request }) => {
   try {
-    const { services, config, rtvi_client_version } = await request.json();
-    if (!services || !config || true) {
-      return new Response(
-        JSON.stringify({ error: "Services or config not found on request body" }),
-        {
-          status: 400,
-          headers: {
-            "Content-Type": "application/json"
-          }
+    if (false) ;
+    const missingKeys = [];
+    if (true) missingKeys.push("OPENAI_API_KEY");
+    if (true) missingKeys.push("ELEVENLABS_API_KEY");
+    if (true) missingKeys.push("DEEPGRAM_API_KEY");
+    if (missingKeys.length > 0) {
+      console.error(`Missing environment variables: ${missingKeys.join(", ")}`);
+      return new Response(JSON.stringify({
+        error: `Server configuration error: Missing ${missingKeys.join(", ")}`
+      }), {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*"
         }
-      );
+      });
     }
-    const mergedServices = {
-      ...defaultServices,
-      ...services,
-      stt: "deepgram",
-      tts: "elevenlabs"
-    };
-    const mergedConfig = [
-      ...defaultConfig,
-      ...config,
-      {
-        service: "stt",
-        options: [
-          { name: "model", value: "deepgram" },
-          { name: "language", value: "en-US" }
-        ]
+    const data = await request.json();
+    const { rtvi_client_version, client_info } = data;
+    console.log("Connect request received:", {
+      rtvi_client_version,
+      client_info: client_info || "Not provided"
+    });
+    const botConfig = {
+      bot_profile: "natural_conversation_2024_11",
+      max_duration: 600,
+      // 10 minutes
+      services: {
+        // Use your preferred services
+        llm: "openai",
+        tts: "elevenlabs",
+        stt: "deepgram"
       },
-      {
-        service: "tts",
-        options: [
-          { name: "voice", value: "en-US-Neural2-F" },
-          { name: "model", value: "neural2" },
-          { name: "language", value: "en-US" }
-        ]
-      }
-    ];
-    const payload = {
-      bot_profile: defaultBotProfile,
-      max_duration: defaultMaxDuration,
-      services: mergedServices,
       api_keys: {
         openai: void 0,
         elevenlabs: void 0,
         deepgram: void 0
       },
-      config: mergedConfig,
+      config: [
+        {
+          service: "stt",
+          options: [
+            { name: "language", value: "en-US" }
+          ]
+        },
+        {
+          service: "tts",
+          options: [
+            { name: "voice", value: "6IlUNt4hAIP1jMBYQncS" },
+            { name: "model", value: "eleven_turbo_v2" },
+            { name: "output_format", value: "pcm_24000" },
+            { name: "stability", value: 0.5 },
+            { name: "similarity_boost", value: 0.5 },
+            { name: "latency", value: 1 }
+          ]
+        },
+        {
+          service: "llm",
+          options: [
+            { name: "model", value: "gpt-4o-mini" },
+            {
+              name: "initial_messages",
+              value: [
+                {
+                  role: "system",
+                  content: "You are a friendly assistant for Portcullis, helping users understand our data warehouse steering assistance services. Your job is to help the user understand the services we offer and to collect the information we need to provide a quote. You should call the 'check_interest' tool to guage the user's interest and then call the 'provide_quote' tool to provide a quote. You should also call the 'collect_qualification_info' tool to collect the information we need to provide a quote."
+                }
+              ]
+            },
+            { name: "temperature", value: 0.7 }
+          ]
+        }
+      ],
       rtvi_client_version,
-      webhook_tools: webhookTools
+      webhook_tools: {
+        provide_quote: {
+          url: `${"https://www.runportcullis.co"}/api/assistant/webhooks`,
+          method: "POST",
+          streaming: false
+        },
+        collect_qualification_info: {
+          url: `${"https://www.runportcullis.co"}/api/assistant/webhooks`,
+          method: "POST",
+          streaming: false
+        },
+        check_interest: {
+          url: `${"https://www.runportcullis.co"}/api/assistant/webhooks`,
+          method: "POST",
+          streaming: false
+        }
+      }
     };
-    const response = await fetch("https://api.daily.co/v1/bots/start", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${"d39dcbcb651eb023256551425ed7de9712d6d9abffa2057bde3a5fb62cd34397"}`
-      },
-      body: JSON.stringify(payload)
-    });
-    const data = await response.json();
-    if (!response.ok) {
-      return new Response(JSON.stringify(data), {
-        status: response.status,
+    console.log("Starting Daily.co bot with configuration:", JSON.stringify(botConfig, null, 2));
+    let response;
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 1e4);
+      response = await fetch("https://api.daily.co/v1/bots/start", {
+        method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${"d39dcbcb651eb023256551425ed7de9712d6d9abffa2057bde3a5fb62cd34397"}`
+        },
+        body: JSON.stringify(botConfig),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+    } catch (error) {
+      console.error("Error making request to Daily.co API:", error);
+      return new Response(JSON.stringify({
+        error: error instanceof Error ? error.message : "Error connecting to Daily.co API",
+        details: "Check server logs for more information"
+      }), {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*"
         }
       });
     }
-    return new Response(JSON.stringify(data), {
+    const responseText = await response.text();
+    let responseData;
+    try {
+      responseData = JSON.parse(responseText);
+    } catch (error) {
+      console.error("Non-JSON response from Daily API:", responseText);
+      return new Response(JSON.stringify({
+        error: "Invalid response from Daily.co API",
+        status: response.status,
+        responseText
+      }), {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*"
+        }
+      });
+    }
+    if (!response.ok) {
+      console.error("Error starting bot:", responseData);
+      return new Response(JSON.stringify({
+        error: "Failed to start Daily.co bot",
+        details: responseData,
+        status: response.status
+      }), {
+        status: response.status,
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*"
+        }
+      });
+    }
+    console.log("Bot started successfully, room URL:", responseData.room_url);
+    const enhancedResponse = {
+      ...responseData,
+      success: true,
+      timestamp: (/* @__PURE__ */ new Date()).toISOString()
+    };
+    return new Response(JSON.stringify(enhancedResponse), {
       status: 200,
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Cache-Control": "no-cache, no-store, must-revalidate"
       }
     });
   } catch (error) {
+    console.error("Connect API error:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+    const errorStack = error instanceof Error ? error.stack : void 0;
     return new Response(
-      JSON.stringify({ error: "Internal Server Error", message: errorMessage }),
+      JSON.stringify({
+        error: "Internal Server Error",
+        message: errorMessage,
+        stack: process.env.NODE_ENV === "development" ? errorStack : void 0,
+        timestamp: (/* @__PURE__ */ new Date()).toISOString()
+      }),
       {
         status: 500,
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+          "Cache-Control": "no-cache, no-store, must-revalidate"
         }
       }
     );
   }
 };
+const OPTIONS = async () => {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization"
+    }
+  });
+};
 const _page = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
+  OPTIONS,
   POST
 }, Symbol.toStringTag, { value: "Module" }));
 const page = () => _page;

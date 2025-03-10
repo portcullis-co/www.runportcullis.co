@@ -1,6 +1,5 @@
 import { N as NETLIFY_CACHE_BUST_PARAM } from "./chunks/chunk-MB6ONLJQ_BU_kMdek.mjs";
 import { webcrypto } from "node:crypto";
-import { g as getAugmentedNamespace, a as getDefaultExportFromCjs } from "./chunks/_commonjsHelpers_azxtCg0z.mjs";
 import { __assign } from "tslib";
 import { parse as parse$1, serialize } from "cookie";
 import "./chunks/shared_C4ZqxeEq.mjs";
@@ -1034,6 +1033,33 @@ var deprecated = (fnName, warning, key) => {
 ${warning}`
   );
 };
+function getDefaultExportFromCjs(x) {
+  return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, "default") ? x["default"] : x;
+}
+function getAugmentedNamespace(n) {
+  if (n.__esModule) return n;
+  var f = n.default;
+  if (typeof f == "function") {
+    var a = function a2() {
+      if (this instanceof a2) {
+        return Reflect.construct(f, arguments, this.constructor);
+      }
+      return f.apply(this, arguments);
+    };
+    a.prototype = f.prototype;
+  } else a = {};
+  Object.defineProperty(a, "__esModule", { value: true });
+  Object.keys(n).forEach(function(k) {
+    var d = Object.getOwnPropertyDescriptor(n, k);
+    Object.defineProperty(a, k, d.get ? d : {
+      enumerable: true,
+      get: function() {
+        return n[k];
+      }
+    });
+  });
+  return a;
+}
 var mapObj = { exports: {} };
 const isObject = (value) => typeof value === "object" && value !== null;
 const mapObjectSkip = Symbol("skip");

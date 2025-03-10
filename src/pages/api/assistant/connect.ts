@@ -16,25 +16,6 @@ export const POST: APIRoute = async ({ request }) => {
         }
       });
     }
-
-    // Check other required API keys
-    const missingKeys = [];
-    if (!import.meta.env.OPENAI_API_KEY) missingKeys.push('OPENAI_API_KEY');
-    if (!import.meta.env.ELEVENLABS_API_KEY) missingKeys.push('ELEVENLABS_API_KEY');
-    if (!import.meta.env.DEEPGRAM_API_KEY) missingKeys.push('DEEPGRAM_API_KEY');
-    
-    if (missingKeys.length > 0) {
-      console.error(`Missing environment variables: ${missingKeys.join(', ')}`);
-      return new Response(JSON.stringify({ 
-        error: `Server configuration error: Missing ${missingKeys.join(', ')}` 
-      }), {
-        status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        }
-      });
-    }
     
     const data = await request.json();
     const { rtvi_client_version, client_info } = data;
@@ -53,11 +34,6 @@ export const POST: APIRoute = async ({ request }) => {
         llm: "openai",
         tts: "elevenlabs", 
         stt: "deepgram"
-      },
-      api_keys: {
-        openai: import.meta.env.OPENAI_API_KEY,
-        elevenlabs: import.meta.env.ELEVENLABS_API_KEY,
-        deepgram: import.meta.env.DEEPGRAM_API_KEY
       },
       config: [
         {

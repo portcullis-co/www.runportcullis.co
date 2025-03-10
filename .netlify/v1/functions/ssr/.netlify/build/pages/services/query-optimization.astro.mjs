@@ -1,8 +1,8 @@
 import { a as createComponent, b as renderTemplate, r as renderComponent, m as maybeRenderHead } from "../../chunks/astro/server_aMtVhhw-.mjs";
 import { $ as $$Bentogrid } from "../../chunks/bentogrid_CyHOjrBJ.mjs";
-import { $ as $$HeroSection } from "../../chunks/hero-section_CiVjkpkU.mjs";
-import { $ as $$MainLayout, d as Button } from "../../chunks/main-layout_C4s2EEtb.mjs";
-import { $ as $$Icon } from "../../chunks/Icon_C7xTG8EG.mjs";
+import { $ as $$HeroSection } from "../../chunks/hero-section_C-76lgOT.mjs";
+import { $ as $$MainLayout, d as Button } from "../../chunks/main-layout_Dz18vA4v.mjs";
+import { $ as $$Icon } from "../../chunks/Icon_BY_CdGcZ.mjs";
 import { $ as $$HeaderSection } from "../../chunks/header-section_Va4gOp5y.mjs";
 import { renderers } from "../../renderers.mjs";
 var __freeze = Object.freeze;
