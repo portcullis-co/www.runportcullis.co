@@ -233,16 +233,23 @@ function AssistantContent() {
           </span>
         </div>
         
-        {/* Audio troubleshooting button */}
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="w-full mt-2" 
-          onClick={handleManualAudioUnlock}
-        >
-          <Volume2 className="mr-2 h-4 w-4" />
-          Enable Audio (Safari/iOS)
-        </Button>
+        {/* Audio troubleshooting buttons */}
+        <div className="space-y-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="w-full mt-2" 
+            onClick={handleManualAudioUnlock}
+          >
+            <Volume2 className="mr-2 h-4 w-4" />
+            Enable Audio (Safari/iOS)
+          </Button>
+          
+          <p className="text-xs text-gray-500 text-center">
+            If you can't hear any audio, check that your volume is turned up and try the button above.
+            A debug audio player may appear at the bottom left corner if needed.
+          </p>
+        </div>
       </CardContent>
 
       <CardFooter>
@@ -276,12 +283,19 @@ export function Assistant() {
         const { RTVIClient } = await import('@pipecat-ai/client-js');
         const { DailyTransport } = await import('@pipecat-ai/daily-transport');
         
-        // Create the transport with the correct options for audio input AND output
+        // Create the transport with proper audio configuration
         const transport = new DailyTransport({
           dailyFactoryOptions: {
             audioSource: true,      // Enable microphone input
             videoSource: false,     // No camera needed
-            subscribeToTracksAutomatically: true // Auto-subscribe to remote audio tracks
+            subscribeToTracksAutomatically: true, // Auto-subscribe to remote audio tracks
+            dailyConfig: {
+              userMediaAudioConstraints: {
+                autoGainControl: true,
+                echoCancellation: true,
+                noiseSuppression: true,
+              }
+            }
           }
         });
         
@@ -297,44 +311,62 @@ export function Assistant() {
             endpoints: {
               connect: '/connect',
             },
+            config: [
+              // Match the server-side TTS configuration for ElevenLabs
+              {
+                service: "tts",
+                options: [
+                  { name: "output_format", value: "mp3" }, 
+                  { name: "optimize_streaming_latency", value: 4 },
+                  { name: "latency", value: 1 }
+                ],
+              },
+              // Enable audio input and output
+              {
+                service: "audio",
+                options: [
+                  { name: "enable_output", value: true },
+                  { name: "enable_input", value: true },
+                  { name: "output_volume", value: 1.0 },
+                ],
+              }
+            ],
           },
           callbacks: {
             onBotReady: () => console.log('Bot is ready for interaction'),
-            onBotTtsStarted: () => console.log('Bot TTS audio stream started'),
-            onBotTtsStopped: () => console.log('Bot TTS audio stream stopped'),
-            onError: (error) => console.error('RTVI client error:', error),
             onTrackStarted: (track) => {
               console.log('Track started:', track);
               if (track.kind === 'audio') {
                 console.log('Audio track received - handling should be automatic');
-                // Force play on iOS/Safari which might need user interaction
-                try {
-                  const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-                  if (audioContext.state === 'suspended') {
-                    audioContext.resume().then(() => console.log('Audio context resumed for track'));
-                  }
+                // Create a visible audio element for debugging
+                if (track.label?.includes('remote')) {
+                  console.log('Creating visible audio element for debugging');
                   
-                  // Manual fallback for audio playback - connect remote tracks to the fallback audio element
-                  if (track.label?.includes('remote')) {
-                    console.log('Attempting manual connection of remote audio track');
-                    const audioElement = document.getElementById('fallback-audio') as HTMLAudioElement;
-                    if (audioElement) {
-                      // Create a new MediaStream with the track
-                      const stream = new MediaStream([track]);
-                      
-                      // Connect the stream to the audio element
-                      audioElement.srcObject = stream;
-                      
-                      // Try to play
-                      audioElement.play()
-                        .then(() => console.log('Fallback audio playback started'))
-                        .catch(err => console.error('Fallback audio playback failed:', err));
-                    } else {
-                      console.warn('Fallback audio element not found');
-                    }
-                  }
-                } catch (err) {
-                  console.warn('Failed to resume audio context:', err);
+                  // Remove any existing debug audio elements
+                  const existingDebug = document.getElementById('debug-audio');
+                  if (existingDebug) existingDebug.remove();
+                  
+                  // Create a new audio element
+                  const audioElement = document.createElement('audio');
+                  audioElement.id = 'debug-audio';
+                  audioElement.controls = true; // Show controls for debugging
+                  audioElement.autoplay = true;
+                  audioElement.style.position = 'fixed';
+                  audioElement.style.bottom = '10px';
+                  audioElement.style.left = '10px';
+                  audioElement.style.zIndex = '9999';
+                  
+                  // Create a MediaStream with the track
+                  const stream = new MediaStream([track]);
+                  audioElement.srcObject = stream;
+                  
+                  // Add to DOM
+                  document.body.appendChild(audioElement);
+                  
+                  // Try to play
+                  audioElement.play()
+                    .then(() => console.log('Debug audio playback started'))
+                    .catch(err => console.error('Debug audio playback failed:', err));
                 }
               }
             },
@@ -343,6 +375,26 @@ export function Assistant() {
             },
             onConnected: () => {
               console.log('RTVI client connected and ready');
+            },
+            // Listen for TTS audio events
+            onBotTtsStarted: () => {
+              console.log('TTS started - audio should be playing');
+              
+              // Force unlock audio context on iOS/Safari when TTS starts
+              try {
+                const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+                if (audioContext.state === 'suspended') {
+                  audioContext.resume().then(() => console.log('Audio context resumed for TTS'));
+                }
+              } catch (err) {
+                console.warn('Failed to resume audio context for TTS:', err);
+              }
+            },
+            onBotTtsStopped: () => {
+              console.log('TTS stopped - audio should have played');
+            },
+            onError: (error) => {
+              console.error('RTVI client error:', error);
             }
           }
         });
