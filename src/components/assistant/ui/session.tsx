@@ -226,56 +226,48 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
     console.log('[SESSION] Explicitly triggering bot to speak:', text);
     
     try {
-      // Use the standard RTVI action format
+      // First try the TTS synthesize action
       client.action({
-        service: "bot",
-        action: "speak",
+        service: "tts",
+        action: "synthesize",
         arguments: [
           { name: "text", value: text }
         ]
       }).then((response) => {
-        console.log('[SESSION] Bot speak action response:', response);
+        console.log('[SESSION] TTS synthesize response:', response);
       }).catch((error) => {
-        console.error('[SESSION] Bot speak action error:', error);
+        console.error('[SESSION] TTS synthesize error:', error);
         
-        // Fallback to sending a direct message
-        client.sendMessage({
-          type: 'bot-message',
-          data: {
-            text,
-            type: 'text'
-          },
-          id: '',
-          label: ''
+        // If that fails, try the bot speak action
+        client.action({
+          service: "bot",
+          action: "speak",
+          arguments: [
+            { name: "text", value: text }
+          ]
+        }).then((response) => {
+          console.log('[SESSION] Bot speak response:', response);
+        }).catch((error) => {
+          console.error('[SESSION] Bot speak error:', error);
+          console.log('[SESSION] Falling back to direct message...');
+          
+          // Last resort: try direct message
+          client.sendMessage({
+            type: 'bot-message',
+            data: {
+              text,
+              type: 'text'
+            },
+            id: '',
+            label: ''
+          });
         });
       });
-      
     } catch (error) {
       console.error('[SESSION] Failed to trigger bot speech:', error);
     }
   };
-  // Add more comprehensive event handlers
-  useRTVIClientEvent(RTVIEvent.ServerMessage, (message: any) => {
-    console.log('[SESSION] Bot message event:', message);
-    if (message.type === 'bot-message' && message.data?.text) {
-      setMessages(prev => [...prev, { role: 'assistant', content: message.data.text }]);
-    }
-  });
 
-  useRTVIClientEvent(RTVIEvent.BotReady, () => {
-    console.log('[SESSION] Bot ready event received');
-    // Send initial message when bot is ready
-    client?.sendMessage({
-      type: 'bot-message',
-      data: {
-        text: "Hello! I'm ready to help.",
-        type: 'text'
-      },
-      id: '',
-      label: ''
-    });
-  });
-  
   // Add greeting when session starts with retry logic
   useEffect(() => {
     let attempts = 0;
@@ -287,19 +279,18 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
       
       console.log(`[SESSION] Attempting bot introduction (attempt ${attempts + 1}/${maxAttempts})`);
       
-      // First try sending a direct message
-      client.sendMessage({
-        type: 'bot-message',
-        data: {
-          text: "Hello! I'm your Portcullis assistant. How can I help you today?",
-          type: 'text'
-        },
-        id: '',
-        label: ''
+      // First try to initialize the bot
+      client.action({
+        service: "bot",
+        action: "initialize",
+        arguments: []
+      }).then(() => {
+        console.log('[SESSION] Bot initialized, attempting to speak...');
+        // Then try to speak
+        return triggerBotToSpeak("Hello! I'm your Portcullis assistant. How can I help you today?");
+      }).catch((error) => {
+        console.error('[SESSION] Bot initialization error:', error);
       });
-      
-      // Then try the action
-      triggerBotToSpeak("Hello! I'm your Portcullis assistant. How can I help you today?");
       
       attempts++;
       
@@ -310,7 +301,7 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
     };
 
     // Start the first attempt after a delay
-    const timer = setTimeout(tryGreeting, 1000);
+    const timer = setTimeout(tryGreeting, 2000); // Increased initial delay
     
     return () => clearTimeout(timer);
   }, [client, messages]);

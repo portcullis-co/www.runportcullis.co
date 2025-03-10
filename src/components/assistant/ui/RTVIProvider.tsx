@@ -32,7 +32,6 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
         });
 
         // Create RTVI client with MINIMAL configuration
-        // Let the server handle all the LLM, TTS, STT configuration
         const client = new RTVIClient({
           transport: transport as any,
           enableMic: true,
@@ -47,39 +46,63 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
           callbacks: {
             onBotConnected: () => {
               console.log('[CALLBACK] Bot connected');
-              // Initialize the bot when connected
-              client.sendMessage({
-                type: 'bot-message',
-                data: {
-                  text: "Hello! I'm initializing...",
-                  type: 'text'
-                },
-                id: '',
-                label: ''
-              });
+              // Don't send message here - wait for ready state
             },
             onBotDisconnected: () => {
               console.log('[CALLBACK] Bot disconnected');
             },
             onBotReady: () => {
               console.log('[CALLBACK] Bot ready to chat!');
-              // Send a test message when ready
-              client.sendMessage({
-                type: 'bot-message',
-                data: {
-                  text: "I'm ready to help!",
-                  type: 'text'
-                },
-                id: '',
-                label: ''
-              });
+              // Only send messages when bot is ready
+              setTimeout(() => {
+                try {
+                  client.action({
+                    service: "bot",
+                    action: "initialize",
+                    arguments: []
+                  }).then(() => {
+                    console.log('[RTVI Core] Bot initialized successfully');
+                    // Now try to speak
+                    client.action({
+                      service: "tts",
+                      action: "synthesize",
+                      arguments: [
+                        { name: "text", value: "Hello! I'm ready to help." }
+                      ]
+                    });
+                  }).catch(console.error);
+                } catch (error) {
+                  console.error('[RTVI Core] Failed to initialize bot:', error);
+                }
+              }, 1000);
             },
             onTransportStateChanged: (state: string) => {
               console.log('[CALLBACK] Transport state changed:', state);
               setTransportState(state);
+              
+              // If we reach ready state, try to initialize
+              if (state === 'ready') {
+                console.log('[RTVI Core] Transport ready, initializing...');
+                try {
+                  client.action({
+                    service: "bot",
+                    action: "initialize",
+                    arguments: []
+                  }).catch(console.error);
+                } catch (error) {
+                  console.error('[RTVI Core] Failed to initialize on ready:', error);
+                }
+              }
             },
             onError: (error: any) => {
               console.error('[CALLBACK] RTVI error:', error);
+            },
+            onServerMessage: (message: any) => {
+              console.log('[DEBUG] Raw message received:', message);
+              // Log error responses in detail
+              if (message.type === 'error-response') {
+                console.error('[DEBUG] Error response:', JSON.stringify(message.data, null, 2));
+              }
             }
           }
         });
