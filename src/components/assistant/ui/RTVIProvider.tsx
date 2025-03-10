@@ -31,64 +31,20 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
           }
         });
 
-        // Create RTVI client with proper configuration
+        // Create RTVI client with MINIMAL configuration
+        // Let the server handle all the LLM, TTS, STT configuration
         const client = new RTVIClient({
           transport: transport as any,
           enableMic: true,
           enableCam: false,
           timeout: 15000,
           params: {
-            // Using standard URL format for Daily Bots
             baseUrl: '/api/assistant',
             endpoints: {
               connect: '/connect',
             },
-            // Use the requestData property to explicitly pass services and config
-            // This follows the Daily Bots docs more closely
-            requestData: {
-              services: {
-                llm: "anthropic",
-                tts: "elevenlabs",
-                stt: "deepgram"
-              },
-              config: [
-                {
-                  service: "stt",
-                  options: [
-                    { name: "language", value: "en-US" }
-                  ]
-                },
-                {
-                  service: "tts",
-                  options: [
-                    { name: "voice", value: "6IlUNt4hAIP1jMBYQncS" },
-                    { name: "model", value: "eleven_turbo_v2" },
-                    { name: "output_format", value: "pcm_24000" },
-                    { name: "stability", value: 0.5 },
-                    { name: "similarity_boost", value: 0.5 },
-                    { name: "latency", value: 1 }
-                  ]
-                },
-                {
-                  service: "llm",
-                  options: [
-                    { name: "model", value: "claude-3-5-sonnet-latest" },
-                    {
-                      name: "initial_messages",
-                      value: [
-                        {
-                          role: "system",
-                          content: "You are a friendly assistant for Portcullis, helping users understand our data warehouse steering assistance services. Introduce yourself briefly and be conversational. Keep your responses short and direct. Always respond to the user's input - never wait for more information unless explicitly needed. Use the tools provided to assist the user."
-                        }
-                      ]
-                    },
-                    { name: "temperature", value: 0.7 },
-                    { name: "max_tokens", value: 500 },
-                    { name: "run_on_config", value: true }
-                  ]
-                }
-              ]
-            }
+            // Don't send any configuration data from client
+            // Let the server handle everything
           },
           callbacks: {
             onBotConnected: () => {
@@ -157,6 +113,33 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
           if (data && data.text) {
             setLastBotMessage(data.text);
           }
+        });
+        
+        // Add event listener for bot LLM events with correct casing
+        client.on(RTVIEvent.BotLlmStarted, () => {
+          console.log('[EVENT] Bot LLM started processing');
+        });
+        
+        client.on(RTVIEvent.BotLlmStopped, () => {
+          console.log('[EVENT] Bot LLM stopped processing');
+        });
+        
+        client.on(RTVIEvent.BotLlmText, (data: any) => {
+          console.log('[EVENT] Bot LLM text:', data);
+        });
+        
+        client.on(RTVIEvent.BotReady, () => {
+          console.log('[EVENT] Bot is ready to chat - IMPORTANT EVENT');
+        });
+        
+        client.on(RTVIEvent.BotTtsStarted, () => {
+          console.log('[EVENT] Bot TTS started');
+          setBotSpeaking(true);
+        });
+        
+        client.on(RTVIEvent.BotTtsStopped, () => {
+          console.log('[EVENT] Bot TTS stopped');
+          setBotSpeaking(false);
         });
         
         // Handle user speech events for debugging

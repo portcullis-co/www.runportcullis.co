@@ -528,11 +528,11 @@ export const POST: APIRoute = async ({ request }) => {
       console.log('Request data received:', JSON.stringify(requestData, null, 2));
     } catch (error) {
       console.error('Failed to parse request body:', error);
-      requestData = { services: {}, config: [] };
+      requestData = {};
     }
     
-    // Extract data from request, with fallbacks
-    const services = requestData.services || {
+    // Define the services
+    const services = {
       llm: "anthropic",
       tts: "elevenlabs", 
       stt: "deepgram"
@@ -640,60 +640,58 @@ export const POST: APIRoute = async ({ request }) => {
       }
     ];
     
-    const config = requestData.config || [
-      {
-        service: "stt",
-        options: [
-          { name: "language", value: "en-US" }
-        ]
-      },
-      {
-        service: "tts",
-        options: [
-          { name: "voice", value: "6IlUNt4hAIP1jMBYQncS" }, // ElevenLabs voice ID
-          { name: "model", value: "eleven_turbo_v2" },
-          { name: "output_format", value: "pcm_24000" }, // Important for audio playback!
-          { name: "stability", value: 0.5 },
-          { name: "similarity_boost", value: 0.5 },
-          { name: "latency", value: 1 }
-        ]
-      },
-      {
-        service: "llm",
-        options: [
-          { name: "model", value: "claude-3-5-sonnet-latest" },
-          {
-            name: "initial_messages",
-            value: [
-              {
-                role: "system",
-                content: "You are a friendly assistant for Portcullis, helping users understand our data warehouse steering assistance services. Introduce yourself briefly first. Your responses should be conversational and brief."
-              }
-            ]
-          },
-          { name: "temperature", value: 0.7 },
-          { name: "max_tokens", value: 500 },
-          { name: "run_on_config", value: true },
-          // Add the tools for Anthropic function calling
-          { 
-            name: "tools", 
-            value: toolSchemas
-          }
-        ]
-      }
-    ];
-    
-    // Get client version if provided
-    const rtvi_client_version = requestData.rtvi_client_version;
-    
-    // Create the bot configuration - DO NOT include function_handlers
-    // as this could be causing issues. Let Daily handle the function calling.
+    // Create the bot configuration with the following services and options
     const botConfig = {
       bot_profile: "voice_2024_08", // Use the standard voice profile
       max_duration: 600, // 10 minutes
       services,
-      config,
-      rtvi_client_version,
+      config: [
+        {
+          service: "stt",
+          options: [
+            { name: "language", value: "en-US" }
+          ]
+        },
+        {
+          service: "tts",
+          options: [
+            { name: "voice", value: "6IlUNt4hAIP1jMBYQncS" }, // ElevenLabs voice ID
+            { name: "model", value: "eleven_turbo_v2" },
+            { name: "output_format", value: "pcm_24000" }, // Important for audio playback!
+            { name: "stability", value: 0.5 },
+            { name: "similarity_boost", value: 0.5 },
+            { name: "latency", value: 1 }
+          ]
+        },
+        {
+          service: "llm",
+          options: [
+            { name: "model", value: "claude-3-5-sonnet-latest" },
+            {
+              name: "initial_messages",
+              value: [
+                {
+                  role: "system",
+                  content: "You are a friendly assistant for Portcullis. Always respond to the user's questions, even with brief acknowledgments if you don't have a complete answer. Keep responses short and direct, no more than 2-3 sentences. Introduce yourself first."
+                },
+                {
+                  role: "assistant",
+                  content: "Hello! I'm the Portcullis AI assistant. I'm here to tell you about our data warehouse steering assistance services. How can I help you today?"
+                }
+              ]
+            },
+            { name: "temperature", value: 0.7 },
+            { name: "max_tokens", value: 300 },
+            { name: "run_on_config", value: true },
+            // Add the tools for Anthropic function calling
+            { 
+              name: "tools", 
+              value: toolSchemas
+            }
+          ]
+        }
+      ],
+      rtvi_client_version: requestData.rtvi_client_version || "0.3.3",
     };
     
     console.log('Sending bot config to Daily API:', JSON.stringify(botConfig, null, 2));
