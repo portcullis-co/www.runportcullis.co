@@ -217,13 +217,8 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
   return (
     <RTVIClientProvider client={rtviClient}>
       {children}
-      {/* Enhanced audio component with explicit options */}
-      <RTVIClientAudio 
-        autoPlay={true}
-        muted={false}
-        volume={1.0}
-        debug={true} // Enable debug logging for audio events
-      />
+      {/* Essential RTVIClientAudio component to mount the bot's audio track */}
+      <RTVIClientAudio />
       
       {/* Audio debug log */}
       <div

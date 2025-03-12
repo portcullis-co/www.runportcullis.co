@@ -5,7 +5,8 @@ import { Mic, Loader2, Volume2 } from 'lucide-react';
 import { 
   useRTVIClientTransportState,
   useRTVIClient,
-  useRTVIClientEvent
+  useRTVIClientEvent,
+  RTVIClientAudio
 } from '@pipecat-ai/client-react';
 
 // Import the Daily demo components we want to reuse
@@ -49,15 +50,36 @@ function BotController() {
   }, [transportState]);
   
   const handleStartSession = async () => {
-    if (!client) return;
+    if (!client) {
+      console.error('RTVI client not initialized');
+      alert('RTVI client not initialized. Please try refreshing the page.');
+      return;
+    }
     
     try {
       setIsConnecting(true);
-      console.log('Starting session...');
+      console.log('Starting session... Client status:', client.connected ? 'Already connected' : 'Not connected');
       
       // Use the connect method from the client
+      console.log('Calling client.connect()');
       await client.connect();
-      console.log('Connected successfully');
+      console.log('Connected successfully, client status:', client.connected ? 'Connected' : 'Not connected');
+      
+      // Force TTS check - send a test message after successful connection
+      setTimeout(async () => {
+        if (client.connected) {
+          console.log('Testing TTS with a greeting message');
+          try {
+            await client.action({
+              service: 'tts',
+              action: 'say',
+              arguments: [{ name: 'text', value: 'Connection successful. I am ready to assist you.' }]
+            });
+          } catch (err) {
+            console.error('TTS test failed:', err);
+          }
+        }
+      }, 2000);
       
       // Don't automatically transition here - we'll wait for the bot-ready event
       // or the transport-ready state (handled in the useEffect above)

@@ -2,24 +2,16 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardHeader, CardContent, CardFooter, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Mic, Loader2, Volume2, LogOut, StopCircle } from 'lucide-react';
-import { useRTVIClient, useRTVIClientEvent } from '@pipecat-ai/client-react';
+import { useRTVIClient, useRTVIClientEvent, VoiceVisualizer, RTVIClientAudio } from '@pipecat-ai/client-react';
 import { RTVIEvent } from '@pipecat-ai/client-js';
 
-// Simple session view with chat interface
+// Simple session view with voice visualizer interface
 export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
   const client = useRTVIClient();
-  const [messages, setMessages] = useState<{ role: 'user' | 'assistant', content: string }[]>([]);
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [transcription, setTranscription] = useState('');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  
-  // Scroll to bottom when messages change
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [messages]);
+  const [userSpeech, setUserSpeech] = useState('');
+  const [botSpeech, setBotSpeech] = useState('');
   
   // User speech events
   useRTVIClientEvent(RTVIEvent.UserStartedSpeaking, () => {
@@ -30,26 +22,21 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
   useRTVIClientEvent(RTVIEvent.UserStoppedSpeaking, () => {
     console.log('[SESSION] User stopped speaking');
     setIsListening(false);
+    // Clear user speech after a short delay
+    setTimeout(() => {
+      setUserSpeech('');
+    }, 3000);
   });
   
   // User transcription events
   useRTVIClientEvent(RTVIEvent.UserTranscript, (data: any) => {
     console.log('[SESSION] User transcription:', data);
     if (data) {
-      setTranscription(data.text || '');
-      
-      // When transcription is final, add to messages
-      if (data.final) {
-        setMessages(prev => [...prev, { 
-          role: 'user', 
-          content: data.text 
-        }]);
-        setTranscription('');
-      }
+      setUserSpeech(data.text || '');
     }
   });
   
-  // Bot speech events - simplified to match Daily demo
+  // Bot speech events
   useRTVIClientEvent(RTVIEvent.BotStartedSpeaking, () => {
     console.log('[SESSION] Bot started speaking');
     setIsSpeaking(true);
@@ -58,16 +45,17 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
   useRTVIClientEvent(RTVIEvent.BotStoppedSpeaking, () => {
     console.log('[SESSION] Bot stopped speaking');
     setIsSpeaking(false);
+    // Clear bot speech after a delay
+    setTimeout(() => {
+      setBotSpeech('');
+    }, 3000);
   });
   
-  // Primary bot response handler - simplified to match Daily demo
+  // Primary bot response handler
   useRTVIClientEvent(RTVIEvent.BotLlmText, (data: any) => {
     console.log('[SESSION] Bot LLM text:', data);
     if (data?.text) {
-      setMessages(prev => [...prev, { 
-        role: 'assistant', 
-        content: data.text 
-      }]);
+      setBotSpeech(prev => prev + (prev ? ' ' : '') + data.text);
     }
   });
   
@@ -87,7 +75,7 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
     }
   };
   
-  // Simplified bot speak trigger to match Daily demo
+  // Trigger bot to speak
   const triggerBotToSpeak = (text: string) => {
     if (!client) return;
     
@@ -125,16 +113,14 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
     
     const handleBotReady = () => {
       console.log('[SESSION] Bot ready event received');
-      if (messages.length === 0) {
-        setTimeout(() => {
-          triggerBotToSpeak("Hello! I'm your Portcullis assistant. How can I help you today?");
-        }, 1000);
-      }
+      setTimeout(() => {
+        triggerBotToSpeak("Hello! I'm your Portcullis assistant. How can I help you today?");
+      }, 1000);
     };
 
     const handleTransportStateChange = (state: string) => {
       console.log('[SESSION] Transport state changed:', state);
-      if (state === 'ready' && messages.length === 0) {
+      if (state === 'ready') {
         setTimeout(() => {
           console.log('[SESSION] Transport ready, sending greeting...');
           triggerBotToSpeak("Hello! I'm your Portcullis assistant. How can I help you today?");
@@ -150,70 +136,26 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
       client.off(RTVIEvent.BotReady, handleBotReady);
       client.off(RTVIEvent.TransportStateChanged, handleTransportStateChange);
     };
-  }, [client, messages]);
+  }, [client]);
 
-  // Bot event handlers
-  useRTVIClientEvent(RTVIEvent.BotLlmStarted, () => {
-    console.log('[SESSION] Bot started thinking...');
-  });
-
-  useRTVIClientEvent(RTVIEvent.BotLlmStopped, () => {
-    console.log('[SESSION] Bot finished thinking');
-  });
-
-  useRTVIClientEvent(RTVIEvent.BotLlmText, (data: any) => {
-    console.log('[SESSION] Bot LLM text:', data);
+  // Additional bot event handlers
+  useRTVIClientEvent(RTVIEvent.BotTtsText, (data: any) => {
+    console.log('[SESSION] Bot TTS text:', data);
     if (data?.text) {
-      setMessages(prev => [...prev, { 
-        role: 'assistant', 
-        content: data.text 
-      }]);
+      setBotSpeech(data.text);
     }
   });
 
-  useRTVIClientEvent(RTVIEvent.BotTtsStarted, () => {
-    console.log('[SESSION] Bot started speaking');
-    setIsSpeaking(true);
-  });
-
-  useRTVIClientEvent(RTVIEvent.BotTtsStopped, () => {
-    console.log('[SESSION] Bot stopped speaking');
-    setIsSpeaking(false);
-  });
-
-  useRTVIClientEvent(RTVIEvent.BotTtsText, (data: any) => {
-    console.log('[SESSION] Bot TTS text:', data);
-  });
-
-  // Add message handlers for both modern and legacy formats
+  // Server message handler
   useRTVIClientEvent(RTVIEvent.ServerMessage, (message: any) => {
     console.log('[SESSION] Server message received:', message);
     if (message?.type === 'bot-message' && message?.data?.text) {
-      setMessages(prev => [...prev, { 
-        role: 'assistant', 
-        content: message.data.text 
-      }]);
+      setBotSpeech(message.data.text);
+    }
+    if (message?.type === 'user-transcription' && message?.data?.text) {
+      setUserSpeech(message.data.text);
     }
   });
-
-  // Add effect to handle user messages
-  useEffect(() => {
-    const lastMessage = messages[messages.length - 1];
-    if (lastMessage?.role === 'user') {
-      // Send to LLM with conversation context
-      client?.action({
-        service: 'llm',
-        action: 'generate',
-        arguments: [{
-          name: 'messages',
-          value: messages.map(msg => ({
-            role: msg.role,
-            content: msg.content
-          }))
-        }]
-      }).catch(err => console.error('[SESSION] LLM generation failed:', err));
-    }
-  }, [messages, client]);
 
   return (
     <Card className="w-full">
@@ -240,82 +182,71 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
         </div>
       </CardHeader>
       
-      <CardContent className="max-h-96 overflow-y-auto space-y-4 relative">
-        {messages.length === 0 && (
-          <div className="text-center text-muted-foreground py-8">
-            <p>Start speaking to interact with the assistant.</p>
+      <CardContent className="space-y-8">
+        {/* User Voice Visualizer */}
+        <div className="w-full">
+          <div className="text-center mb-2 text-sm font-medium">
+            {isListening ? '🎤 You are speaking...' : 'Waiting for speech...'}
           </div>
-        )}
-        
-        {messages.map((message, index) => (
-          <div 
-            key={index}
-            className={`p-3 rounded-md ${
-              message.role === 'assistant' ? 'bg-blue-50' : 'bg-gray-100'
-            }`}
-          >
-            <div className="flex items-center gap-2">
-              {message.role === 'assistant' ? (
-                <Volume2 
-                  className={`h-4 w-4 ${
-                    isSpeaking ? 'text-blue-500 animate-pulse' : 'text-gray-500'
-                  }`} 
-                />
-              ) : (
-                <Mic 
-                  className={`h-4 w-4 ${
-                    isListening ? 'text-green-500 animate-pulse' : 'text-gray-500'
-                  }`} 
-                />
-              )}
-              <span className="text-xs font-medium">
-                {message.role === 'assistant' 
-                  ? (isSpeaking ? 'Bot speaking...' : 'Bot') 
-                  : 'You'}
-              </span>
+          <div className="h-16 w-full flex items-center justify-center bg-gray-50 rounded-lg">
+            <VoiceVisualizer 
+              participantType="local"
+              backgroundColor="transparent"
+              barColor={isListening ? "#22c55e" : "#9ca3af"}
+              barGap={4}
+              barWidth={6}
+              barMaxHeight={40}
+            />
+          </div>
+          {userSpeech && (
+            <div className="mt-2 p-3 bg-gray-100 rounded-lg text-sm">
+              {userSpeech}
             </div>
-            <p className="mt-1 text-sm whitespace-pre-wrap">{message.content}</p>
-          </div>
-        ))}
+          )}
+        </div>
         
-        {/* Show current transcription if not finalized */}
-        {transcription && isListening && (
-          <div className="p-3 bg-gray-100 rounded-md">
-            <div className="flex items-center gap-2">
-              <Mic className="h-4 w-4 text-green-500 animate-pulse" />
-              <span className="text-xs font-medium">You (speaking...)</span>
+        {/* Bot Voice Visualizer */}
+        <div className="w-full">
+          <div className="text-center mb-2 text-sm font-medium">
+            {isSpeaking ? '🔊 Assistant is speaking...' : 'Assistant is listening'}
+          </div>
+          <div className="h-16 w-full flex items-center justify-center bg-blue-50 rounded-lg">
+            <VoiceVisualizer 
+              participantType="bot"
+              backgroundColor="transparent"
+              barColor={isSpeaking ? "#3b82f6" : "#9ca3af"}
+              barGap={4}
+              barWidth={6}
+              barMaxHeight={40}
+            />
+          </div>
+          {botSpeech && (
+            <div className="mt-2 p-3 bg-blue-50 rounded-lg text-sm">
+              {botSpeech}
             </div>
-            <p className="mt-1 text-sm">{transcription}</p>
-          </div>
-        )}
+          )}
+        </div>
+
+        {/* Bot Audio Output - Essential for hearing the bot speak */}
+        <RTVIClientAudio />
         
-        {/* Test Speak Button - For debugging */}
+        {/* Test Button - For debugging */}
         <div className="flex justify-center mt-4">
           <Button 
             variant="outline" 
             size="sm" 
-            onClick={() => triggerBotToSpeak("Hello, I'm testing the TTS functionality. Can you hear me?")}
+            onClick={() => triggerBotToSpeak("Hello, I'm testing the voice assistant. Can you hear me?")}
           >
-            Test TTS
+            Test Voice
           </Button>
         </div>
-        
-        {/* Invisible div for scrolling to bottom */}
-        <div ref={messagesEndRef} />
       </CardContent>
       
       <CardFooter className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          {isListening ? 
-            <Mic className="h-5 w-5 text-green-500 animate-pulse" /> : 
-            <Mic className="h-5 w-5" />}
-          <span className="text-sm">
-            {isListening ? 'Listening...' : 'Waiting for speech...'}
-          </span>
-        </div>
-        
-        <div className="text-xs text-gray-500">
-          {isSpeaking ? 'Bot is speaking...' : 'Bot is ready'}
+        <div className="text-sm text-muted-foreground">
+          {isListening ? '🎤 Listening...' : 
+           isSpeaking ? '🔊 Speaking...' : 
+           '✅ Ready'}
         </div>
       </CardFooter>
     </Card>
