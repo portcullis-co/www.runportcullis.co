@@ -42,7 +42,6 @@ export const defaultConfig = [
         ]
       },
       { name: "temperature", value: 0.7 },
-      { name: "run_on_config", value: true } // Important for Daily Bots
     ]
   }
 ];

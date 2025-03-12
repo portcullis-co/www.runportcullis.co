@@ -70,32 +70,19 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
             ]
           },
           callbacks: {
-            onBotConnected: () => {
-              console.log('[RTVI] Bot connected');
-            },
+            onBotConnected: () => {},
             onBotDisconnected: () => {
-              console.log('[RTVI] Bot disconnected');
               setBotSpeaking(false);
             },
-            onBotReady: (botReadyData: any) => {
-              console.log('[RTVI] Bot ready with config:', botReadyData);
-            },
+            onBotReady: (botReadyData: any) => {},
             onTransportStateChanged: (state: string) => {
-              console.log('[RTVI] Transport state:', state);
               setTransportState(state);
             },
-            onError: (error: any) => {
-              console.error('[RTVI] Error:', error);
-            },
+            onError: (error: any) => {},
             // Add LLM callbacks
-            onBotLlmStarted: () => {
-              console.log('[RTVI] LLM started generating');
-            },
-            onBotLlmStopped: () => {
-              console.log('[RTVI] LLM finished generating');
-            },
+            onBotLlmStarted: () => {},
+            onBotLlmStopped: () => {},
             onBotLlmText: (text: any) => {
-              console.log('[RTVI] LLM text:', text);
               if (text?.text) {
                 setLastBotMessage(text.text);
                 // Try to speak the response
@@ -103,69 +90,49 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
                   service: 'tts',
                   action: 'say',
                   arguments: [{ name: 'text', value: text.text }]
-                }).catch(err => console.error('[RTVI] TTS failed:', err));
+                }).catch(() => {});
               }
             },
             // Add TTS callbacks
             onBotTtsStarted: () => {
-              console.log('[RTVI] TTS started');
               setBotSpeaking(true);
             },
             onBotTtsStopped: () => {
-              console.log('[RTVI] TTS stopped');
               setBotSpeaking(false);
             },
-            onBotTtsText: (text: any) => {
-              console.log('[RTVI] TTS text:', text);
-            },
+            onBotTtsText: (text: any) => {},
             // Add transcript callbacks
             onBotTranscript: (text: any) => {
-              console.log('[RTVI] Bot transcript:', text);
               if (text?.text) {
                 setLastBotMessage(text.text);
               }
             },
+            // Note: We're removing the onUserTranscript handler here as we want
+            // to handle this in the session component using triggerBotToSpeak
             onUserTranscript: (transcript: any) => {
-              console.log('[RTVI] User transcript:', transcript);
-              if (transcript?.final) {
-                // When user finishes speaking, trigger LLM
-                client.action({
-                  service: 'llm',
-                  action: 'generate',
-                  arguments: [{ name: 'text', value: transcript.text }]
-                }).catch(err => console.error('[RTVI] LLM generation failed:', err));
-              }
+              // Just capture transcripts, don't trigger LLM directly
+              // The session component will handle this
             }
           }
         });
         
         // Core event listeners
-        client.on(RTVIEvent.Error, (error: any) => {
-          console.error('[RTVI] Client error:', error);
-        });
-        
-        client.on(RTVIEvent.BotReady, () => {
-          console.log('[RTVI] Bot ready event received');
-        });
+        client.on(RTVIEvent.Error, (error: any) => {});
+        client.on(RTVIEvent.BotReady, () => {});
 
         // Add audio track handling
         client.on(RTVIEvent.BotStartedSpeaking, () => {
-          console.log('[RTVI] Bot started speaking');
           setBotSpeaking(true);
         });
 
         client.on(RTVIEvent.BotStoppedSpeaking, () => {
-          console.log('[RTVI] Bot stopped speaking');
           setBotSpeaking(false);
         });
 
         // Add message handlers
-        client.on(RTVIEvent.ServerMessage, (message: any) => {
-          console.log('[RTVI] Raw message:', message);
-        });
+        client.on(RTVIEvent.ServerMessage, (message: any) => {});
 
         client.on(RTVIEvent.ServerMessage, (message: any) => {
-          console.log('[RTVI] Server message:', message);
           if (message?.type === 'bot-message' && message?.data?.text) {
             setLastBotMessage(message.data.text);
             // Try to speak the response
@@ -173,7 +140,7 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
               service: 'tts',
               action: 'say',
               arguments: [{ name: 'text', value: message.data.text }]
-            }).catch(err => console.error('[RTVI] TTS failed:', err));
+            }).catch(() => {});
           }
         });
 
@@ -182,14 +149,7 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
         setRTVIClientProvider(() => RTVIClientProvider);
         setRTVIClientAudio(() => RTVIClientAudio);
         setIsLoaded(true);
-        
-        console.log('[RTVI] Client initialized');
-       
-        // Log the final URL for debugging
-        console.log('Connect URL will be:', client.params.baseUrl ? client.params.baseUrl + (client.params.endpoints?.connect || '') : 'Base URL not defined');
-      } catch (error) {
-        console.error('Failed to load RTVI dependencies:', error);
-      }
+      } catch (error) {}
     }
     
     loadDependencies();
@@ -198,12 +158,8 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
     return () => {
       if (rtviClient) {
         try {
-          rtviClient.disconnect().catch((err: unknown) => {
-            console.warn('Error during disconnect in cleanup:', err);
-          });
-        } catch (err) {
-          console.warn('Error during cleanup:', err);
-        }
+          rtviClient.disconnect().catch(() => {});
+        } catch (err) {}
       }
     };
   }, []);
@@ -219,46 +175,6 @@ export function RTVIProvider({ children }: { children: ReactNode }) {
       {children}
       {/* Essential RTVIClientAudio component to mount the bot's audio track */}
       <RTVIClientAudio />
-      
-      {/* Audio debug log */}
-      <div
-        style={{
-          position: 'fixed',
-          bottom: '10px',
-          right: '10px',
-          padding: '5px',
-          background: 'rgba(0,0,0,0.1)',
-          borderRadius: '5px',
-          zIndex: 100,
-          fontSize: '10px',
-          display: botSpeaking ? 'block' : 'none'
-        }}
-      >
-        🔊 Bot speaking...
-      </div>
-      
-      {/* Simple debug panel */}
-      <div
-        style={{
-          position: 'fixed',
-          bottom: '10px',
-          right: '10px',
-          backgroundColor: 'rgba(0, 0, 0, 0.7)',
-          color: 'white',
-          padding: '8px',
-          borderRadius: '4px',
-          fontSize: '10px',
-          maxWidth: '300px',
-          zIndex: 1000,
-        }}
-      >
-        RTVI Audio Status: Active<br />
-        TTS: ElevenLabs (PCM)<br />
-        Transport: {transportState}<br />
-        Bot Speaking: {botSpeaking ? 'Yes' : 'No'}<br />
-        Last Message: {lastBotMessage ? lastBotMessage.substring(0, 30) + '...' : 'None yet'}<br />
-        Version: {rtviClient?.version || '0.3.3'}
-      </div>
     </RTVIClientProvider>
   );
 } 

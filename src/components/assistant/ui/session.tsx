@@ -1,85 +1,71 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { Card, CardHeader, CardContent, CardFooter, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Mic, Loader2, Volume2, LogOut, StopCircle } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import { useRTVIClient, useRTVIClientEvent, VoiceVisualizer, RTVIClientAudio } from '@pipecat-ai/client-react';
 import { RTVIEvent } from '@pipecat-ai/client-js';
 
-// Simple session view with voice visualizer interface
+// Simplified session view with a single voice visualizer
 export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
   const client = useRTVIClient();
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [userSpeech, setUserSpeech] = useState('');
-  const [botSpeech, setBotSpeech] = useState('');
+  const [currentTranscript, setCurrentTranscript] = useState('');
+  const [isUserSpeaking, setIsUserSpeaking] = useState(false);
+  const [userTranscript, setUserTranscript] = useState('');
   
   // User speech events
   useRTVIClientEvent(RTVIEvent.UserStartedSpeaking, () => {
-    console.log('[SESSION] User started speaking');
+    setIsUserSpeaking(true);
     setIsListening(true);
   });
   
   useRTVIClientEvent(RTVIEvent.UserStoppedSpeaking, () => {
-    console.log('[SESSION] User stopped speaking');
+    setIsUserSpeaking(false);
     setIsListening(false);
-    // Clear user speech after a short delay
-    setTimeout(() => {
-      setUserSpeech('');
-    }, 3000);
+    
+    // When user stops speaking, use their transcript to trigger a response
+    if (userTranscript.trim()) {
+      // Small delay to ensure final transcript is received
+      setTimeout(() => {
+        triggerBotToSpeak(userTranscript);
+        // Clear the user transcript after processing
+        setUserTranscript('');
+      }, 500);
+    }
   });
   
   // User transcription events
   useRTVIClientEvent(RTVIEvent.UserTranscript, (data: any) => {
-    console.log('[SESSION] User transcription:', data);
-    if (data) {
-      setUserSpeech(data.text || '');
+    if (data && data.text) {
+      setCurrentTranscript(data.text);
+      
+      // If this is the final transcript, save it for processing when user stops speaking
+      if (data.final) {
+        setUserTranscript(data.text);
+      }
     }
   });
   
   // Bot speech events
   useRTVIClientEvent(RTVIEvent.BotStartedSpeaking, () => {
-    console.log('[SESSION] Bot started speaking');
     setIsSpeaking(true);
   });
   
   useRTVIClientEvent(RTVIEvent.BotStoppedSpeaking, () => {
-    console.log('[SESSION] Bot stopped speaking');
     setIsSpeaking(false);
-    // Clear bot speech after a delay
-    setTimeout(() => {
-      setBotSpeech('');
-    }, 3000);
   });
   
   // Primary bot response handler
   useRTVIClientEvent(RTVIEvent.BotLlmText, (data: any) => {
-    console.log('[SESSION] Bot LLM text:', data);
     if (data?.text) {
-      setBotSpeech(prev => prev + (prev ? ' ' : '') + data.text);
+      setCurrentTranscript(data.text);
     }
   });
-  
-  // Handle interrupting the bot
-  const handleInterrupt = () => {
-    if (!client) return;
-    
-    try {
-      console.log('Interrupting bot...');
-      client.action({
-        service: "tts",
-        action: "interrupt",
-        arguments: []
-      });
-    } catch (error) {
-      console.error('Failed to interrupt bot:', error);
-    }
-  };
   
   // Trigger bot to speak
   const triggerBotToSpeak = (text: string) => {
     if (!client) return;
-    
-    console.log('[SESSION] Triggering bot to speak:', text);
     
     // Send message to LLM with proper format
     client.action({
@@ -95,65 +81,47 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
         ]
       }]
     }).catch(error => {
-      console.error('[SESSION] LLM generation failed:', error);
       // Fall back to direct TTS if LLM fails
       client.action({
         service: 'tts',
         action: 'say',
         arguments: [{ name: 'text', value: text }]
-      }).catch(err => console.error('[SESSION] TTS failed:', err));
+      }).catch(err => {});
     });
   };
 
   // Enhanced bot ready handling
-  useEffect(() => {
-    if (!client) return;
-    
-    console.log('[SESSION] Setting up message handlers...');
-    
-    const handleBotReady = () => {
-      console.log('[SESSION] Bot ready event received');
+  useRTVIClientEvent(RTVIEvent.BotReady, () => {
+    setTimeout(() => {
+      triggerBotToSpeak("Hello! I'm your Portcullis assistant. How can I help you today?");
+    }, 1000);
+  });
+
+  useRTVIClientEvent(RTVIEvent.TransportStateChanged, (state: string) => {
+    if (state === 'ready') {
       setTimeout(() => {
         triggerBotToSpeak("Hello! I'm your Portcullis assistant. How can I help you today?");
       }, 1000);
-    };
-
-    const handleTransportStateChange = (state: string) => {
-      console.log('[SESSION] Transport state changed:', state);
-      if (state === 'ready') {
-        setTimeout(() => {
-          console.log('[SESSION] Transport ready, sending greeting...');
-          triggerBotToSpeak("Hello! I'm your Portcullis assistant. How can I help you today?");
-        }, 1000);
-      }
-    };
-
-    // Listen for both events
-    client.on(RTVIEvent.BotReady, handleBotReady);
-    client.on(RTVIEvent.TransportStateChanged, handleTransportStateChange);
-
-    return () => {
-      client.off(RTVIEvent.BotReady, handleBotReady);
-      client.off(RTVIEvent.TransportStateChanged, handleTransportStateChange);
-    };
-  }, [client]);
-
-  // Additional bot event handlers
-  useRTVIClientEvent(RTVIEvent.BotTtsText, (data: any) => {
-    console.log('[SESSION] Bot TTS text:', data);
-    if (data?.text) {
-      setBotSpeech(data.text);
     }
   });
 
-  // Server message handler
+  // Additional transcript handlers
+  useRTVIClientEvent(RTVIEvent.BotTtsText, (data: any) => {
+    if (data?.text) {
+      setCurrentTranscript(data.text);
+    }
+  });
+
   useRTVIClientEvent(RTVIEvent.ServerMessage, (message: any) => {
-    console.log('[SESSION] Server message received:', message);
     if (message?.type === 'bot-message' && message?.data?.text) {
-      setBotSpeech(message.data.text);
+      setCurrentTranscript(message.data.text);
     }
     if (message?.type === 'user-transcription' && message?.data?.text) {
-      setUserSpeech(message.data.text);
+      setCurrentTranscript(message.data.text);
+      // If final transcription, also save for processing
+      if (message?.data?.final) {
+        setUserTranscript(message.data.text);
+      }
     }
   });
 
@@ -161,93 +129,49 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
     <Card className="w-full">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Portcullis AI Assistant</CardTitle>
-        <div className="flex items-center gap-2">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={handleInterrupt}
-            title="Interrupt bot"
-            disabled={!isSpeaking}
-          >
-            <StopCircle className="h-4 w-4" />
-          </Button>
-          <Button 
-            variant="destructive" 
-            size="sm" 
-            onClick={onLeave}
-          >
-            <LogOut className="h-4 w-4 mr-2" />
-            End
-          </Button>
-        </div>
+        <Button 
+          variant="destructive" 
+          size="sm" 
+          onClick={onLeave}
+        >
+          <LogOut className="h-4 w-4 mr-2" />
+          End
+        </Button>
       </CardHeader>
       
-      <CardContent className="space-y-8">
-        {/* User Voice Visualizer */}
+      <CardContent className="space-y-4">
+        {/* Single Voice Visualizer */}
         <div className="w-full">
           <div className="text-center mb-2 text-sm font-medium">
-            {isListening ? '🎤 You are speaking...' : 'Waiting for speech...'}
+            {isUserSpeaking ? 'You are speaking...' : 
+             isSpeaking ? 'Assistant is speaking...' : 
+             'Listening...'}
           </div>
-          <div className="h-16 w-full flex items-center justify-center bg-gray-50 rounded-lg">
+          <div className="h-24 w-full flex items-center justify-center bg-gray-50 rounded-lg">
             <VoiceVisualizer 
-              participantType="local"
+              participantType={isUserSpeaking ? "local" : "bot"}
               backgroundColor="transparent"
-              barColor={isListening ? "#22c55e" : "#9ca3af"}
+              barColor={isUserSpeaking ? "#22c55e" : isSpeaking ? "#3b82f6" : "#9ca3af"}
               barGap={4}
               barWidth={6}
-              barMaxHeight={40}
+              barMaxHeight={60}
             />
           </div>
-          {userSpeech && (
-            <div className="mt-2 p-3 bg-gray-100 rounded-lg text-sm">
-              {userSpeech}
-            </div>
-          )}
-        </div>
-        
-        {/* Bot Voice Visualizer */}
-        <div className="w-full">
-          <div className="text-center mb-2 text-sm font-medium">
-            {isSpeaking ? '🔊 Assistant is speaking...' : 'Assistant is listening'}
-          </div>
-          <div className="h-16 w-full flex items-center justify-center bg-blue-50 rounded-lg">
-            <VoiceVisualizer 
-              participantType="bot"
-              backgroundColor="transparent"
-              barColor={isSpeaking ? "#3b82f6" : "#9ca3af"}
-              barGap={4}
-              barWidth={6}
-              barMaxHeight={40}
-            />
-          </div>
-          {botSpeech && (
-            <div className="mt-2 p-3 bg-blue-50 rounded-lg text-sm">
-              {botSpeech}
+          {currentTranscript && (
+            <div className="mt-4 p-3 bg-gray-100 rounded-lg text-sm">
+              {currentTranscript}
             </div>
           )}
         </div>
 
         {/* Bot Audio Output - Essential for hearing the bot speak */}
         <RTVIClientAudio />
-        
-        {/* Test Button - For debugging */}
-        <div className="flex justify-center mt-4">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => triggerBotToSpeak("Hello, I'm testing the voice assistant. Can you hear me?")}
-          >
-            Test Voice
-          </Button>
-        </div>
       </CardContent>
       
-      <CardFooter className="flex items-center justify-between">
-        <div className="text-sm text-muted-foreground">
-          {isListening ? '🎤 Listening...' : 
-           isSpeaking ? '🔊 Speaking...' : 
-           '✅ Ready'}
-        </div>
+      <CardFooter className="text-sm text-muted-foreground text-center">
+        {isUserSpeaking ? 'Listening to you...' : 
+         isSpeaking ? 'Assistant is speaking...' : 
+         'Ready - speak or ask a question'}
       </CardFooter>
     </Card>
   );

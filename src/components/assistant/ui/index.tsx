@@ -33,14 +33,12 @@ function BotController() {
   
   // Use RTVI event hooks to track bot ready state
   useRTVIClientEvent(RTVIEvent.BotReady, () => {
-    console.log('Bot ready event received in BotController, switching to session view');
     setIsSetup(false);
   });
   
   // Also watch for transport state changes
   useEffect(() => {
     if (transportState === 'ready') {
-      console.log('Transport ready state detected, switching to session view');
       // Give a small delay to ensure everything is loaded
       setTimeout(() => {
         setIsConnecting(false);
@@ -51,40 +49,17 @@ function BotController() {
   
   const handleStartSession = async () => {
     if (!client) {
-      console.error('RTVI client not initialized');
       alert('RTVI client not initialized. Please try refreshing the page.');
       return;
     }
     
     try {
       setIsConnecting(true);
-      console.log('Starting session... Client status:', client.connected ? 'Already connected' : 'Not connected');
-      
-      // Use the connect method from the client
-      console.log('Calling client.connect()');
       await client.connect();
-      console.log('Connected successfully, client status:', client.connected ? 'Connected' : 'Not connected');
       
-      // Force TTS check - send a test message after successful connection
-      setTimeout(async () => {
-        if (client.connected) {
-          console.log('Testing TTS with a greeting message');
-          try {
-            await client.action({
-              service: 'tts',
-              action: 'say',
-              arguments: [{ name: 'text', value: 'Connection successful. I am ready to assist you.' }]
-            });
-          } catch (err) {
-            console.error('TTS test failed:', err);
-          }
-        }
-      }, 2000);
-      
-      // Don't automatically transition here - we'll wait for the bot-ready event
-      // or the transport-ready state (handled in the useEffect above)
+      // Once connected, the session component will handle the greeting
+      // through its BotReady and TransportStateChanged event handlers
     } catch (error) {
-      console.error('Failed to start session:', error);
       setIsConnecting(false);
     }
   };
@@ -94,12 +69,9 @@ function BotController() {
     
     try {
       await client.disconnect();
-      console.log('Session ended successfully');
-      // Show a brief message before returning to setup
       alert('Session ended. Thank you for using Portcullis AI Assistant.');
       setIsSetup(true);
     } catch (error) {
-      console.error('Failed to end session:', error);
       setIsSetup(true);
     }
   };

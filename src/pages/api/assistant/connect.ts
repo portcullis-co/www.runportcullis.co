@@ -68,11 +68,12 @@ export const POST: APIRoute = async ({ request }) => {
       services: {
         // Use OpenAI instead of Anthropic
         llm: "openai",
-        tts: "elevenlabs", 
+        tts: "cartesia", 
         stt: "deepgram"
       },
       api_keys: {
         "openai": import.meta.env.OPENAI_API_KEY,
+        "cartesia": import.meta.env.CARTESIA_API_KEY,
       },
       config: [
         {
@@ -80,16 +81,12 @@ export const POST: APIRoute = async ({ request }) => {
           options: [
             {
               name: "voice",
-              value: "6IlUNt4hAIP1jMBYQncS"
+              value: "e81079c7-9159-4f33-bafd-672a27b924c1"
             },
             {
               name: "model",
-              value: "eleven_turbo_v2"
+              value: "sonic-english"
             },
-            {
-              name: "output_format",
-              value: "pcm_24000"
-            }
           ]
         },
         {
