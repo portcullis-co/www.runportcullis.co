@@ -17,19 +17,6 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    if (!import.meta.env.OPENAI_API_KEY) {
-      console.error('Missing OPENAI_API_KEY environment variable');
-      return new Response(JSON.stringify({ 
-        error: 'Server configuration error: Missing OpenAI API key' 
-      }), {
-        status: 500, 
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        }
-      });
-    }
-
     // Only Hyperline API Key is needed for function calls
     if (!import.meta.env.HYPERLINE_API_KEY) {
       console.error('Missing HYPERLINE_API_KEY environment variable');
@@ -63,19 +50,80 @@ export const POST: APIRoute = async ({ request }) => {
     
     // Simplified configuration to reduce potential errors
     const botConfig = {
-      bot_profile: "natural_conversation_2024_11",
+      bot_profile: "voice_2024_08",
       max_duration: 600, // 10 minutes
       services: {
-        // Use OpenAI instead of Anthropic
-        llm: "openai",
+        llm: "anthropic",
         tts: "cartesia", 
         stt: "deepgram"
       },
       api_keys: {
-        "openai": import.meta.env.OPENAI_API_KEY,
         "cartesia": import.meta.env.CARTESIA_API_KEY,
       },
+      service_options: {
+        anthropic: {
+          model: "claude-3-5-sonnet-latest",
+          temperature: 0.7,
+          max_tokens: 4096
+        },
+        cartesia: {
+          voice: "e81079c7-9159-4f33-bafd-672a27b924c1",
+          model: "sonic-english"
+        },
+        deepgram: {
+          language: "en-US"
+        }
+      },
       config: [
+        {
+          service: "llm",
+          options: [
+            {
+              name: "model",
+              value: "claude-3-5-sonnet-latest"
+            },
+            {
+              name: "temperature",
+              value: 0.7
+            },
+            {
+              name: "max_tokens",
+              value: 4096
+            },
+            {
+              name: "initial_messages",
+              value: [
+                {
+                  role: "system",
+                  content: `You are a friendly assistant for Portcullis, helping users understand our data warehouse steering assistance services. Your job is to help the user understand the services we offer and to collect the information we need to provide a quote.
+
+Available products and pricing:
+1. Content Writing Package
+   - 10 blog posts about data engineering topics
+   - One-time fee: $5,200
+
+2. Dashboard Creation
+   - Shadcn and Streamlit dashboard for your data warehouse
+   - One-time fee: $13,000
+
+3. Insights Advisory
+   - Ongoing steering support for realtime data engineering
+   - Monthly: $97.50 or Annual: $1,170
+
+4. Realtime Voice AI Build
+   - Custom realtime voice AI solution
+   - One-time fee: $23,000
+
+5. Steering Report
+   - POC planning and build/buy analysis
+   - One-time fee: $1,200
+
+Please ask questions to understand the customer's needs and recommend the most suitable product(s).`
+                }
+              ]
+            }
+          ]
+        },
         {
           service: "tts",
           options: [
@@ -86,264 +134,6 @@ export const POST: APIRoute = async ({ request }) => {
             {
               name: "model",
               value: "sonic-english"
-            },
-          ]
-        },
-        {
-          service: "llm",
-          options: [
-            {
-              name: "model",
-              value: "gpt-4o" // Using GPT-4o instead of Claude
-            },
-            {
-              name: "temperature",
-              value: 0.7
-            },
-            {
-              name: "max_tokens",
-              value: 1000
-            },
-            {
-              name: "initial_messages", // Changed from system_prompt to initial_messages for Daily Bots compatibility
-              value: [{ // Format changed to array of messages format
-                "role": "system",
-                "content": `You are a friendly assistant for Portcullis, helping users understand our data warehouse steering assistance services. Your job is to help the user understand the services we offer and to use the tools provided to collect the information we need to provide a quote via the Hyperline API.
-
-Available products and pricing:
-1. Content Writing Package (itm_Lwdf42vy6z1voE)
-   - 10 blog posts about data engineering topics
-   - One-time fee: $5,200
-
-2. Dashboard Creation (itm_DGblPGNRYp9Fu7)
-   - Shadcn and Streamlit dashboard for your data warehouse
-   - One-time fee: $13,000
-
-3. Insights Advisory (itm_7YYk9dyW1dcWGg)
-   - Ongoing steering support for realtime data engineering
-   - Monthly: $97.50 or Annual: $1,170
-
-4. Realtime Voice AI Build (itm_rjHTRIERIpOUnQ)
-   - Custom realtime voice AI solution
-   - One-time fee: $23,000
-
-5. Steering Report (itm__kaVtWZoXa0olZ)
-   - POC planning and build/buy analysis
-   - One-time fee: $1,200
-
-Use the available functions to collect customer information and create quotes based on their needs. Match their requirements to the most suitable product(s).`
-              }]
-            },
-            {
-              name: "tools", // Changed from "functions" to "tools" for Daily Bots compatibility
-              value: [
-                {
-                  name: "get_products",
-                  description: "Get available products and their details from Hyperline",
-                  input_schema: { // Using Anthropic/Daily Bots format for tools
-                    type: "object",
-                    properties: {
-                      filter: {
-                        type: "string",
-                        enum: ["all", "subscription", "one_off"],
-                        description: "Filter products by type"
-                      }
-                    }
-                  },
-                  function_exec_info: {
-                    endpoint: `${HYPERLINE_API_BASE}/products`,
-                    method: "GET",
-                    headers: {
-                      "Authorization": `Bearer ${import.meta.env.HYPERLINE_API_KEY}`,
-                      "Content-Type": "application/json"
-                    }
-                  }
-                },
-                {
-                  name: "create_customer",
-                  description: "Create a new customer in Hyperline",
-                  input_schema: { // Using Anthropic/Daily Bots format for tools
-                    type: "object",
-                    properties: {
-                      name: {
-                        type: "string",
-                        description: "Customer's full name"
-                      },
-                      email: {
-                        type: "string",
-                        description: "Customer's email address"
-                      },
-                      company_name: {
-                        type: "string",
-                        description: "Customer's company name"
-                      },
-                      phone: {
-                        type: "string",
-                        description: "Customer's phone number"
-                      },
-                      custom_properties: {
-                        type: "object",
-                        properties: {
-                          data_warehouse: { 
-                            type: "string",
-                            description: "Type of data warehouse being used"
-                          },
-                          project_status: { 
-                            type: "string",
-                            description: "Current status of the project (e.g., planning, ongoing, etc.)"
-                          },
-                          team_size: { 
-                            type: "integer",
-                            description: "Size of the team working on the project"
-                          },
-                          requirements: { 
-                            type: "string",
-                            description: "Comma-separated list of project requirements"
-                          }
-                        }
-                      },
-                      metadata: {
-                        type: "object",
-                        description: "Additional metadata about the customer",
-                        properties: {
-                          source: {
-                            type: "string",
-                            default: "voice_assistant"
-                          }
-                        }
-                      }
-                    },
-                    required: ["name", "email"]
-                  },
-                  function_exec_info: {
-                    endpoint: `${HYPERLINE_API_BASE}/customers`,
-                    method: "POST",
-                    headers: {
-                      "Authorization": `Bearer ${import.meta.env.HYPERLINE_API_KEY}`,
-                      "Content-Type": "application/json"
-                    }
-                  }
-                },
-                {
-                  name: "create_quote",
-                  description: "Create a quote in Hyperline",
-                  input_schema: { // Using Anthropic/Daily Bots format for tools
-                    type: "object",
-                    properties: {
-                      customer_id: {
-                        type: "string",
-                        description: "Customer ID from create_customer"
-                      },
-                      type: {
-                        type: "string",
-                        enum: ["subscription", "one_off"],
-                        description: "Type of quote"
-                      },
-                      status: {
-                        type: "string",
-                        enum: ["draft", "sent"],
-                        default: "draft"
-                      },
-                      owner_email: {
-                        type: "string",
-                        default: "james@runportcullis.co"
-                      },
-                      comments: {
-                        type: "string",
-                        description: "Additional comments or notes about the quote"
-                      },
-                      terms: {
-                        type: "string",
-                        default: "By signing this quote, you accept our terms of service."
-                      },
-                      products: {
-                        type: "array",
-                        items: {
-                          type: "object",
-                          properties: {
-                            id: { type: "string" },
-                            name: { type: "string" },
-                            description: { type: "string" },
-                            price: { 
-                              type: "integer",
-                              description: "Price in cents"
-                            },
-                            quantity: { type: "integer", default: 1 }
-                          }
-                        }
-                      },
-                      subscription: {
-                        type: "object",
-                        properties: {
-                          commitment_interval: {
-                            type: "object",
-                            properties: {
-                              period: { type: "string", enum: ["months", "years"] },
-                              count: { type: "integer", default: 1 }
-                            }
-                          },
-                          renew_automatically: { type: "boolean", default: true }
-                        }
-                      },
-                      collect_payment_details: { type: "boolean", default: true },
-                      automatically_start_subscription: { type: "boolean", default: true },
-                      metadata: {
-                        type: "object",
-                        description: "Additional metadata about the quote",
-                        properties: {
-                          source: {
-                            type: "string",
-                            default: "voice_assistant"
-                          }
-                        }
-                      }
-                    },
-                    required: ["customer_id", "type", "products"]
-                  },
-                  function_exec_info: {
-                    endpoint: `${HYPERLINE_API_BASE}/quotes`,
-                    method: "POST",
-                    headers: {
-                      "Authorization": `Bearer ${import.meta.env.HYPERLINE_API_KEY}`,
-                      "Content-Type": "application/json"
-                    }
-                  }
-                },
-                {
-                  name: "send_quote",
-                  description: "Send a quote to the customer",
-                  input_schema: { // Using Anthropic/Daily Bots format for tools
-                    type: "object",
-                    properties: {
-                      quote_id: {
-                        type: "string",
-                        description: "Quote ID from create_quote"
-                      },
-                      email: {
-                        type: "string",
-                        description: "Customer's email address"
-                      },
-                      subject: {
-                        type: "string",
-                        description: "Email subject line"
-                      },
-                      message: {
-                        type: "string",
-                        description: "Email message body"
-                      }
-                    },
-                    required: ["quote_id", "email", "subject", "message"]
-                  },
-                  function_exec_info: {
-                    endpoint: `${HYPERLINE_API_BASE}/quotes/{quote_id}/send`,
-                    method: "POST",
-                    headers: {
-                      "Authorization": `Bearer ${import.meta.env.HYPERLINE_API_KEY}`,
-                      "Content-Type": "application/json"
-                    }
-                  }
-                }
-              ]
             }
           ]
         },
@@ -357,7 +147,7 @@ Use the available functions to collect customer information and create quotes ba
           ]
         }
       ],
-      rtvi_client_version: requestData.rtvi_client_version || '1.0.0',
+      rtvi_client_version: requestData.rtvi_client_version || '0.3.3',
     };
     
     console.log('Sending bot config to Daily API:', JSON.stringify(botConfig, null, 2));
@@ -390,27 +180,8 @@ Use the available functions to collect customer information and create quotes ba
     let responseData;
     try {
       const responseText = await response.text();
-      console.log('Daily API response status:', response.status);
-      // Convert headers to object safely without using .entries()
-      const headerObj: Record<string, string> = {};
-      response.headers.forEach((value, key) => {
-        headerObj[key] = value;
-      });
-      console.log('Daily API response headers:', headerObj);
-      console.log('Daily API response body:', responseText);
-      
+      console.log('Daily API response:', responseText);
       responseData = JSON.parse(responseText);
-      
-      // Log specific error information if present
-      if (response.status !== 200) {
-        console.error('Daily API error details:');
-        console.error('- Error type:', responseData.error || 'None');
-        console.error('- Error message:', responseData.error_msg || responseData.message || 'None');
-        console.error('- Error details:', responseData.details || 'None');
-      } else {
-        console.log('Daily API bot start successful - Bot ID:', responseData.id || 'Unknown');
-        console.log('Daily API connection info provided:', !!responseData.connection_info);
-      }
     } catch (error) {
       console.error('Invalid response from Daily API:', error);
       return new Response(JSON.stringify({

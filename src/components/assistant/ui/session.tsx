@@ -5,65 +5,12 @@ import { LogOut } from 'lucide-react';
 import { useRTVIClient, useRTVIClientEvent, VoiceVisualizer, RTVIClientAudio } from '@pipecat-ai/client-react';
 import { RTVIEvent } from '@pipecat-ai/client-js';
 
-// Simplified session view with a single voice visualizer
+// Zero-state management - Maximum responsiveness
 export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
   const client = useRTVIClient();
-  const [isListening, setIsListening] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [currentTranscript, setCurrentTranscript] = useState('');
   const [isUserSpeaking, setIsUserSpeaking] = useState(false);
-  const [userTranscript, setUserTranscript] = useState('');
   
-  // User speech events
-  useRTVIClientEvent(RTVIEvent.UserStartedSpeaking, () => {
-    setIsUserSpeaking(true);
-    setIsListening(true);
-  });
-  
-  useRTVIClientEvent(RTVIEvent.UserStoppedSpeaking, () => {
-    setIsUserSpeaking(false);
-    setIsListening(false);
-    
-    // When user stops speaking, use their transcript to trigger a response
-    if (userTranscript.trim()) {
-      // Small delay to ensure final transcript is received
-      setTimeout(() => {
-        triggerBotToSpeak(userTranscript);
-        // Clear the user transcript after processing
-        setUserTranscript('');
-      }, 500);
-    }
-  });
-  
-  // User transcription events
-  useRTVIClientEvent(RTVIEvent.UserTranscript, (data: any) => {
-    if (data && data.text) {
-      setCurrentTranscript(data.text);
-      
-      // If this is the final transcript, save it for processing when user stops speaking
-      if (data.final) {
-        setUserTranscript(data.text);
-      }
-    }
-  });
-  
-  // Bot speech events
-  useRTVIClientEvent(RTVIEvent.BotStartedSpeaking, () => {
-    setIsSpeaking(true);
-  });
-  
-  useRTVIClientEvent(RTVIEvent.BotStoppedSpeaking, () => {
-    setIsSpeaking(false);
-  });
-  
-  // Primary bot response handler
-  useRTVIClientEvent(RTVIEvent.BotLlmText, (data: any) => {
-    if (data?.text) {
-      setCurrentTranscript(data.text);
-    }
-  });
-  
-  // Trigger bot to speak
+  // Core function to trigger bot responses
   const triggerBotToSpeak = (text: string) => {
     if (!client) return;
     
@@ -80,49 +27,29 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
           }
         ]
       }]
-    }).catch(error => {
-      // Fall back to direct TTS if LLM fails
-      client.action({
-        service: 'tts',
-        action: 'say',
-        arguments: [{ name: 'text', value: text }]
-      }).catch(err => {});
-    });
+    })
   };
 
-  // Enhanced bot ready handling
+  // The only event we need to handle is getting the transcript to send to the LLM
+  useRTVIClientEvent(RTVIEvent.UserTranscript, (data: any) => {
+    if (data?.text && data?.final) {
+      triggerBotToSpeak(data.text);
+    }
+  });
+
+  // Handle initial greeting
   useRTVIClientEvent(RTVIEvent.BotReady, () => {
-    setTimeout(() => {
-      triggerBotToSpeak("Hello! I'm your Portcullis assistant. How can I help you today?");
-    }, 1000);
+    triggerBotToSpeak("Hello! I'm your Portcullis assistant. How can I help you today?");
   });
 
-  useRTVIClientEvent(RTVIEvent.TransportStateChanged, (state: string) => {
-    if (state === 'ready') {
-      setTimeout(() => {
-        triggerBotToSpeak("Hello! I'm your Portcullis assistant. How can I help you today?");
-      }, 1000);
-    }
+  // Track when user starts speaking
+  useRTVIClientEvent(RTVIEvent.UserStartedSpeaking, () => {
+    setIsUserSpeaking(true);
   });
 
-  // Additional transcript handlers
-  useRTVIClientEvent(RTVIEvent.BotTtsText, (data: any) => {
-    if (data?.text) {
-      setCurrentTranscript(data.text);
-    }
-  });
-
-  useRTVIClientEvent(RTVIEvent.ServerMessage, (message: any) => {
-    if (message?.type === 'bot-message' && message?.data?.text) {
-      setCurrentTranscript(message.data.text);
-    }
-    if (message?.type === 'user-transcription' && message?.data?.text) {
-      setCurrentTranscript(message.data.text);
-      // If final transcription, also save for processing
-      if (message?.data?.final) {
-        setUserTranscript(message.data.text);
-      }
-    }
+  // Track when user stops speaking
+  useRTVIClientEvent(RTVIEvent.UserStoppedSpeaking, () => {
+    setIsUserSpeaking(false);
   });
 
   return (
@@ -140,38 +67,30 @@ export function PortcullisSessionView({ onLeave }: { onLeave: () => void }) {
       </CardHeader>
       
       <CardContent className="space-y-4">
-        {/* Single Voice Visualizer */}
+        {/* Voice Visualizer automatically connects to RTVI client */}
         <div className="w-full">
           <div className="text-center mb-2 text-sm font-medium">
-            {isUserSpeaking ? 'You are speaking...' : 
-             isSpeaking ? 'Assistant is speaking...' : 
-             'Listening...'}
+            Portcullis Voice Assistant
+            {isUserSpeaking && <span className="ml-2 text-green-500 animate-pulse">● User Speaking</span>}
           </div>
-          <div className="h-24 w-full flex items-center justify-center bg-gray-50 rounded-lg">
+          <div className={`h-40 w-full flex items-center justify-center ${isUserSpeaking ? 'bg-gray-100' : 'bg-gray-50'} rounded-lg border ${isUserSpeaking ? 'border-green-300' : 'border-gray-200'} transition-colors duration-200`}>
             <VoiceVisualizer 
-              participantType={isUserSpeaking ? "local" : "bot"}
+              participantType="bot"
               backgroundColor="transparent"
-              barColor={isUserSpeaking ? "#22c55e" : isSpeaking ? "#3b82f6" : "#9ca3af"}
+              barColor={isUserSpeaking ? "#22c55e" : "#000000"}
               barGap={4}
-              barWidth={6}
-              barMaxHeight={60}
+              barWidth={18}
+              barMaxHeight={100}
             />
           </div>
-          {currentTranscript && (
-            <div className="mt-4 p-3 bg-gray-100 rounded-lg text-sm">
-              {currentTranscript}
-            </div>
-          )}
         </div>
 
-        {/* Bot Audio Output - Essential for hearing the bot speak */}
+        {/* Essential audio component */}
         <RTVIClientAudio />
       </CardContent>
       
       <CardFooter className="text-sm text-muted-foreground text-center">
-        {isUserSpeaking ? 'Listening to you...' : 
-         isSpeaking ? 'Assistant is speaking...' : 
-         'Ready - speak or ask a question'}
+        {isUserSpeaking ? "Listening..." : "Speak to interact with the assistant"}
       </CardFooter>
     </Card>
   );
