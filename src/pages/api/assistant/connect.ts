@@ -91,34 +91,142 @@ export const POST: APIRoute = async ({ request }) => {
               value: 4096
             },
             {
+              name: "tools",
+              value: [
+                {
+                  name: "check_interest",
+                  description: "Evaluate and record the customer's interest level in Portcullis services",
+                  input_schema: {
+                    type: "object",
+                    properties: {
+                      interest_level: {
+                        type: "integer",
+                        description: "Interest level on a scale of 1-10, where 10 is extremely interested",
+                        minimum: 1,
+                        maximum: 10
+                      },
+                      notes: {
+                        type: "string",
+                        description: "Brief explanation of why you assessed this interest level"
+                      },
+                      product: {
+                        type: "string",
+                        description: "Which product or service the customer seems most interested in",
+                        enum: [
+                          "Data Warehouse Optimization", 
+                          "Data Quality Management", 
+                          "Data Security and Governance", 
+                          "Advanced Analytics Integration"
+                        ]
+                      }
+                    },
+                    required: ["interest_level", "product"]
+                  }
+                },
+                {
+                  name: "collect_qualification_info",
+                  description: "Trigger collection of customer qualification information via form",
+                  input_schema: {
+                    type: "object",
+                    properties: {
+                      trigger_form: {
+                        type: "boolean",
+                        description: "Set to true to display the customer information form"
+                      }
+                    },
+                    required: ["trigger_form"]
+                  }
+                },
+                {
+                  name: "get_products",
+                  description: "Retrieve available products from the Portcullis catalog",
+                  input_schema: {
+                    type: "object",
+                    properties: {
+                      pricebook_id: {
+                        type: "string",
+                        description: "ID of the pricebook to retrieve products from",
+                        default: "prib_9-PbjlK4BzUSPR"
+                      }
+                    },
+                    required: ["pricebook_id"]
+                  }
+                },
+                {
+                  name: "provide_quote",
+                  description: "Generate a quote for interested customer after collecting their information",
+                  input_schema: {
+                    type: "object",
+                    properties: {
+                      customer_id: {
+                        type: "string",
+                        description: "ID of the customer, obtained after form submission"
+                      },
+                      description: {
+                        type: "string",
+                        description: "Brief description of what services this quote is for"
+                      },
+                      budget: {
+                        type: "string",
+                        description: "Optional budget information provided by the customer"
+                      }
+                    },
+                    required: ["customer_id", "description"]
+                  }
+                }
+              ]
+            },
+            {
               name: "initial_messages",
               value: [
                 {
                   role: "system",
-                  content: `You are a friendly assistant for Portcullis, helping users understand our data warehouse steering assistance services. Your job is to help the user understand the services we offer and to collect the information we need to provide a quote.
+                  content: `You are Portcullis AI Assistant, a friendly, helpful voice agent that assists potential customers with understanding Portcullis's data warehouse steering services.
 
-Available products and pricing:
-1. Content Writing Package
-   - 10 blog posts about data engineering topics
-   - One-time fee: $5,200
+Your primary goals:
+1. Explain Portcullis's services clearly and concisely
+2. Gauge the customer's interest level in our offerings
+3. Collect qualifying information when appropriate
+4. Help generate meaningful quotes for interested prospects
 
-2. Dashboard Creation
-   - Shadcn and Streamlit dashboard for your data warehouse
-   - One-time fee: $13,000
+Key services to discuss:
+- Data Warehouse Optimization: Improving query performance and reducing costs
+- Data Quality Management: Ensuring data accuracy and reliability
+- Data Security and Governance: Implementing best practices for data protection
+- Advanced Analytics Integration: Supporting ML/AI and business intelligence tools
 
-3. Insights Advisory
-   - Ongoing steering support for realtime data engineering
-   - Monthly: $97.50 or Annual: $1,170
+You have access to the following tools:
 
-4. Realtime Voice AI Build
-   - Custom realtime voice AI solution
-   - One-time fee: $23,000
+1. check_interest: Use this to evaluate and record the customer's interest level. When the customer expresses significant interest (level 7+), the system will automatically offer to collect their information via a form.
+   - Parameters:
+     - interest_level: 1-10 score of how interested the customer seems
+     - notes: Brief explanation of why you assessed this interest level
+     - product: Which product/service they seem most interested in
 
-5. Steering Report
-   - POC planning and build/buy analysis
-   - One-time fee: $1,200
+2. collect_qualification_info: Use this when a customer shows interest and you need to gather key information.
+   - Parameters:
+     - trigger_form: Set to true to display the customer information form
 
-Please ask questions to understand the customer's needs and recommend the most suitable product(s).`
+3. get_products: Use this to retrieve available products from our catalog.
+   - Parameters:
+     - pricebook_id: Always use "prib_9-PbjlK4BzUSPR" for the standard Portcullis pricebook
+
+4. provide_quote: Use this after collecting customer information to generate a quote.
+   - Parameters:
+     - customer_id: The ID of the customer (obtained after form submission)
+     - description: Brief description of what services the quote is for
+     - budget: Optional budget information from the customer
+
+Guidelines:
+- Be natural and conversational, but professional
+- Ask open-ended questions to understand the customer's needs
+- Avoid overwhelming with technical details unless requested
+- If the customer mentions a problem, show empathy and offer relevant solutions
+- When you detect significant interest (7+ on a 10-point scale), use the check_interest tool
+- Only offer to send a quote when there's clear interest
+- If the customer wants to speak with a human, offer to schedule a meeting at ${MEETING_LINK}
+
+You will be interacting through voice, so keep your responses concise and easy to follow in conversation.`
                 }
               ]
             }
