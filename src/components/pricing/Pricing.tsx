@@ -4,6 +4,7 @@ import { PricingCard } from "@/components/pricing/PricingCard";
 import { PricingHeader } from "@/components/pricing/PricingHeader";
 import { PAYMENT_FREQUENCIES, TIERS } from "@/config";
 import { useState } from "react";
+import React from "react";
 
 export const Pricing = () => {
   const [selectedPaymentFreq, setSelectedPaymentFreq] = useState<"monthly" | "yearly">(

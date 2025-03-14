@@ -5,9 +5,9 @@ import {
   MoreHorizontal,
   Send,
 } from "lucide-react"
-import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { useState } from "react"
+import React, { useEffect, useRef } from "react"
 
 export interface Message {
   id: string
@@ -208,12 +208,12 @@ export function ChatCard({
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {messages.map((message) => (
             <div key={message.id} className="flex items-start gap-3">
-              <Image
+              <img
                 src={message.sender.avatar}
                 alt={message.sender.name}
                 width={36}
                 height={36}
-                className="rounded-full"
+                className="rounded-full object-cover"
               />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">

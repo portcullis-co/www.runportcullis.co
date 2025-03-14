@@ -13,7 +13,7 @@ import {
   SelectItem 
 } from "@/components/ui/select";
 
-import { AudioIndicatorBar } from "@/components/assistant/ui/audio-indicator";
+import { AudioIndicatorBar } from "./AudioIndicator";
 import { Button } from "@/components/ui/button";
 
 interface DeviceSelectProps {
@@ -171,7 +171,7 @@ export const DeviceSelect: React.FC<DeviceSelectProps> = ({
               <div className="flex-1">
                 <Select
                   onValueChange={handleMicChange}
-                  value={localSelectedMic || selectedMic?.deviceId || ""}
+                  value={localSelectedMic || selectedMic?.deviceId || "default"}
                   disabled={isLoading}
                 >
                   <SelectTrigger className="w-full">
