@@ -1,0 +1,108 @@
+---
+import BentoGrid from "@/components/sections/bentogrid.astro";
+import Features from "@/components/sections/features.astro";
+import HeroLanding from "@/components/sections/hero-landing.astro";
+import InfoLanding from "@/components/sections/info-landing.astro";
+import PreviewLanding from "@/components/sections/preview-landing.astro";
+import Testimonials from "@/components/sections/testimonials.astro";
+import AssistantIsland from "@/components/assistant/AssistantIsland";
+import { cn } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
+import { Icon } from "astro-icon/components";
+import Cal, { getCalApi } from "@calcom/embed-react";
+
+
+import { infos } from "@/config/landing";
+import BaseLayout from "@/layouts/base-layout.astro";
+---
+
+<BaseLayout title="Schedule a Chat">
+    <section class="py-12 sm:py-20 lg:py-20">
+        <div class="container flex max-w-7xl flex-col items-center gap-5 text-center">
+          <a
+            href="/talk"
+            class={cn(
+              buttonVariants({ variant: "outline", size: "sm" }),
+              "px-4 rounded-full"
+            )}
+            target="_blank"
+          >
+            <span class="mr-3">🤖</span> First look: Porticia, the AI data assistant
+          </a>
+      
+          <h1 class="text-balance font-heading text-4xl sm:text-5xl md:text-6xl lg:text-[66px]">
+           Data doldrums? Let us steer you in the right direction
+          </h1>    
+      
+          <p class="max-w-2xl text-balance leading-normal text-muted-foreground sm:text-xl sm:leading-8">
+            We provide technical advisory to companies looking to enhance their usage of realtime data warehouses
+          </p>
+      
+          <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+            <a
+              href="https://cal.com/team/portcullis/portcullis-intro"
+              class={cn(buttonVariants({ size: "lg" }), "bg-black text-white hover:opacity-90 transition-all duration-300 shadow-md flex items-center justify-center rounded-full")}
+            >
+              <span class="ml-2">Schedule a chat</span>
+              <Icon name="lucide:circle-arrow-right" class="ml-2 size-4" />
+            </a>
+          </div>
+        </div>
+      </section>
+      <InfoLanding data={infos[0]} reverse={true} />
+      <div class="w-full max-w-5xl mx-auto my-16 flex items-center justify-center min-h-[500px]">
+        <!-- Cal inline embed code begins -->
+        <div style="width:100%;height:100%;overflow:scroll" id="my-cal-inline"></div>
+        <script type="text/javascript">
+        (function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement("script")).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if(typeof namespace === "string"){cal.ns[namespace] = cal.ns[namespace] || api;p(cal.ns[namespace], ar);p(cal, ["initNamespace", namespace]);} else p(cal, ar); return;} p(cal, ar); }; })(window, "https://app.cal.com/embed/embed.js", "init");
+        Cal("init", "portcullis-intro", {origin:"https://cal.com"});
+
+        Cal.ns["portcullis-intro"]("inline", {
+            elementOrSelector:"#my-cal-inline",
+            config: {"layout":"month_view","theme":"light"},
+            calLink: "team/portcullis/portcullis-intro",
+        });
+
+        Cal.ns["portcullis-intro"]("ui", {"theme":"light","cssVarsPerTheme":{"light":{"cal-brand":"#ffffff"}},"hideEventTypeDetails":false,"layout":"month_view"});
+        </script>
+  <!-- Cal inline embed code ends -->
+      </div>
+  <BentoGrid />
+  <Features />
+
+  <!-- CTA Section -->
+  <section class="py-16 sm:py-24">
+    <div class="container max-w-5xl mx-auto px-4 sm:px-6 text-center">
+      <h2 class="font-heading text-3xl sm:text-4xl md:text-5xl text-balance mb-6">
+        Ready to chart a course?
+      </h2>
+      <p class="text-muted-foreground text-lg max-w-2xl mx-auto mb-10">
+        Let our team map your journey to success.
+      </p>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a 
+          href="https://cal.com/team/portcullis/portcullis-intro" 
+          class={cn(
+            buttonVariants({ size: "lg" }), 
+            "bg-black text-white hover:opacity-90 transition-all duration-300 shadow-md flex items-center justify-center rounded-full px-8"
+          )}
+        >
+          <span>Schedule a consultation</span>
+          <Icon name="lucide:calendar" class="ml-2 size-4" />
+        </a>
+        <a 
+          href="/talk" 
+          class={cn(
+            buttonVariants({ variant: "outline", size: "lg" }), 
+            "rounded-full px-8"
+          )}
+        >
+          <span>Explore our services with Porticia, our AI assistant</span>
+          <Icon name="lucide:arrow-right" class="ml-2 size-4" />
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!--  <Testimonials /> -->
+</BaseLayout>

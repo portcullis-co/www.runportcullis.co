@@ -143,7 +143,7 @@ export default function Assistant() {
   return (
         <Card.Card className="animate-appear max-w-lg shadow-md">
           <Card.CardHeader>
-            <Card.CardTitle>Configuration</Card.CardTitle>
+            <Card.CardTitle>Porticia Setup</Card.CardTitle>
           </Card.CardHeader>
           <Card.CardContent className="flex flex-col gap-4">
             <div className="flex flex-row gap-2 bg-primary-50 px-4 py-2 md:p-2 text-sm items-center justify-center rounded-md font-medium text-pretty">

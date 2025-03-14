@@ -5,7 +5,7 @@ export const infos: InfoLdg[] = [
     title: "Get the most value out of your Data Warehouse investment",
     description:
       "Portcullis is here to help you with reaching maximum ROI on your commitment to data warehousing",
-    image: "/images/blog/placeholder-about.jpg",
+    image: "https://cdn.thenewstack.io/media/2023/07/aacdf144-image2.png",
     list: [
       {
         title: "Engineer-founded",
@@ -26,9 +26,9 @@ export const infos: InfoLdg[] = [
     ],
   },
   {
-    title: "Seamless Integration",
+    title: "For tip-of-the-spear projects",
     description:
-      "Integrate our open-source Portcullis seamlessly into your existing workflows. Effortlessly connect with your favorite tools and services for a streamlined experience.",
+      "Companies tap us when they need to get high-level support on their data engineering projects without the extra bulk of a implementation-focused partner",
     image: "/images/blog/placeholder-about.jpg",
     list: [
       {

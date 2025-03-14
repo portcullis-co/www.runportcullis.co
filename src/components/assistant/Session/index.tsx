@@ -18,6 +18,7 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/comp
 import Agent from "./Agent";
 import Stats from "./Stats";
 import UserMicBubble from "./UserMicBubble";
+import CalendarDialog from "./CalendarDialog";
 
 let stats_aggregator: StatsAggregator;
 
@@ -39,7 +40,11 @@ export const Session = React.memo(
       RTVIClientConfigOption[] | null
     >(null);
     const [updatingConfig, setUpdatingConfig] = useState<boolean>(false);
-
+    
+    // Calendar dialog state
+    const [showCalendar, setShowCalendar] = useState<boolean>(false);
+    const [calendarUrl, setCalendarUrl] = useState<string>("https://cal.com/team/portcullis/portcullis-intro");
+    
     const modalRef = useRef<HTMLDialogElement>(null);
     //const bingSoundRef = useRef<HTMLAudioElement>(null);
     //const bongSoundRef = useRef<HTMLAudioElement>(null);
@@ -119,6 +124,47 @@ export const Session = React.memo(
       return () => current?.close();
     }, [showConfig]);
 
+    // SSE Event Listener for show_calendar event
+    useEffect(() => {
+      // Set up SSE connection
+      const eventSource = new EventSource('/api/assistant/events');
+
+      // Handler for show_calendar event
+      const handleShowCalendar = (event: MessageEvent) => {
+        try {
+          const data = JSON.parse(event.data);
+          
+          // Set the calendar URL if provided, otherwise use default
+          if (data.url) {
+            setCalendarUrl(data.url);
+          }
+          
+          // Show the calendar dialog
+          setShowCalendar(true);
+        } catch (error) {
+          console.error('Error parsing show_calendar event:', error);
+        }
+      };
+
+      // Add event listener
+      eventSource.addEventListener('show_calendar', handleShowCalendar);
+
+      // Connection status events
+      eventSource.addEventListener('open', () => {
+        console.log('SSE connection established');
+      });
+
+      eventSource.addEventListener('error', (e) => {
+        console.error('SSE connection error:', e);
+      });
+
+      // Cleanup on unmount
+      return () => {
+        eventSource.removeEventListener('show_calendar', handleShowCalendar);
+        eventSource.close();
+      };
+    }, []);
+
     function toggleMute() {
       voiceClient.enableMic(muted);
       setMuted(!muted);
@@ -130,7 +176,7 @@ export const Session = React.memo(
           <dialog ref={modalRef} className="p-0 rounded-lg shadow-lg bg-white">
             <Card.Card className="w-svw max-w-full md:max-w-md lg:max-w-lg">
               <Card.CardHeader>
-                <Card.CardTitle>Configuration</Card.CardTitle>
+                <Card.CardTitle>Porticia Setup</Card.CardTitle>
               </Card.CardHeader>
               <Card.CardContent>
                 <Configure state={state} inSession={true} />
@@ -163,6 +209,13 @@ export const Session = React.memo(
               </Card.CardFooter>
             </Card.Card>
           </dialog>
+
+          {/* Calendar Dialog */}
+          <CalendarDialog
+            open={showCalendar}
+            onOpenChange={setShowCalendar}
+            calendarUrl={calendarUrl}
+          />
 
           {showStats &&
             createPortal(
