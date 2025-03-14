@@ -18,7 +18,6 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/comp
 import Agent from "./Agent";
 import Stats from "./Stats";
 import UserMicBubble from "./UserMicBubble";
-import CalendarDialog from "./CalendarDialog";
 
 let stats_aggregator: StatsAggregator;
 
