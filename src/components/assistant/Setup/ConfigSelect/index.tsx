@@ -55,7 +55,7 @@ export const ConfigSelect: React.FC<ConfigSelectProps> = ({
   state,
   inSession = false,
 }) => {
-  const { character, setCharacter, language, setLanguage, clientParams } =
+  const { language, setLanguage, clientParams } =
     useContext(AppContext);
 
   const [llmProvider, setLlmProvider] = useState<string>(
@@ -91,9 +91,9 @@ export const ConfigSelect: React.FC<ConfigSelectProps> = ({
   }, [showPrompt]);
 
   const composeConfig = useCallback(
-    (character: number, language: number) => {
-      // Get character data
-      const characterData = PRESET_CHARACTERS[character] as CharacterData;
+    (language: number) => {
+      // Always use default character (index 0)
+      const characterData = PRESET_CHARACTERS[0] as CharacterData;
 
       // Compose new config object
       const updatedConfig: RTVIClientConfigOption[] = [
@@ -169,7 +169,7 @@ export const ConfigSelect: React.FC<ConfigSelectProps> = ({
     <>
       <dialog ref={modalRef} className="p-0 rounded-lg shadow-lg bg-white">
         <Prompt
-          characterPrompt={PRESET_CHARACTERS[character].prompt}
+          characterPrompt={PRESET_CHARACTERS[0].prompt}
           handleUpdate={(prompt) => {
             onConfigUpdate([
               {
@@ -186,7 +186,7 @@ export const ConfigSelect: React.FC<ConfigSelectProps> = ({
           <Select
             value={language.toString()}
             onValueChange={(value) => {
-              composeConfig(character, parseInt(value));
+              composeConfig(parseInt(value));
               setLanguage(parseInt(value));
             }}
           >
@@ -203,43 +203,8 @@ export const ConfigSelect: React.FC<ConfigSelectProps> = ({
             </SelectContent>
           </Select>
         </Field>
+
         <Accordion type="single" collapsible>
-          {language === 0 && (
-            <AccordionItem value="character">
-              <AccordionTrigger>Character</AccordionTrigger>
-              <AccordionContent>
-                <Field error={false}>
-                  <div className="w-full flex flex-col md:flex-row gap-2">
-                    <Select
-                      disabled={inSession && !["ready", "idle"].includes(state)}
-                      value={character.toString()}
-                      onValueChange={(value) => {
-                        setCharacter(parseInt(value));
-                        composeConfig(
-                          parseInt(value),
-                          language
-                        );
-                      }}
-                    >
-                      <SelectTrigger className="flex-1">
-                        <SelectValue placeholder="Select character" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {PRESET_CHARACTERS.map(({ name }, i) => (
-                          <SelectItem key={`char-${i}`} value={i.toString()}>
-                            {name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Button variant="outline" onClick={() => setshowPrompt(true)}>
-                      Customize
-                    </Button>
-                  </div>
-                </Field>
-              </AccordionContent>
-            </AccordionItem>
-          )}
           <AccordionItem value="llm">
             <AccordionTrigger>LLM options</AccordionTrigger>
             <AccordionContent>
