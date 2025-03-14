@@ -210,12 +210,11 @@ export const Session = React.memo(
             </Card.Card>
           </dialog>
 
-          {/* Calendar Dialog */}
-          <CalendarDialog
+          {/* <CalendarDialog
             open={showCalendar}
             onOpenChange={setShowCalendar}
             calendarUrl={calendarUrl}
-          />
+          /> */}
 
           {showStats &&
             createPortal(
