@@ -1,7 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import Cal, { getCalApi } from "@calcom/embed-react";
 
 interface CalendarDialogProps {
   open: boolean;
@@ -12,82 +13,14 @@ export const CalendarDialog: React.FC<CalendarDialogProps> = ({
   open, 
   onClose,
 }) => {
-  const calendarRef = useRef<HTMLDivElement>(null);
   
-  useEffect(() => {
-    // Only inject the script when the dialog is open
-    if (open && calendarRef.current) {
-      // Clear any previous content
-      while (calendarRef.current.firstChild) {
-        calendarRef.current.removeChild(calendarRef.current.firstChild);
-      }
-      
-      // Create the Cal container div
-      const calContainer = document.createElement('div');
-      calContainer.id = 'my-cal-inline';
-      calContainer.style.width = '100%';
-      calContainer.style.height = '100%';
-      calContainer.style.overflow = 'scroll';
-      calendarRef.current.appendChild(calContainer);
-      
-      // Create and inject the script
-      const script = document.createElement('script');
-      script.type = 'text/javascript';
-      script.innerHTML = `
-        (function (C, A, L) { 
-          let p = function (a, ar) { a.q.push(ar); }; 
-          let d = C.document; 
-          C.Cal = C.Cal || function () { 
-            let cal = C.Cal; 
-            let ar = arguments; 
-            if (!cal.loaded) { 
-              cal.ns = {}; 
-              cal.q = cal.q || []; 
-              d.head.appendChild(d.createElement("script")).src = A; 
-              cal.loaded = true; 
-            } 
-            if (ar[0] === L) { 
-              const api = function () { p(api, arguments); }; 
-              const namespace = ar[1]; 
-              api.q = api.q || []; 
-              if(typeof namespace === "string"){
-                cal.ns[namespace] = cal.ns[namespace] || api;
-                p(cal.ns[namespace], ar);
-                p(cal, ["initNamespace", namespace]);
-              } else p(cal, ar); 
-              return;
-            } 
-            p(cal, ar); 
-          }; 
-        })(window, "https://app.cal.com/embed/embed.js", "init");
-        
-        Cal("init", "portcullis-intro", {origin:"https://cal.com"});
-        
-        Cal.ns["portcullis-intro"]("inline", {
-          elementOrSelector: "#my-cal-inline",
-          config: {"layout":"month_view","theme":"light"},
-          calLink: "team/portcullis/portcullis-intro",
-        });
-        
-        Cal.ns["portcullis-intro"]("ui", {
-          "theme":"light",
-          "cssVarsPerTheme":{"light":{"cal-brand":"#ffffff"}},
-          "hideEventTypeDetails":false,
-          "layout":"month_view"
-        });
-      `;
-      calendarRef.current.appendChild(script);
-    }
-    
-    // Cleanup function
-    return () => {
-      if (calendarRef.current) {
-        while (calendarRef.current.firstChild) {
-          calendarRef.current.removeChild(calendarRef.current.firstChild);
-        }
-      }
-    };
-  }, [open]);
+  // Prevent hydration issues with the Cal embed
+	useEffect(()=>{
+	  (async function () {
+		const cal = await getCalApi({"namespace":"portcullis-intro"});
+		cal("ui", {"hideEventTypeDetails":false,"layout":"month_view"});
+	  })();
+	}, [])
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
@@ -103,8 +36,11 @@ export const CalendarDialog: React.FC<CalendarDialogProps> = ({
             Select a time that works for you to speak with our team.
           </DialogDescription>
         </DialogHeader>
-        
-        <div className="p-6 pt-2 h-[calc(80vh-100px)]" ref={calendarRef}></div>
+        <Cal namespace="portcullis-intro"
+	  calLink="team/portcullis/portcullis-intro"
+	  style={{width:"100%",height:"100%",overflow:"scroll"}}
+	  config={{"layout":"month_view","theme":"light"}}
+	/>;
       </DialogContent>
     </Dialog>
   );
