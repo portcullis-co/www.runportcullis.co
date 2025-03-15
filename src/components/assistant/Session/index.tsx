@@ -18,6 +18,8 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/comp
 import Agent from "./Agent";
 import Stats from "./Stats";
 import UserMicBubble from "./UserMicBubble";
+import CalendarDialog from "./CalendarDialog";
+import CallRequestDialog from "./CallRequestDialog";
 
 let stats_aggregator: StatsAggregator;
 
@@ -42,7 +44,11 @@ export const Session = React.memo(
     
     // Calendar dialog state
     const [showCalendar, setShowCalendar] = useState<boolean>(false);
-    const [calendarUrl, setCalendarUrl] = useState<string>("https://cal.com/team/portcullis/portcullis-intro");
+    const [calendarLink, setCalendarLink] = useState<string>("team/portcullis/portcullis-intro");
+    
+    // Call request dialog state
+    const [showCallRequest, setShowCallRequest] = useState<boolean>(false);
+    const [callRequestMessage, setCallRequestMessage] = useState<string>("Enter your phone number to receive a call from our AI assistant.");
     
     const modalRef = useRef<HTMLDialogElement>(null);
     //const bingSoundRef = useRef<HTMLAudioElement>(null);
@@ -59,15 +65,41 @@ export const Session = React.memo(
       }, [])
     );
 
+    // Listen for function calls from the LLM
+    useRTVIClientEvent(
+      RTVIEvent.LLMFunctionCall,
+      useCallback(async (data: any) => {
+        console.log('Function call received from RTVI:', data);
+        
+        try {
+          // Make API call to our function-call endpoint
+          const response = await fetch('/api/assistant/function-call', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              function_name: data.function_name,
+              arguments: data.arguments || {}
+            })
+          });
+          
+          if (!response.ok) {
+            const errorData = await response.json();
+            console.error('Error calling function:', errorData);
+          } else {
+            console.log('Function call successful');
+          }
+        } catch (error) {
+          console.error('Error processing function call:', error);
+        }
+      }, [])
+    );
+
     useRTVIClientEvent(
       RTVIEvent.BotStoppedSpeaking,
       useCallback(() => {
         if (hasStarted) return;
-
-        /*if (bingSoundRef.current) {
-          bingSoundRef.current.volume = 0.5;
-          bingSoundRef.current.play();
-        }*/
         setHasStarted(true);
       }, [hasStarted])
     );
@@ -123,19 +155,19 @@ export const Session = React.memo(
       return () => current?.close();
     }, [showConfig]);
 
-    // SSE Event Listener for show_calendar event
+    // SSE Event Listeners for tool events
     useEffect(() => {
       // Set up SSE connection
-      const eventSource = new EventSource('/api/assistant/events');
+      const eventSource = new EventSource('/api/assistant/sse');
 
       // Handler for show_calendar event
       const handleShowCalendar = (event: MessageEvent) => {
         try {
           const data = JSON.parse(event.data);
           
-          // Set the calendar URL if provided, otherwise use default
-          if (data.url) {
-            setCalendarUrl(data.url);
+          // Set the calendar link if provided, otherwise use default
+          if (data.calendarLink) {
+            setCalendarLink(data.calendarLink);
           }
           
           // Show the calendar dialog
@@ -145,8 +177,26 @@ export const Session = React.memo(
         }
       };
 
-      // Add event listener
+      // Handler for create_call event
+      const handleCreateCall = (event: MessageEvent) => {
+        try {
+          const data = JSON.parse(event.data);
+          
+          // Set the message if provided
+          if (data.message) {
+            setCallRequestMessage(data.message);
+          }
+          
+          // Show the call request dialog
+          setShowCallRequest(true);
+        } catch (error) {
+          console.error('Error parsing create_call event:', error);
+        }
+      };
+
+      // Add event listeners
       eventSource.addEventListener('show_calendar', handleShowCalendar);
+      eventSource.addEventListener('create_call', handleCreateCall);
 
       // Connection status events
       eventSource.addEventListener('open', () => {
@@ -160,6 +210,7 @@ export const Session = React.memo(
       // Cleanup on unmount
       return () => {
         eventSource.removeEventListener('show_calendar', handleShowCalendar);
+        eventSource.removeEventListener('create_call', handleCreateCall);
         eventSource.close();
       };
     }, []);
@@ -209,11 +260,18 @@ export const Session = React.memo(
             </Card.Card>
           </dialog>
 
-          {/* <CalendarDialog
+          {/* Calendar Dialog */}
+          <CalendarDialog 
             open={showCalendar}
-            onOpenChange={setShowCalendar}
-            calendarUrl={calendarUrl}
-          /> */}
+            onClose={() => setShowCalendar(false)}
+          />
+
+          {/* Call Request Dialog */}
+          <CallRequestDialog
+            open={showCallRequest}
+            onClose={() => setShowCallRequest(false)}
+            message={callRequestMessage}
+          />
 
           {showStats &&
             createPortal(

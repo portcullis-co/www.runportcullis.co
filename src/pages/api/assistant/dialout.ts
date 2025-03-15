@@ -43,13 +43,13 @@ import {
       console.log("- CARTESIA_API_KEY:", import.meta.env.CARTESIA_API_KEY ? "✅ Set" : "❌ Missing");
 
       // Create the dialout settings
-      const dialout_settings = {
+      const dialout_settings = [{
         phoneNumber: data.phoneNumber,
         // Optional parameters if provided
         callerId: data.callerId || undefined,
         countryCode: data.countryCode || 'US',
         greeting: data.greeting || "Hello, this is Porticia, an AI assistant from Portcullis. I'm calling because you requested information. How can I help you today?"
-      };
+      }];
 
       // Create payload for Daily Bots API
       const payload = {
