@@ -21,8 +21,14 @@ export const POST: APIRoute = async ({ request }) => {
     // Handle different function calls
     switch (function_name) {
       case 'show_calendar':
-        // Broadcast the show_calendar event with a fixed value
-        broadcast('show_calendar', {});
+        // Broadcast the show_calendar event
+        try {
+          broadcast('show_calendar', {});
+          console.log("📆 Successfully broadcast show_calendar event");
+        } catch (broadcastError) {
+          console.error("📆 Error broadcasting show_calendar event:", broadcastError);
+          // Continue and return success anyway since we'll handle it directly in the component
+        }
         
         return new Response(JSON.stringify({
           success: true,
@@ -34,9 +40,15 @@ export const POST: APIRoute = async ({ request }) => {
 
       case 'create_call':
         // Broadcast the create_call event
-        broadcast('create_call', {
-          message: args?.message || "Enter your phone number to receive a call from our AI assistant."
-        });
+        try {
+          broadcast('create_call', {
+            message: args?.message || "Enter your phone number to receive a call from our AI assistant."
+          });
+          console.log("📞 Successfully broadcast create_call event");
+        } catch (broadcastError) {
+          console.error("📞 Error broadcasting create_call event:", broadcastError);
+          // Continue and return success anyway since we'll handle it directly in the component
+        }
         
         return new Response(JSON.stringify({
           success: true,

@@ -80,7 +80,7 @@ export const Session = React.memo(
             },
             body: JSON.stringify({
               function_name: data.function_name,
-              arguments: data.arguments || {}
+              arguments: data.args || {}
             })
           });
           
@@ -89,6 +89,15 @@ export const Session = React.memo(
             console.error('Error calling function:', errorData);
           } else {
             console.log('Function call successful');
+            
+            // For show_calendar, directly set the state
+            if (data.function_name === 'show_calendar') {
+              setShowCalendar(true);
+            }
+            // For create_call, directly set the state
+            else if (data.function_name === 'create_call') {
+              setShowCallRequest(true);
+            }
           }
         } catch (error) {
           console.error('Error processing function call:', error);
