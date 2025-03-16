@@ -5,13 +5,48 @@ import { Image } from "astro:assets";
 import { hobbies } from "@/config/about";
 import { Button } from "@/components/ui/button";
 import { Icon } from "astro-icon/components";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import porticiaPng from '@/assets/porticia.png';
 ---
 <MainLayout title="Talk to Portcullis" mainClass="flex-1 bg-background-200">
     <section
-      class="flex items-center justify-center min-h-screen"
+      class="flex items-center justify-center min-h-screen relative"
     >
-      <div class="flex flex-col gap-4 w-full max-w-[58rem] items-center p-4">
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-7xl px-4 md:px-8 relative z-10">
+        <!-- Left side: Header and subtext -->
+        <div class="flex flex-col justify-center md:pr-8">
+          <!-- Simple image instead of Radix Avatar -->
+          <div class="mb-6">
+            <img 
+              src="/porticia.png" 
+              alt="Porticia" 
+              class="h-20 w-20 rounded-full border-2 border-primary object-cover"
+            />
+          </div>
+          
+          <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-4">
+            Get your questions answered immediately
+          </h1>
+          <p class="text-lg md:text-xl text-muted-foreground mb-6 max-w-md">
+            Meet Porticia, our AI assistant, she can help answer a variety of questions about Portcullis and our services.
+          </p>
+          <div class="flex flex-wrap gap-3">
+            <Button variant="outline" className="group">
+              <Icon name="lucide:calendar" class="w-4 h-4 mr-2 group-hover:text-primary" />
+              Schedule a Meeting
+            </Button>
+            <Button variant="outline" className="group">
+              <Icon name="lucide:mail" class="w-4 h-4 mr-2 group-hover:text-primary" />
+              Contact Us
+            </Button>
+          </div>
+        </div>
+        
+        <!-- Right side: Assistant -->
+        <div class="flex flex-col justify-center items-center md:items-end order-first md:order-last">
           <Assistant client:only="react" />
+        </div>
       </div>
     </section>
 </MainLayout>

@@ -8,6 +8,7 @@ import {
   TransportState,
 } from "@pipecat-ai/client-js";
 import { useRTVIClient, useRTVIClientEvent } from "@pipecat-ai/client-react";
+import { AnalyticsBrowser } from '@segment/analytics-next'
 
 import StatsAggregator from "@/pages/utils/stats_aggregator";
 import { Configure } from "@/components/assistant/Setup";
@@ -29,6 +30,8 @@ interface SessionProps {
   openMic?: boolean;
   startAudioOff?: boolean;
 }
+
+export const analytics = AnalyticsBrowser.load({ writeKey: 'dWblSFD9FurupFBQtGoL4lV9WigrNwNb' })
 
 export const Session = React.memo(
   ({ state, onLeave, startAudioOff = false }: SessionProps) => {
@@ -173,6 +176,12 @@ export const Session = React.memo(
       const handleShowCalendar = (event: MessageEvent) => {
         try {
           const data = JSON.parse(event.data);
+
+          const anonymousId = crypto.randomUUID();
+
+          analytics.track('show_calendar', {
+            anonymousId: anonymousId,
+          });
           
           // Set the calendar link if provided, otherwise use default
           if (data.calendarLink) {
@@ -190,6 +199,12 @@ export const Session = React.memo(
       const handleCreateCall = (event: MessageEvent) => {
         try {
           const data = JSON.parse(event.data);
+
+          const anonymousId = crypto.randomUUID();
+
+          analytics.track('create_call', {
+            anonymousId: anonymousId,
+          });
           
           // Set the message if provided
           if (data.message) {
@@ -203,9 +218,51 @@ export const Session = React.memo(
         }
       };
 
+      // Handler for calendar_event_scheduled event
+      const handleCalendarEventScheduled = (event: MessageEvent) => {
+        try {
+          const data = JSON.parse(event.data);
+          console.log('Calendar event scheduled:', data);
+          
+          const anonymousId = crypto.randomUUID();
+
+          analytics.track('calendar_event_scheduled', {
+            anonymousId: anonymousId,
+            eventType: data.eventType,
+            startTime: data.startTime,
+            endTime: data.endTime,
+            attendeeName: data.attendeeName,
+            attendeeEmail: data.attendeeEmail,
+          });
+
+          // Send a message to the RTVI bot
+          if (voiceClient) {
+            try {
+              voiceClient.action({
+                service: "llm",
+                action: "inject_message",
+                arguments: [{
+                  name: "message",
+                  value: {
+                    role: "system",
+                    content: `The user has scheduled a meeting (${data.eventType}) for ${new Date(data.startTime).toLocaleString()}. Please thank them and ask what they would like to know about pricing.`
+                  }
+                }]
+              });
+              console.log('Successfully sent calendar event system message');
+            } catch (err) {
+              console.error('Error sending system message:', err);
+            }
+          }
+        } catch (error) {
+          console.error('Error handling calendar_event_scheduled event:', error);
+        }
+      };
+
       // Add event listeners
       eventSource.addEventListener('show_calendar', handleShowCalendar);
       eventSource.addEventListener('create_call', handleCreateCall);
+      eventSource.addEventListener('calendar_event_scheduled', handleCalendarEventScheduled);
 
       // Connection status events
       eventSource.addEventListener('open', () => {
@@ -220,9 +277,10 @@ export const Session = React.memo(
       return () => {
         eventSource.removeEventListener('show_calendar', handleShowCalendar);
         eventSource.removeEventListener('create_call', handleCreateCall);
+        eventSource.removeEventListener('calendar_event_scheduled', handleCalendarEventScheduled);
         eventSource.close();
       };
-    }, []);
+    }, [voiceClient]);
 
     function toggleMute() {
       voiceClient.enableMic(muted);

@@ -6,10 +6,10 @@ export const navMenuConfig: NavMenuConfig = {
       title: "About",
       items: [
         {
-          title: "Pricing",
-          href: "/pricing",
+          title: "Porticia",
+          href: "/talk",
           description:
-            "Transparent pricing for all our services",
+            "Meet Porticia, our AI assistant",
           image: "/images/examples/waitlist.jpg",
           forceReload: true,
         },
@@ -51,9 +51,9 @@ export const navMenuConfig: NavMenuConfig = {
   ],
   links: [
     {
-      title: "Get a free trial",
-      href: "/pricing",
-      description: "Get a free trial of our enterprise-grade support",
+      title: "Get a free quote",
+      href: "/talk",
+      description: "Get a free quote for our services",
       image: "/images/examples/pricing.jpg",
     },
   ],

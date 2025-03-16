@@ -4,6 +4,7 @@ import { PricingCard } from "@/components/pricing/PricingCard";
 import { PricingHeader } from "@/components/pricing/PricingHeader";
 import { PAYMENT_FREQUENCIES, TIERS } from "@/config";
 import { useState } from "react";
+import React from "react";
 
 export const Pricing = () => {
   const [selectedPaymentFreq, setSelectedPaymentFreq] = useState<"monthly" | "yearly">(
@@ -11,7 +12,7 @@ export const Pricing = () => {
   );
 
   return (
-    <section className="flex flex-col items-center gap-10 py-10">
+    <section className="flex flex-col items-center gap-10 py-10 text-center">
       {/* Section Header */}
       <PricingHeader
         title="Plans and Pricing"
@@ -22,7 +23,7 @@ export const Pricing = () => {
       />
 
       {/* Pricing Cards */}
-      <div className="grid w-full max-w-6xl gap-6 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid w-full max-w-6xl gap-6 sm:grid-cols-2 xl:grid-cols-3 place-items-center">
         {TIERS.map((tier, i) => (
           <PricingCard
             key={i}

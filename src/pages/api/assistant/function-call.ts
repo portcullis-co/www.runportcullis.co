@@ -1,6 +1,9 @@
 import type { APIRoute } from 'astro';
 import { broadcast } from './sse';
+import { Analytics } from '@segment/analytics-node'
+const analytics = new Analytics({ writeKey: import.meta.env.SEGMENT_WRITE_KEY })
 
+const anonymousId = crypto.randomUUID();
 export const POST: APIRoute = async ({ request }) => {
   try {
     const data = await request.json();

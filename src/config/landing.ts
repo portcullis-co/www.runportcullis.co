@@ -57,42 +57,42 @@ export const features = [
     title: "Project Scoping",
     description:
       "We thrive in high level, tip of the spear advisory roles for complex data warehousing projects",
-    link: "/pricing",
+    link: "/talk",
     icon: "lucide:microscope",
   },
   {
     title: "Analytics",
     description:
       "Contact us for support optimizing and gaining insights into your analytics",
-    link: "/pricing",
+    link: "/talk",
     icon: "lucide:activity",
   },
   {
     title: "Custom Dashboards",
     description:
       "Use our methodology and tools or let us support you with custom dashboards",
-    link: "/pricing",
+    link: "/talk",
     icon: "lucide:layers",
   },
   {
     title: "Bespoke Behaviour and UDFs",
     description:
       "Connect with us to see how we can help you extract unique behaviour out of your Clickhouse instances",
-    link: "/pricing",
+    link: "/talk",
     icon: "lucide:wand-sparkles",
   },
   {
     title: "Optimization",
     description:
       "Need help optimizing your queries? Let us help you with that.",
-    link: "/pricing",
+    link: "/talk",
     icon: "lucide:database",
   },
   {
     title: "Report Creation",
     description:
       "We can help you with writing implementation reports for your POCs",
-    link: "/pricing",
+    link: "/talk",
     icon: "lucide:file-chart-column",
   },
 ];
