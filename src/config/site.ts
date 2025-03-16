@@ -27,13 +27,5 @@ export const footerLinks: SidebarNavItem[] = [
       { title: "Blog", href: "/blog" },
     ],
   },
-  {
-    title: "Services",
-    items: [
-      { title: "Project Planning", href: "/services/project-planning" },
-      { title: "Content Writing", href: "/services/content-writing" },
-      { title: "General Clickhouse Support", href: "/services/clickhouse-support" },
-      { title: "Query Optimization", href: "/services/query-optimization" },
-    ],
-  },
+
 ];

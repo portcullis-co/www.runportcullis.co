@@ -2,9 +2,9 @@ import type { InfoLdg } from "@/types";
 
 export const infos: InfoLdg[] = [
   {
-    title: "Get the most value out of your Data Warehouse investment",
+    title: "Get the most value out of your LLM investment",
     description:
-      "Portcullis is here to help you with reaching maximum ROI on your commitment to data warehousing",
+      "Portcullis is here to help you with reaching maximum ROI on your commitment to LLM projects",
     image: "https://cdn.thenewstack.io/media/2023/07/aacdf144-image2.png",
     list: [
       {

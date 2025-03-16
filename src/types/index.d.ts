@@ -50,7 +50,6 @@ export type MarketingConfig = {
 
 export type NavMenuConfig = {
   aboutNav: SidebarNavItem[];
-  servicesNav: SidebarNavItem[];
   links: MenuItem[];
 };
 
