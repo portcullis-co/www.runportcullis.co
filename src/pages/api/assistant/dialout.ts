@@ -1,119 +1,94 @@
-// Daily Bots Dialout API Endpoint
-// Used to have the AI call a phone number
-
 import type { APIRoute } from 'astro';
-import {
-    defaultBotProfile,
-    defaultConfig,
-    defaultMaxDuration,
-    defaultServices,
-  } from "@/rtvi.config";
-  
-  export const POST: APIRoute = async ({ request }) => {
-    try {
-      console.log("📱 Received dialout request");
-      const data = await request.json();
-      
-      // Log request but exclude sensitive information like phone numbers
-      console.log("📱 Request data received", { 
-        ...data, 
-        phoneNumber: data.phoneNumber ? '✓ [REDACTED]' : '✗ Missing' 
-      });
+import twilio from 'twilio';
+import { parsePhoneNumberFromString } from 'libphonenumber-js';
 
-      // Validate request data
-      if (!data.phoneNumber || !import.meta.env.DAILY_BOTS_URL) {
-        const errorMsg = `PhoneNumber: ${data.phoneNumber ? '✓' : '✗'}, DAILY_BOTS_URL: ${import.meta.env.DAILY_BOTS_URL ? '✓' : '✗'}`;
-        console.error("📱 Validation error:", errorMsg);
-        
-        return new Response(JSON.stringify({ 
-          error: `Missing required parameters. ${errorMsg}`
-        }), {
-          status: 400,
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
-      }
+export const POST: APIRoute = async ({ request }) => {
+  console.log('Received Twilio dialout request');
 
-      // Check environment variables
-      console.log("📱 Environment variables check:");
-      console.log("- DAILY_BOTS_URL:", import.meta.env.DAILY_BOTS_URL ? "✅ Set" : "❌ Missing");
-      console.log("- DAILY_BOTS_API_KEY:", import.meta.env.DAILY_BOTS_API_KEY ? "✅ Set" : "❌ Missing");
-      console.log("- TOGETHER_API_KEY:", import.meta.env.TOGETHER_API_KEY ? "✅ Set" : "❌ Missing");
-      console.log("- CARTESIA_API_KEY:", import.meta.env.CARTESIA_API_KEY ? "✅ Set" : "❌ Missing");
+  try {
+    const requestData = await request.json();
+    const { phoneNumber } = requestData;
 
-      // Create the dialout settings
-      const dialout_settings = [{
-        phoneNumber: data.phoneNumber,
-        // Optional parameters if provided
-        callerId: data.callerId || undefined,
-        countryCode: data.countryCode || 'US',
-        greeting: data.greeting || "Hello, this is Porticia, an AI assistant from Portcullis. I'm calling because you requested information. How can I help you today?"
-      }];
-
-      // Create payload for Daily Bots API
-      const payload = {
-        bot_profile: defaultBotProfile,
-        services: defaultServices,
-        max_duration: defaultMaxDuration,
-        api_keys: {
-          together: import.meta.env.TOGETHER_API_KEY,
-          cartesia: import.meta.env.CARTESIA_API_KEY,
-        },
-        config: defaultConfig,
-        dialout_settings
-      };
-
-      console.log(`📱 Initiating call to phone number`);
-      
-      try {
-        // Call Daily Bots API to start the bot and place the call
-        const response = await fetch(import.meta.env.DAILY_BOTS_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.DAILY_BOTS_API_KEY}`,
-          },
-          body: JSON.stringify(payload),
-        });
-        
-        // Parse response
-        const result = await response.json();
-        
-        if (!response.ok) {
-          console.error(`📱 Error from Daily Bots API: ${response.status}`, result);
-          return new Response(JSON.stringify({
-            error: "Failed to initiate call",
-            details: result
-          }), { 
-            status: response.status,
-            headers: { 'Content-Type': 'application/json' }
-          });
-        }
-
-        console.log(`📱 Successfully initiated call`);
-        return new Response(JSON.stringify({
-          success: true,
-          message: "Call initiated successfully",
-          callDetails: result
-        }), { 
-          status: 200,
-          headers: { 'Content-Type': 'application/json' }
-        });
-      } catch (fetchError) {
-        console.error(`📱 Network error when calling Daily Bots API:`, fetchError);
-        throw fetchError; // Re-throw to be caught by outer try/catch
-      }
-    } catch (error) {
-      console.error("📱 Error in dialout API route:", error);
-      return new Response(JSON.stringify({ 
-        error: "Internal server error",
-        message: error instanceof Error ? error.message : "Unknown error"
-      }), {
-        status: 500,
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+    // Validate input
+    if (!phoneNumber) {
+      console.error('Missing phone number in request');
+      return new Response(
+        JSON.stringify({ error: 'Phone number is required' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
     }
-  };
+
+    console.log(`Processing call request to: ${phoneNumber.substring(0, 3)}*****`);
+
+    // Check for required environment variables
+    const accountSid = import.meta.env.TWILIO_ACCOUNT_SID;
+    const authToken = import.meta.env.TWILIO_AUTH_TOKEN;
+    const twilioNumber = import.meta.env.TWILIO_PHONE_NUMBER || '+18444354338';
+    const personalNumber = import.meta.env.PERSONAL_PHONE_NUMBER || '+18657763192';
+
+    if (!accountSid || !authToken) {
+      console.error('Missing Twilio credentials');
+      return new Response(
+        JSON.stringify({ error: 'Twilio credentials not configured' }),
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Parse and validate the phone number
+    let formattedPhoneNumber;
+    try {
+      const parsedNumber = parsePhoneNumberFromString(phoneNumber);
+      if (!parsedNumber) {
+        throw new Error('Failed to parse phone number');
+      }
+      
+      formattedPhoneNumber = parsedNumber.format('E.164');
+      
+      if (!parsedNumber.isValid()) {
+        throw new Error('Invalid phone number format');
+      }
+    } catch (err) {
+      console.error('Phone number validation failed:', err);
+      return new Response(
+        JSON.stringify({ error: 'Invalid phone number format' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Get the domain for the TwiML URL
+    const host = request.headers.get('host') || 'localhost:4321';
+    const protocol = host.includes('localhost') ? 'http' : 'https';
+    const twimlUrl = `${protocol}://${host}/api/assistant/twilio`;
+
+    console.log(`Using TwiML URL: ${twimlUrl}`);
+
+    // Initialize Twilio client
+    const client = twilio(accountSid, authToken);
+
+    // Make the call
+    const call = await client.calls.create({
+      to: formattedPhoneNumber,
+      from: twilioNumber,
+      url: twimlUrl,
+    });
+
+    console.log(`Call initiated with SID: ${call.sid}`);
+
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        message: 'Call initiated successfully',
+        callSid: call.sid 
+      }),
+      { status: 200, headers: { 'Content-Type': 'application/json' } }
+    );
+  } catch (error) {
+    console.error('Error initiating Twilio call:', error);
+    return new Response(
+      JSON.stringify({ 
+        error: error instanceof Error ? error.message : 'An unknown error occurred' 
+      }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
+}; 

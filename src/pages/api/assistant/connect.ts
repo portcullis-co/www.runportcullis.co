@@ -38,8 +38,6 @@ export const POST: APIRoute = async ({ request }) => {
       services: { ...defaultServices, ...services },
       api_keys: {
         openai: import.meta.env.OPENAI_API_KEY,
-        grok: import.meta.env.GROK_API_KEY,
-        gemini: import.meta.env.GEMINI_API_KEY,
       },
       config: [...config],
       rtvi_client_version,

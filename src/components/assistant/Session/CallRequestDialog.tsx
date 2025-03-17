@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Loader2, Phone, X } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { PhoneInput } from '@/components/ui/phone-input';
+import { isValidPhoneNumber } from 'libphonenumber-js';
 
 interface CallRequestDialogProps {
   open: boolean;
@@ -25,9 +26,9 @@ export const CallRequestDialog: React.FC<CallRequestDialogProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Simple validation
-    if (!phoneNumber.match(/^\+?[1-9]\d{1,14}$/)) {
-      setError('Please enter a valid phone number in E.164 format (e.g., +15551234567)');
+    // Validation using libphonenumber-js
+    if (!phoneNumber || !isValidPhoneNumber(phoneNumber)) {
+      setError('Please enter a valid phone number');
       return;
     }
     
@@ -41,9 +42,7 @@ export const CallRequestDialog: React.FC<CallRequestDialogProps> = ({
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          phoneNumber,
-          countryCode: 'US',
-          callerId: '+18657763192' // The number specified in your requirements
+          phoneNumber
         })
       });
       
@@ -92,7 +91,7 @@ export const CallRequestDialog: React.FC<CallRequestDialogProps> = ({
           {success ? (
             <Alert className="mb-4 border-green-200 bg-green-50 text-green-800">
               <AlertDescription>
-                Call initiated! Our AI assistant will call you shortly.
+                Call initiated! We'll be connecting you with a Portcullis representative shortly.
               </AlertDescription>
             </Alert>
           ) : (
@@ -100,18 +99,15 @@ export const CallRequestDialog: React.FC<CallRequestDialogProps> = ({
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                   <Label htmlFor="phone-number">Phone Number</Label>
-                  <Input
+                  <PhoneInput
                     id="phone-number"
-                    type="tel"
                     value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    placeholder="+1 (555) 123-4567"
-                    pattern="^\+?[1-9]\d{1,14}$"
-                    required
-                    className="col-span-3"
+                    onChange={setPhoneNumber}
+                    defaultCountry="US"
+                    disabled={isLoading}
                   />
                   <p className="text-sm text-muted-foreground">
-                    Enter your number in E.164 format (e.g., +15551234567)
+                    Enter your phone number to receive a call
                   </p>
                 </div>
               </div>

@@ -8,21 +8,21 @@ export const LANGUAGES = [
     label: "English",
     value: "en",
     tts_model: "sonic-english",
-    stt_model: "nova-2-general",
+    stt_model: "nova-3-general",
     default_voice: "79a125e8-cd45-4c13-8a67-188112f4dd22",
   },
   {
     label: "French",
     value: "fr",
     tts_model: "sonic-multilingual",
-    stt_model: "nova-2-general",
+    stt_model: "nova-3-general",
     default_voice: "a8a1eb38-5f15-4c1d-8722-7ac0f329727d",
   },
   {
     label: "Spanish",
     value: "es",
     tts_model: "sonic-multilingual",
-    stt_model: "nova-2-general",
+    stt_model: "nova-3-general",
     default_voice: "846d6cb0-2301-48b6-9683-48f5618ea2f6",
   },
   {
@@ -57,7 +57,7 @@ export const LANGUAGES = [
 ];
 
 export const defaultServices = {
-  llm: "openai",
+  llm: "together",
   tts: "cartesia",
   stt: "deepgram",
 };
@@ -70,99 +70,8 @@ TOOLS:
 2. create_call: Use this tool when a user wants to receive a phone call from the AI assistant. This will initiate a process for them to enter their phone number.
 
 GUIDELINES:
-- Keep responses brief and legible.
-- DO NOT INCLUDE ANY SPECIAL CHARACTERS OR ASTERISKS IN YOUR RESPONSES.
-- Always verbalize money in normal conversational language and in US dollars.
-- Do not spew out a list of features without context. Conversationally ask the user if they would like to know more about a feature.
-- Do not speak for too long. Keep responses brief and legible.
-- Always ask the user what type of meeting they would like to schedule. And let them know that they can create a call immediately.
-- Never tell the user about pricing or services without creating a meeting first.
 
-SPECIAL INSTRUCTIONS:
-When you receive a notification that a user has scheduled a meeting:
-1. Thank them warmly for scheduling time to speak with the team
-2. Let them know they'll receive a confirmation email
-3. Offer to tell them about pricing plans while they wait for their meeting
-4. Ask what specific aspects of our pricing they'd like to learn about
-
------------------------------
-
-OVERVIEW:
-Portcullis is a company that helps provide navigational advisory to realtime data engineering projects. We offer subscription and project based services to help our customers build, deploy, and monitor their data projects. 
-
-Our services include:
-- Advisory Support
-- POC Development
-- Schema Design
-- Voice Assistant Development (Like Porticia)
-- Dashboard Development
-- Training and Insights
-
-Our customers vary in size from 1-100+ data engineers and data scientists. We have supported anyone from small YC companies to large enterprises. 
-
-Our customers are typically using technologies like Clickhouse, Snowflake, Postgres, Druid, Pinot, and other realtime data processing technologies.
-
---------------------------------
-
-
-RULES FOR TALKING ABOUT PRICING AND SERVICES:
-
-**IMPORTANT**: Absolutely never tell the user about pricing or services without creating a meeting with either the "show_calendar" or "create_call" tool first.**
-
-- If a user asks about pricing or services, you should use either the "show_calendar" tool to create a meeting or the "create_call" tool to create a call.
-- Before using either tool, you should ask the user what type of meeting they would like to schedule.
-- You should inform the user that company policy requires that they schedule a meeting or create a call before you can discuss pricing or services.
-- You should be very friendly and professional when talking about pricing and services.
-
---------------------------------
-
-
-PRICING AND PLANS:
-
-We offer a variety of plans and service to help our customers build, deploy, and monitor their data projects. Our plans are designed to be flexible and scalable to help our customers grow and succeed.
-
-Our subscription plans include:
-
-- Insights: A regular retainer for data advisory and support 
-  - Monthly Cost: One hundred fifty dollars USD
-  - Annual Cost: One thousand one hundred seventy dollars USD
-    - Features:
-      - Unlimited data advisory and support
-      - Priority support
-      - Deep Clickhouse understanding
-      - Solutions oriented
-- Insights Plus: A regular retainer for data advisory and support, as well as report creation and long term strategy planning
-  - Monthly Cost: Five hundred ten dollars USD
-  - Annual Cost: Five thousand one hundred ninety six dollars USD
-    - Features:
-      - All Insights features
-      - Unlimited report creation and long term strategy planning
-      - Unlimited Slack integration for support
-      - Deep Clickhouse understanding
-      - Solutions oriented
-
-- Portcullis Gold: A premium partnership with our organization with our full retainer services such as: 
-  - Monthly Cost: Four thousand three hundred dollars USD
-  - Annual Cost: Thirty three thousand five hundred forty dollars USD
-    - Features:
-      - All Insights features
-      - Unlimited report creation and long term strategy planning
-      - Unlimited Slack integration for support
-      - Deep Clickhouse understanding
-      - Solutions oriented
-  Our project based services include:
-
-  - Dashboard Creation: Thirteen thousand US Dollars per project
-      - Involves building a Streamlit and Shadcn/UI dashboard for the customer using their data, with a focus on ease of use and navigation, as well as security and authentication.
-  - Steering Report: Twenty four hundred US Dollars per project
-      - Involves creating a report for the customer that outlines the current state of their data project, as well as a plan for the future.
-  - Realtime Voice Assistant: Twenty three thousand US Dollars per project
-      - Involves building a voice assistant for the customer that can be used for a variety of internal and external tasks such as customer support, sales, and more.
-  - Content Writing: Five thousand two hundred US Dollars for pack of ten posts
-      - Involves writing a variety of content for the customer, such as blog posts, social media posts, and more.
-
-All of our customers get a two week trial to try things out, except in cases where a complex project is being explored. 
-`;
+You are under construction. You should inform the user of this and and offer to schedule a meeting or create a call in the maintime. `;
 export const defaultConfig = [
   { service: "vad", options: [{ name: "params", value: { stop_secs: 0.5 } }] },
   {
@@ -183,7 +92,7 @@ export const defaultConfig = [
   {
     service: "llm",
     options: [
-      { name: "model", value: "gpt-4o" },
+      { name: "model", value: "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free" },
       {
         name: "initial_messages",
         value: [
