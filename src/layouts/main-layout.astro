@@ -9,6 +9,7 @@ import { navMenuConfig } from "@/config/nav-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { siteConfig } from "@/config/site";
 import { Icon } from "astro-icon/components";
+import RTVIWidget from "@/components/RTVIWidget";
 // import { marketingConfig } from "@/config/marketing";
 // import MainNav from "@/components/layout/main-nav.astro";
 
@@ -58,6 +59,8 @@ const { title, description, mainClass, ogImage } = Astro.props;
   <main class={cn(mainClass)}>
     <slot />
   </main>
+
+  <!-- <RTVIWidget client:load /> -->
 
   <Footer />
 </BaseLayout>

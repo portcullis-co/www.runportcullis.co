@@ -1,11 +1,14 @@
 ---
 import MainLayout from "@/layouts/main-layout.astro";
-import Assistant from "@/components/assistant/index";
 import { Image } from "astro:assets";
 import { hobbies } from "@/config/about";
 import { Button } from "@/components/ui/button";
 import { Icon } from "astro-icon/components";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RevenueSelect } from "@/components/ui/revenue-select";
+import { PhoneInput } from "@/components/ui/phone-input";
 import porticiaPng from '@/assets/porticia.png';
 ---
 <MainLayout title="Talk to Portcullis" mainClass="flex-1 bg-background-200">
@@ -19,17 +22,17 @@ import porticiaPng from '@/assets/porticia.png';
           <!-- Simple image instead of Radix Avatar -->
           <div class="mb-6">
             <img 
-              src="/porticia.png" 
-              alt="Porticia" 
+              src="/james.png" 
+              alt="James" 
               class="h-20 w-20 rounded-full border-2 border-primary object-cover"
             />
           </div>
           
           <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-4">
-            Get your questions answered immediately
+            Chat with James immediately
           </h1>
           <p class="text-lg md:text-xl text-muted-foreground mb-6 max-w-md">
-            Meet Porticia, our AI assistant, she can help answer a variety of questions about Portcullis and our services.
+            Fill out the form and we'll call you right away to discuss how Portcullis can help your business.
           </p>
           <div class="flex flex-wrap gap-3">
             <a href="https://cal.com/team/portcullis/portcullis-intro" class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 group">
@@ -43,10 +46,141 @@ import porticiaPng from '@/assets/porticia.png';
           </div>
         </div>
         
-        <!-- Right side: Assistant -->
-        <div class="flex flex-col justify-center items-center md:items-end order-first md:order-last">
-          <Assistant client:only="react" />
+        <!-- Right side: Contact Form -->
+        <div class="flex flex-col justify-center items-center md:items-start order-first md:order-last bg-white p-6 rounded-lg shadow-md">
+          <h2 class="text-2xl font-semibold mb-6 w-full text-center">Talk to us now</h2>
+          
+          <form id="contactForm" class="w-full space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="space-y-2">
+                <Label htmlFor="firstName">First Name</Label>
+                <Input id="firstName" name="firstName" placeholder="John" required />
+              </div>
+              
+              <div class="space-y-2">
+                <Label htmlFor="lastName">Last Name</Label>
+                <Input id="lastName" name="lastName" placeholder="Doe" required />
+              </div>
+            </div>
+            
+            <div class="space-y-2">
+              <Label htmlFor="companyName">Company Name</Label>
+              <Input id="companyName" name="companyName" placeholder="Acme Inc." required />
+            </div>
+            
+            <div class="space-y-2">
+              <Label htmlFor="annualRevenue">Annual Revenue</Label>
+              <RevenueSelect id="annualRevenue" name="annualRevenue" required client:load />
+            </div>
+            
+            <div class="space-y-2">
+              <Label htmlFor="phoneNumber">Phone Number</Label>
+              <PhoneInput id="phoneNumber" name="phoneNumber" defaultCountry="US" required client:load />
+            </div>
+            
+            <button type="submit" class="w-full flex items-center justify-center gap-2 bg-primary text-white hover:bg-primary/90 h-10 px-4 py-2 rounded-md font-medium">
+              <Icon name="lucide:phone" class="w-4 h-4" />
+              Call Me Now
+            </button>
+            
+            <p class="text-sm text-muted-foreground text-center">
+              By submitting this form, you agree to be contacted by our team.
+            </p>
+          </form>
+          
+          <div id="successMessage" class="hidden w-full text-center p-4 bg-green-50 text-green-700 rounded-md mt-4">
+            Thanks! We'll be calling you shortly.
+          </div>
+          
+          <div id="errorMessage" class="hidden w-full text-center p-4 bg-red-50 text-red-700 rounded-md mt-4">
+            There was an error processing your request. Please try again.
+          </div>
         </div>
       </div>
     </section>
+
+    <script>
+      // Form submission handler
+      document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('contactForm') as HTMLFormElement;
+        const successMessage = document.getElementById('successMessage');
+        const errorMessage = document.getElementById('errorMessage');
+        
+        form?.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          errorMessage?.classList.add('hidden');
+          
+          // Get form data
+          const formData = new FormData(form);
+          let phoneNumber = formData.get('phoneNumber') as string;
+          
+          // Validate phone number
+          if (!phoneNumber) {
+            if (errorMessage) {
+              errorMessage.textContent = "Please enter a valid phone number";
+              errorMessage.classList.remove('hidden');
+            }
+            return;
+          }
+          
+          // Ensure the phone number has the country code
+          if (!phoneNumber.startsWith('+')) {
+            phoneNumber = `+1${phoneNumber.replace(/\D/g, '')}`;
+          }
+          
+          // Show loading state
+          const submitButton = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+          const originalButtonText = submitButton?.innerHTML || '';
+          if (submitButton) {
+            submitButton.innerHTML = '<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Processing...';
+            submitButton.disabled = true;
+          }
+          
+          try {
+            // Call the dialout API
+            const response = await fetch('/api/assistant/dialout', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                firstName: formData.get('firstName'),
+                lastName: formData.get('lastName'),
+                companyName: formData.get('companyName'),
+                annualRevenue: formData.get('annualRevenue'),
+                phoneNumber,
+              }),
+            });
+            
+            if (response.ok) {
+              // Show success message
+              form.reset();
+              form.classList.add('hidden');
+              if (successMessage) successMessage.classList.remove('hidden');
+            } else {
+              // Show error message
+              const errorData = await response.json();
+              if (errorMessage) {
+                errorMessage.textContent = errorData.error || "There was an error processing your request. Please try again.";
+                errorMessage.classList.remove('hidden');
+              }
+              console.error('Error response:', errorData);
+            }
+          } catch (error) {
+            // Show error message
+            if (errorMessage) {
+              errorMessage.textContent = "There was an error connecting to the server. Please try again.";
+              errorMessage.classList.remove('hidden');
+            }
+            console.error('Error:', error);
+          } finally {
+            // Reset button state
+            if (submitButton) {
+              submitButton.innerHTML = originalButtonText;
+              submitButton.disabled = false;
+            }
+          }
+        });
+      });
+    </script>
 </MainLayout>

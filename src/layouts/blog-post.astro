@@ -28,12 +28,13 @@ const { title, description, pubDate, updatedDate, cover, category } =
       {" "}Back
     </button>
 
-    <article class="prose dark:prose-invert max-w-none">
+    <article class="prose prose-slate dark:prose-invert max-w-none prose-headings:font-heading prose-h1:text-4xl prose-h2:text-3xl prose-h3:text-2xl prose-h4:text-xl prose-img:rounded-lg prose-img:w-full prose-img:my-8">
       <a
         href={`/blog/category/${category}`}
         transition:name={`badge-cat-${slug}`}
+        class="no-underline"
       >
-        <Badge radius="md" className="capitalize">
+        <Badge className="capitalize">
           {category}
         </Badge>
       </a>

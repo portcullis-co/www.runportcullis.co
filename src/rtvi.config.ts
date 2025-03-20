@@ -67,17 +67,13 @@ the tools provided to help prospective clients and customers answer questions ab
 
 TOOLS:
 1. show_calendar: Use this tool when a user asks about pricing or wants to schedule a meeting with Portcullis. This will display a calendar interface where they can select a convenient time. You should always ask if the user would like to schedule a meeting or create a call immediately. After they schedule a meeting. 
-2. create_call: Use this tool when a user wants to receive a phone call from the AI assistant. This will initiate a process for them to enter their phone number.
-
-GUIDELINES:
-
-You are under construction. You should inform the user of this and and offer to schedule a meeting or create a call in the maintime. `;
+2. create_call: Use this tool when a user wants to receive a phone call from the AI assistant. This will initiate a process for them to enter their phone number.`
 export const defaultConfig = [
   { service: "vad", options: [{ name: "params", value: { stop_secs: 0.5 } }] },
   {
     service: "tts",
     options: [
-      { name: "voice", value: "79a125e8-cd45-4c13-8a67-188112f4dd22" },
+      { name: "voice", value: "031851ba-cc34-422d-bfdb-cdbb7f4651ee" },
       { name: "model", value: LANGUAGES[0].tts_model },
       { name: "language", value: LANGUAGES[0].value },
       {
@@ -92,7 +88,7 @@ export const defaultConfig = [
   {
     service: "llm",
     options: [
-      { name: "model", value: "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free" },
+      { name: "model", value: "mistralai/Mistral-Small-24B-Instruct-2501" },
       {
         name: "initial_messages",
         value: [
@@ -132,9 +128,9 @@ export const LLM_MODEL_CHOICES = [
     label: "Together AI",
     value: "together",
     models: [
-      {
-        label: "DeepSeek R1 Distilled Llama 70B Free",
-        value: "deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free",
+        {
+        label: "Mistral Small 24B",
+        value: "mistralai/Mistral-Small-24B-Instruct-2501",
       },
       {
         label: "Qwen2.5 72B",

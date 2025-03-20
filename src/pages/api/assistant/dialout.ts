@@ -7,7 +7,13 @@ export const POST: APIRoute = async ({ request }) => {
 
   try {
     const requestData = await request.json();
-    const { phoneNumber } = requestData;
+    const { 
+      phoneNumber,
+      firstName = '',
+      lastName = '',
+      companyName = '',
+      annualRevenue = ''
+    } = requestData;
 
     // Validate input
     if (!phoneNumber) {
@@ -18,7 +24,8 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    console.log(`Processing call request to: ${phoneNumber.substring(0, 3)}*****`);
+    console.log(`Processing call request to: ${phoneNumber}`);
+    console.log(`Contact info: ${firstName} ${lastName}, ${companyName}, Revenue: ${annualRevenue}`);
 
     // Check for required environment variables
     const accountSid = import.meta.env.TWILIO_ACCOUNT_SID;
@@ -37,27 +44,35 @@ export const POST: APIRoute = async ({ request }) => {
     // Parse and validate the phone number
     let formattedPhoneNumber;
     try {
-      const parsedNumber = parsePhoneNumberFromString(phoneNumber);
+      // Ensure the phone number has a country code
+      let phoneNumberWithCode = phoneNumber;
+      if (!phoneNumberWithCode.startsWith('+')) {
+        phoneNumberWithCode = `+1${phoneNumber.replace(/\D/g, '')}`;
+      }
+      
+      const parsedNumber = parsePhoneNumberFromString(phoneNumberWithCode);
       if (!parsedNumber) {
-        throw new Error('Failed to parse phone number');
+        throw new Error(`Failed to parse phone number: ${phoneNumberWithCode}`);
       }
       
       formattedPhoneNumber = parsedNumber.format('E.164');
+      console.log(`Formatted phone number: ${formattedPhoneNumber}`);
       
       if (!parsedNumber.isValid()) {
-        throw new Error('Invalid phone number format');
+        throw new Error(`Invalid phone number format: ${formattedPhoneNumber}`);
       }
     } catch (err) {
       console.error('Phone number validation failed:', err);
       return new Response(
-        JSON.stringify({ error: 'Invalid phone number format' }),
+        JSON.stringify({ error: 'Invalid phone number format. Please enter a valid phone number with country code.' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
     // Get the domain for the TwiML URL
-    const host = request.headers.get('host') || 'localhost:4321';
-    const protocol = host.includes('localhost') ? 'http' : 'https';
+    const isDevelopment = process.env.NODE_ENV !== 'production';
+    const host = request.headers.get('host') || 'localhost:8888';
+    const protocol = isDevelopment ? 'http' : 'https';
     const twimlUrl = `${protocol}://${host}/api/assistant/twilio`;
 
     console.log(`Using TwiML URL: ${twimlUrl}`);
@@ -69,7 +84,16 @@ export const POST: APIRoute = async ({ request }) => {
     const call = await client.calls.create({
       to: formattedPhoneNumber,
       from: twilioNumber,
-      url: twimlUrl,
+      // In development, use static TwiML to avoid URL accessibility issues
+      ...(isDevelopment ? {
+        twiml: `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Say>Hello, we have a lead from ${firstName} ${lastName} at ${companyName}. Their annual revenue is in the ${annualRevenue} range. Please connect with them now.</Say>
+  <Dial callerId="${twilioNumber}">${personalNumber}</Dial>
+</Response>`
+      } : {
+        url: twimlUrl
+      })
     });
 
     console.log(`Call initiated with SID: ${call.sid}`);
