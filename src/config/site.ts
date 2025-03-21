@@ -3,7 +3,7 @@ import type { SidebarNavItem, SiteConfig } from "@/types";
 export const siteConfig: SiteConfig = {
   name: "Portcullis",
   description:
-    "Get your own personal #help channel without having to wait hours for support",
+    "Data doldrums? Let us put some 💨 in your project ",
   url: "https://www.runportcullis.co",
   ogImage: "/og.png",
   links: {
