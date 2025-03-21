@@ -20,7 +20,7 @@ interface PricingCardProps {
   originalPrice?: number;
   features: PricingFeature[];
   buttonText?: string;
-  onButtonClick?: () => void;
+  onButtonClick?: (() => void) | string;
 }
 
 export function PricingCard({
@@ -79,6 +79,14 @@ export function PricingCard({
     },
   };
 
+  const handleButtonClick = () => {
+    if (typeof onButtonClick === 'function') {
+      onButtonClick();
+    } else if (typeof onButtonClick === 'string') {
+      window.location.href = onButtonClick;
+    }
+  };
+
   return (
     <motion.section
       ref={containerRef}
@@ -117,7 +125,7 @@ export function PricingCard({
               </motion.div>
             </div>
             <motion.div className="mt-8" variants={itemVariants}>
-              <Button className="w-full" size="lg" onClick={onButtonClick}>
+              <Button className="w-full" size="lg" onClick={handleButtonClick}>
                 {buttonText}
               </Button>
             </motion.div>

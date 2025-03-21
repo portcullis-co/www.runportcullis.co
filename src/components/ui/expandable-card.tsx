@@ -34,8 +34,8 @@ export function ServiceCard({
   features,
   supportedTools = [],
   priceSubtext = "",
-  ctaText = "Schedule a Demo",
-  ctaLink = "/contact",
+  ctaText = "Talk with us ",
+  ctaLink = "/talk",
 }: ServiceCardProps) {
   return (
     <Card className="w-full max-w-md transition-all duration-300 hover:shadow-lg">
