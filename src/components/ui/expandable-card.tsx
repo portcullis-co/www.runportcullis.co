@@ -1,17 +1,7 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  Clock,
-  GitBranch,
-  Github,
-  MessageSquare,
-  StepForwardIcon as Progress,
-  Star,
-  Users,
-  CheckCircle2,
-} from "lucide-react";
+import React from "react";
+import { CheckCircle2, Calendar } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -20,186 +10,95 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Progress as ProgressBar } from "@/components/ui/progress";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { useExpandable } from "@/hooks/use-expandable";
 
-interface ProjectStatusCardProps {
+interface ServiceFeature {
   title: string;
-  progress: number;
-  dueDate: string;
-  contributors: Array<{ name: string; image?: string }>;
-  tasks: Array<{ title: string; completed: boolean }>;
-  githubStars: number;
-  openIssues: number;
+  included: boolean;
 }
 
-export function ProjectStatusCard({
+interface ServiceCardProps {
+  title: string;
+  price: string;
+  description: string;
+  features: ServiceFeature[];
+  supportedTools?: string[];
+  priceSubtext?: string;
+  ctaText?: string;
+  ctaLink?: string;
+}
+
+export function ServiceCard({
   title,
-  progress,
-  dueDate,
-  contributors,
-  tasks,
-  githubStars,
-  openIssues,
-}: ProjectStatusCardProps) {
-  const { isExpanded, toggleExpand, animatedHeight } = useExpandable();
-  const contentRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (contentRef.current) {
-      animatedHeight.set(isExpanded ? contentRef.current.scrollHeight : 0);
-    }
-  }, [isExpanded, animatedHeight]);
-
+  price,
+  description,
+  features,
+  supportedTools = [],
+  priceSubtext = "",
+  ctaText = "Schedule a Demo",
+  ctaLink = "/contact",
+}: ServiceCardProps) {
   return (
-    <Card
-      className="w-full max-w-md cursor-pointer transition-all duration-300 hover:shadow-lg"
-      onClick={toggleExpand}
-    >
+    <Card className="w-full max-w-md transition-all duration-300 hover:shadow-lg">
       <CardHeader className="space-y-1">
         <div className="flex justify-between items-start w-full">
           <div className="space-y-2">
-            <Badge
-              variant="secondary"
-              className={
-                progress === 100
-                  ? "bg-green-100 text-green-600"
-                  : "bg-blue-100 text-blue-600"
-              }
-            >
-              {progress === 100 ? "Completed" : "In Progress"}
+            <Badge variant="secondary" className="bg-blue-100 text-blue-600">
+              {title}
             </Badge>
-            <h3 className="text-2xl font-semibold">{title}</h3>
+            <div className="space-y-1">
+              <h3 className="text-3xl font-bold">{price}</h3>
+              {priceSubtext && (
+                <p className="text-sm text-muted-foreground">{priceSubtext}</p>
+              )}
+            </div>
           </div>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button size="icon" variant="outline" className="h-8 w-8">
-                  <Github className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>View on GitHub</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
         </div>
+        <p className="text-sm text-muted-foreground">{description}</p>
       </CardHeader>
 
       <CardContent>
         <div className="space-y-4">
           <div className="space-y-2">
-            <div className="flex justify-between text-sm text-gray-600">
-              <span>Progress</span>
-              <span>{progress}%</span>
-            </div>
-            <ProgressBar value={progress} className="h-2" />
+            <h4 className="font-medium text-sm">Features</h4>
+            {features.map((feature, index) => (
+              <div
+                key={index}
+                className="flex items-center justify-between text-sm"
+              >
+                <span className="text-gray-600">{feature.title}</span>
+                {feature.included && (
+                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                )}
+              </div>
+            ))}
           </div>
 
-          <motion.div
-            style={{ height: animatedHeight }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="overflow-hidden"
-          >
-            <div ref={contentRef}>
-              <AnimatePresence>
-                {isExpanded && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="space-y-4 pt-2"
+          {supportedTools.length > 0 && (
+            <div className="space-y-2">
+              <h4 className="font-medium text-sm">Supported Tools</h4>
+              <div className="flex flex-wrap gap-2">
+                {supportedTools.map((tool, index) => (
+                  <Badge
+                    key={index}
+                    variant="outline"
+                    className="text-xs"
                   >
-                    <div className="flex items-center justify-between text-sm text-gray-600">
-                      <div className="flex items-center">
-                        <Clock className="h-4 w-4 mr-2" />
-                        <span>Due {dueDate}</span>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center">
-                          <Star className="h-4 w-4 mr-1 text-yellow-400" />
-                          <span>{githubStars}</span>
-                        </div>
-                        <div className="flex items-center">
-                          <GitBranch className="h-4 w-4 mr-1" />
-                          <span>{openIssues} issues</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <h4 className="font-medium text-sm flex items-center">
-                        <Users className="h-4 w-4 mr-2" />
-                        Contributors
-                      </h4>
-                      <div className="flex -space-x-2">
-                        {contributors.map((contributor, index) => (
-                          <TooltipProvider key={index}>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Avatar className="border-2 border-white">
-                                  <AvatarImage
-                                    src={
-                                      contributor.image ||
-                                      `/placeholder.svg?height=32&width=32&text=${contributor.name[0]}`
-                                    }
-                                    alt={contributor.name}
-                                  />
-                                  <AvatarFallback>
-                                    {contributor.name[0]}
-                                  </AvatarFallback>
-                                </Avatar>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>{contributor.name}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <h4 className="font-medium text-sm">Recent Tasks</h4>
-                      {tasks.map((task, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center justify-between text-sm"
-                        >
-                          <span className="text-gray-600">{task.title}</span>
-                          {task.completed && (
-                            <CheckCircle2 className="h-4 w-4 text-green-500" />
-                          )}
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Button className="w-full">
-                        <MessageSquare className="h-4 w-4 mr-2" />
-                        View Discussion
-                      </Button>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                    {tool}
+                  </Badge>
+                ))}
+              </div>
             </div>
-          </motion.div>
+          )}
         </div>
       </CardContent>
 
       <CardFooter>
-        <div className="flex items-center justify-between w-full text-sm text-gray-600">
-          <span>Last updated: 2 hours ago</span>
-          <span>{openIssues} open issues</span>
-        </div>
+        <Button className="w-full" asChild>
+          <a href={ctaLink}>
+            {ctaText}
+            <Calendar className="ml-2 h-4 w-4" />
+          </a>
+        </Button>
       </CardFooter>
     </Card>
   );

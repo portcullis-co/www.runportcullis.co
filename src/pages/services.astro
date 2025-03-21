@@ -1,0 +1,166 @@
+---
+import MainLayout from "@/layouts/main-layout.astro";
+import { ServiceCard } from "@/components/ui/expandable-card";
+import { PricingCard } from "@/components/blocks/pricing-card";
+
+const services = [
+  {
+    title: "Insights Subscription",
+    price: "$510/mo",
+    description: "Get continuous AI-powered insights and analytics for your business",
+    features: [
+      { title: "Real-time data analysis", included: true },
+      { title: "Monthly trend reports", included: true },
+      { title: "Custom dashboards", included: true },
+      { title: "API access", included: true },
+      { title: "24/7 monitoring", included: true }
+    ],
+    supportedTools: ["Tableau", "Power BI", "Looker", "Custom APIs"],
+    priceSubtext: "Billed monthly"
+  },
+  {
+    title: "Voice AI Build",
+    price: "~$21,000",
+    description: "Custom voice AI solution tailored to your needs",
+    features: [
+      { title: "Any voice model", included: true },
+      { title: "Integration support", included: true },
+      { title: "Training & documentation", included: true },
+      { title: "Performance testing", included: true },
+      { title: "3 months support", included: true }
+    ],
+    supportedTools: ["OpenAI", "Hugging Face", "Pipecat", "Vapi AI", "And others"],
+    priceSubtext: "One-time fee"
+  },
+  {
+    title: "Dashboard Build",
+    price: "~$14,000",
+    description: "Custom analytics dashboard development",
+    features: [
+      { title: "Custom metrics", included: true },
+      { title: "Interactive visualizations", included: true },
+      { title: "Data integration", included: true },
+      { title: "User management", included: true },
+      { title: "Export capabilities", included: true }
+    ],
+    supportedTools: ["React", "Shadcn", "Streamlit", "Python", "And others"],
+    priceSubtext: "One-time fee"
+  },
+  {
+    title: "Report Creation",
+    price: "~$1,200",
+    description: "Detailed analysis and reporting of your data project",
+    features: [
+      { title: "Data analysis", included: true },
+      { title: "Visual charts", included: true },
+      { title: "Executive summary", included: true },
+      { title: "Recommendations", included: true },
+      { title: "Benchmarking", included: true }
+    ],
+    supportedTools: ["Notion", "Shadcn", "Google Docs", "And others"],
+    priceSubtext: "Per report"
+  },
+  {
+    title: "Blog Post",
+    price: "~$750",
+    description: "AI-free technical content creation",
+    features: [
+      { title: "Research & planning", included: true },
+      { title: "SEO optimization", included: true },
+      { title: "Technical review", included: true },
+      { title: "Custom graphics", included: true },
+      { title: "2 revisions", included: true }
+    ],
+    supportedTools: ["Vector Search", "Langchain", "OpenAI", "And others"],
+    priceSubtext: "Per post"
+  },
+  {
+    title: "LLM Project Outline",
+    price: "~$13,000",
+    description: "Project outline for LLM projects",
+    features: [
+      { title: "Research & planning", included: true },
+      { title: "Build vs. Buy Reporting", included: true },
+      { title: "Technical review", included: true },
+      { title: "Competitive Analysis", included: true },
+      { title: "Project Timeline", included: true }
+    ],
+    supportedTools: ["Notion", "Google Docs", "Anthropic Claude", "And others"],
+    priceSubtext: "Per project"
+  }
+];
+
+// Filter out the Insights Subscription from the services array
+const projectServices = services.filter(service => service.title !== "Insights Subscription");
+
+// Format the Insights Subscription for the PricingCard component
+const insightsSubscription = {
+  title: "Insights Subscription",
+  description: "Keep Portcullis retained to provide you with ongoing insights and advisory services for your business",
+  price: 510,
+  features: [
+    {
+      title: "Core Benefits",
+      items: [
+        "Expert level insights and advisory support",
+        "Monthly reports",
+        "Real-time troubleshooting powered by our voice AI",
+        "Easy access to our team"
+      ]
+    },
+    {
+      title: "Compatible Platforms",
+      items: ["Clickhouse", "Postgres", "MySQL", "Custom APIs", "And many more!"]
+    }
+  ],
+  buttonText: "Subscribe Now"
+};
+---
+
+<MainLayout title="Services" mainClass="flex-1 bg-background-200">
+  <!-- Subscription Section -->
+  <section class="container flex flex-col pt-8 md:max-w-[64rem] md:pt-12 lg:pt-16">
+    <div class="mx-auto flex w-full flex-col gap-4 md:max-w-[58rem]">
+      <h2 class="font-heading text-3xl leading-[1.1] sm:text-3xl md:text-5xl">
+        Monthly Advisory Package
+      </h2>
+      <p class="max-w-[85%] leading-normal text-muted-foreground sm:text-lg sm:leading-7">
+        Our main subscription service gives you ongoing access to a team of experts who can help you with your projects.
+      </p>
+    </div>
+
+    <PricingCard
+      client:load
+      title={insightsSubscription.title}
+      description={insightsSubscription.description}
+      price={insightsSubscription.price}
+      features={insightsSubscription.features}
+      buttonText={insightsSubscription.buttonText}
+    />
+  </section>
+  <!-- Project Services Section -->
+  <section class="container flex flex-col gap-6 pb-8 md:max-w-[64rem] md:pb-12 lg:pb-24">
+    <div class="mx-auto flex w-full flex-col gap-4 md:max-w-[58rem]">
+      <h2 class="font-heading text-3xl leading-[1.1] sm:text-3xl md:text-6xl">
+        One-Time Project Services
+      </h2>
+      <p class="max-w-[85%] leading-normal text-muted-foreground sm:text-lg sm:leading-7">
+        Need a specific project completed? Choose from our range of specialized services.
+      </p>
+    </div>
+
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {projectServices.map((service) => (
+        <ServiceCard
+          client:load
+          title={service.title}
+          price={service.price}
+          description={service.description}
+          features={service.features}
+          supportedTools={service.supportedTools}
+          priceSubtext={service.priceSubtext}
+        />
+      ))}
+    </div>
+  </section>
+</MainLayout>
