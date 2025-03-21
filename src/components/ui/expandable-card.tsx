@@ -16,26 +16,27 @@ interface ServiceFeature {
   included: boolean;
 }
 
-interface ServiceCardProps {
+export interface ServiceCardProps {
   title: string;
-  price: string;
-  description: string;
-  features: ServiceFeature[];
+  price?: string;
+  description?: string;
+  features?: {
+    title: string;
+    included: boolean;
+  }[];
   supportedTools?: string[];
   priceSubtext?: string;
-  ctaText?: string;
-  ctaLink?: string;
+  talkUrl?: string;
 }
 
 export function ServiceCard({
   title,
-  price,
-  description,
-  features,
+  price = "",
+  description = "",
+  features = [],
   supportedTools = [],
   priceSubtext = "",
-  ctaText = "Talk with us ",
-  ctaLink = "/talk",
+  talkUrl = "/talk",
 }: ServiceCardProps) {
   return (
     <Card className="w-full max-w-md transition-all duration-300 hover:shadow-lg">
@@ -60,7 +61,7 @@ export function ServiceCard({
         <div className="space-y-4">
           <div className="space-y-2">
             <h4 className="font-medium text-sm">Features</h4>
-            {features.map((feature, index) => (
+            {features?.map((feature, index) => (
               <div
                 key={index}
                 className="flex items-center justify-between text-sm"
@@ -94,8 +95,8 @@ export function ServiceCard({
 
       <CardFooter>
         <Button className="w-full" asChild>
-          <a href={ctaLink}>
-            {ctaText}
+          <a href={talkUrl}>
+            Talk with us
             <Calendar className="ml-2 h-4 w-4" />
           </a>
         </Button>

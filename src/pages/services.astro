@@ -115,6 +115,16 @@ const insightsSubscription = {
   ],
   buttonText: "Subscribe Now"
 };
+
+// Add service identifiers to use in URL parameters
+const serviceIdentifiers: Record<string, string> = {
+  "Insights Subscription": "INSIGHTS",
+  "Voice AI Build": "VOICE",
+  "Dashboard Build": "DASHBOARDS",
+  "Report Creation": "REPORTS",
+  "Blog Post": "BLOGS",
+  "LLM Project Outline": "LLMS"
+};
 ---
 
 <MainLayout title="Services" mainClass="flex-1 bg-background-200">
@@ -136,7 +146,7 @@ const insightsSubscription = {
       price={insightsSubscription.price}
       features={insightsSubscription.features}
       buttonText={insightsSubscription.buttonText}
-      onButtonClick="/talk"
+      onButtonClick={`/talk?service=${serviceIdentifiers["Insights Subscription"]}`}
     />
   </section>
   <!-- Project Services Section -->
@@ -160,6 +170,7 @@ const insightsSubscription = {
           features={service.features}
           supportedTools={service.supportedTools}
           priceSubtext={service.priceSubtext}
+          talkUrl={`/talk?service=${serviceIdentifiers[service.title]}`}
         />
       ))}
     </div>

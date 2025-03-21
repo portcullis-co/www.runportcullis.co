@@ -24,9 +24,9 @@ export const navMenuConfig: NavMenuConfig = {
   ],
   links: [
     {
-      title: "Get a free quote",
-      href: "/talk",
-      description: "Get a free quote for our services",
+      title: "See our services",
+      href: "/services",
+      description: "See our services",
       image: "/images/examples/pricing.jpg",
     },
   ],
